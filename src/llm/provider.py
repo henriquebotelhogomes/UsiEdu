@@ -56,7 +56,8 @@ def _build_opencode_go(model_name: str | None = None) -> BaseChatModel:
         model=model_name or os.getenv("USIEDU_ROUTER_MODEL", "deepseek-v4-flash"),
         base_url=os.getenv("OPENCODE_GO_BASE_URL", "https://opencode.ai/zen/go/v1"),
         api_key=os.getenv("OPENCODE_GO_API_KEY", ""),
-        temperature=0.1,
+        # Console Go/OpenCode Go exige temperature=1 para alguns modelos
+        temperature=1.0,
     )
 
 
