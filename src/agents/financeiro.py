@@ -5,7 +5,6 @@ Conforme doc 02 seção 3 — integração com retriever + tools + citação obr
 
 from __future__ import annotations
 
-import textwrap
 from typing import TYPE_CHECKING
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -54,7 +53,9 @@ def make_financeiro_node(
 
         if retriever:
             try:
-                results = retriever.search(last_message, profile=state.get("profile", "student"))
+                # Coleção acadêmica contém docs público student;
+                # o filtro segue o documento, não o perfil do usuário
+                results = retriever.search(last_message, profile="student")
                 context_text = _format_context(results)
                 retrieved_sources = [r.source for r in results]
             except Exception:
@@ -162,16 +163,24 @@ async def _executar_ferramentas_financeiras(user_id: str, query: str) -> str:
 
 
 def _format_context(results: list) -> str:
-    """Formata resultados RAG para o prompt."""
+    """Formata resultados RAG para o prompt.
+
+    Trechos longos (até 2400 chars) são mantidos quase na íntegra para
+    preservar tabelas e datas; quebras de linha são preservadas.
+    """
     if not results:
         return "Nenhum documento relevante encontrado."
 
+    max_chars = 2400
     parts = []
     for i, r in enumerate(results[:5], 1):
+        excerpt = r.source.excerpt
+        if len(excerpt) > max_chars:
+            excerpt = excerpt[:max_chars] + "..."
         parts.append(
             f"[{i}] Documento: {r.source.document}\n"
             f"    Seção: {r.source.section or 'N/A'}\n"
-            f"    Conteúdo: {textwrap.shorten(r.source.excerpt, width=300, placeholder='...')}"
+            f"    Conteúdo: {excerpt}"
         )
     return "\n\n".join(parts)
 

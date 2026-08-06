@@ -5,6 +5,7 @@ Conforme doc 09 seção 1 — servidor REST com autenticação JWT e chat.
 
 from __future__ import annotations
 
+import logging
 import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -23,6 +24,53 @@ from src.orchestration.graph import create_chat_graph
 
 # Carrega variáveis do .env (se existir) antes de qualquer configuração
 load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+
+def _build_retrievers():
+    """Cria os retrievers RAG (acadêmico e institucional).
+
+    Retorna (retriever_academico, retriever_institucional).
+    Se o Qdrant estiver indisponível, retorna (None, None) e a API
+    segue operando sem RAG.
+    """
+    try:
+        from qdrant_client import QdrantClient
+
+        from src.rag.embedder import Embedder
+        from src.rag.reranker import Reranker
+        from src.rag.retriever import HybridRetriever
+
+        qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
+        client = QdrantClient(qdrant_url)
+        embedder = Embedder()
+
+        try:
+            reranker: Reranker | None = Reranker()
+        except Exception:
+            logger.warning("Reranker indisponível; seguindo sem reranking.")
+            reranker = None
+
+        academico = HybridRetriever(
+            client=client,
+            embedder=embedder,
+            reranker=reranker,
+            collection_name="academico",
+        )
+        institucional = HybridRetriever(
+            client=client,
+            embedder=embedder,
+            reranker=reranker,
+            collection_name="institucional",
+        )
+        academico.build_bm25_index()
+        institucional.build_bm25_index()
+        logger.info("Retrievers RAG inicializados (academico + institucional).")
+        return academico, institucional
+    except Exception:
+        logger.exception("Qdrant indisponível; API seguirá sem RAG.")
+        return None, None
 
 
 @asynccontextmanager
@@ -43,6 +91,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     router_llm = get_chat_model(model_name=router_model_name)
     agent_llm = get_chat_model(model_name=agent_model_name)
 
+    # Retrievers RAG (acadêmico e institucional)
+    retriever, documental_retriever = _build_retrievers()
+
     # Checkpointer SQLite
     db_path = os.getenv("USIEDU_CHECKPOINTER_DB", "usiedu_checkpoints.db")
     async with AsyncSqliteSaver.from_conn_string(db_path) as checkpointer:
@@ -52,7 +103,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             agent_llm=agent_llm,
             financeiro_llm=agent_llm,
             documental_llm=agent_llm,
-            retriever=None,  # RAG opcional no piloto
+            retriever=retriever,
+            documental_retriever=documental_retriever,
             checkpointer=checkpointer,
         )
 

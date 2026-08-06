@@ -16,13 +16,102 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Stopwords PT-BR: removidas na tokenização do BM25 (índice e query)
+# para evitar que palavras funcionais dominem o ranking.
+_STOPWORDS = {
+    "a",
+    "o",
+    "e",
+    "de",
+    "da",
+    "do",
+    "das",
+    "dos",
+    "em",
+    "no",
+    "na",
+    "nos",
+    "nas",
+    "um",
+    "uma",
+    "uns",
+    "umas",
+    "para",
+    "por",
+    "com",
+    "sem",
+    "sob",
+    "sobre",
+    "que",
+    "se",
+    "ao",
+    "aos",
+    "à",
+    "às",
+    "ou",
+    "como",
+    "mais",
+    "menos",
+    "já",
+    "não",
+    "sim",
+    "ser",
+    "ter",
+    "está",
+    "estão",
+    "são",
+    "foi",
+    "sua",
+    "seu",
+    "suas",
+    "seus",
+    "este",
+    "esta",
+    "esse",
+    "essa",
+    "isto",
+    "isso",
+    "qual",
+    "quais",
+    "quando",
+    "onde",
+    "quem",
+    "temos",
+    "tenho",
+    "tem",
+    "têm",
+    "pelo",
+    "pela",
+    "pelos",
+    "pelas",
+    "até",
+    "entre",
+    "após",
+    "ante",
+    "esse",
+    "ano",
+    "anos",
+    "dia",
+    "dias",
+    "forma",
+    "modo",
+}
+
+
+def _tokenize(text: str) -> list[str]:
+    """Tokenização simples (lowercase + split por palavras) sem stopwords."""
+    import re
+
+    tokens = re.findall(r"\w+", text.lower())
+    return [t for t in tokens if t not in _STOPWORDS]
+
 
 class HybridRetriever:
     """Retriever híbrido: busca vetorial no Qdrant + BM25 + reranking.
 
     Pipeline:
-    1. Busca vetorial (Qdrant) → top-K candidatos
-    2. Busca BM25 (rank_bm25) → top-K candidatos
+    1. Busca BM25 (rank_bm25) → top-K candidatos + termos de expansão
+    2. Busca vetorial (Qdrant) com query expandida → top-K candidatos
     3. Fusão por Reciprocal Rank Fusion (RRF)
     4. Reranking com cross-encoder → top-N finais
     5. Filtro por perfil (via metadados do Qdrant)
@@ -61,8 +150,14 @@ class HybridRetriever:
         """
         profile_filter = self._build_profile_filter(profile)
 
-        # 1. Busca vetorial
-        query_vector = self.embedder.embed_query(query)
+        # 1. Busca BM25 (também fornece termos para expansão da query vetorial)
+        bm25_results = self._bm25_search(query)
+
+        # 2. Busca vetorial com query expandida por termos-chave do BM25:
+        # perguntas curtas (ex: "quais feriados temos esse ano?") têm embedding
+        # genérico; os termos dos top hits BM25 direcionam a busca vetorial
+        expanded_query = self._expand_query(query, bm25_results)
+        query_vector = self.embedder.embed_query(expanded_query)
         query_resp = self.client.query_points(
             collection_name=self.collection_name,
             query=query_vector,
@@ -70,9 +165,6 @@ class HybridRetriever:
             query_filter=profile_filter,
         )
         vector_hits = query_resp.points
-
-        # 2. Busca BM25
-        bm25_results = self._bm25_search(query)
 
         # 3. Fusão RRF
         if bm25_results:
@@ -128,6 +220,38 @@ class HybridRetriever:
                 )
             ]
         )
+
+    def _expand_query(self, query: str, bm25_results: list[tuple[str, float]]) -> str:
+        """Expande a query com termos distintivos dos top hits do BM25.
+
+        Extrai palavras frequentes nos melhores resultados BM25 que não
+        estão na query original e as anexa, melhorando o ranqueamento
+        vetorial para perguntas curtas ou coloquiais.
+        """
+        if self._bm25_index is None or not bm25_results:
+            return query
+
+        import re
+
+        query_tokens = set(re.findall(r"\w+", query.lower()))
+
+        top_ids = [doc_id for doc_id, _ in bm25_results[:3]]
+        texts = self._bm25_index.get_texts(top_ids)
+
+        freq: dict[str, int] = {}
+        for text in texts:
+            for token in set(re.findall(r"\w+", text.lower())):
+                if len(token) >= 5 and token not in _STOPWORDS and token not in query_tokens:
+                    freq[token] = freq.get(token, 0) + 1
+
+        # Termos presentes em pelo menos 2 dos 3 top hits
+        expansion = [t for t, c in freq.items() if c >= 2]
+        if not expansion:
+            return query
+
+        expansion = sorted(expansion)[:8]
+        logger.debug("Query expandida com termos BM25: %s", expansion)
+        return f"{query} {' '.join(expansion)}"
 
     def _bm25_search(self, query: str) -> list[tuple[str, float]]:
         """Busca BM25 no índice local."""
@@ -220,8 +344,13 @@ class _BM25Index:
 
         self.ids = [doc_id for doc_id, _ in documents]
         texts = [text for _, text in documents]
+        self._texts = {doc_id: text for doc_id, text in documents}
         tokenized = [self._tokenize(t) for t in texts]
         self._bm25 = BM25Okapi(tokenized)
+
+    def get_texts(self, doc_ids: list[str]) -> list[str]:
+        """Retorna os textos dos documentos pelos IDs."""
+        return [self._texts[doc_id] for doc_id in doc_ids if doc_id in self._texts]
 
     def search(self, query: str, top_k: int = 20) -> list[tuple[str, float]]:
         """Busca BM25. Retorna lista de (doc_id, score)."""
@@ -238,8 +367,5 @@ class _BM25Index:
 
     @staticmethod
     def _tokenize(text: str) -> list[str]:
-        """Tokenização simples (lowercase + split por espaços)."""
-        import re
-
-        text = text.lower()
-        return re.findall(r"\w+", text)
+        """Tokenização simples (lowercase + split por palavras)."""
+        return _tokenize(text)

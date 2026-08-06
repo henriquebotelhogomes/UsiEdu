@@ -31,6 +31,7 @@ def create_chat_graph(
     financeiro_llm: BaseChatModel | None = None,
     documental_llm: BaseChatModel | None = None,
     retriever: HybridRetriever | None = None,
+    documental_retriever: HybridRetriever | None = None,
     checkpointer: BaseCheckpointSaver | None = None,
 ) -> CompiledStateGraph:
     """Cria e compila o grafo de orquestração do chat.
@@ -42,7 +43,10 @@ def create_chat_graph(
             usa agent_llm se None).
         documental_llm: Modelo LLM para o agente documental (opcional;
             usa agent_llm se None).
-        retriever: Retriever RAG híbrido (opcional; sem RAG se None).
+        retriever: Retriever RAG híbrido da coleção acadêmica (opcional;
+            sem RAG se None). Usado pelos agentes acadêmico e financeiro.
+        documental_retriever: Retriever da coleção institucional para o agente
+            documental (opcional; usa retriever se None).
         checkpointer: Checkpointer LangGraph (opcional; MemorySaver se None).
 
     Returns:
@@ -60,7 +64,10 @@ def create_chat_graph(
 
     # Se documental_llm não for fornecido, usa o mesmo agent_llm
     documental_llm = documental_llm or agent_llm
-    builder.add_node("documental", make_documental_node(documental_llm, retriever))
+    # Documental busca na coleção institucional; usa retriever como fallback
+    builder.add_node(
+        "documental", make_documental_node(documental_llm, documental_retriever or retriever)
+    )
 
     builder.add_node("consolidation", consolidation_node)
 
