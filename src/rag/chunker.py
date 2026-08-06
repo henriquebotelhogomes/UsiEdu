@@ -85,15 +85,30 @@ class DocumentChunker:
 
     @staticmethod
     def _extract_pdf(file_path: Path) -> str:
-        """Extrai texto de PDF usando PyMuPDF."""
+        """Extrai texto de PDF usando PyMuPDF, preservando tabelas.
+
+        Usa find_tables() para converter tabelas (ex.: calendários,
+        feriados) em linhas legíveis em vez de números soltos.
+        """
         import fitz  # PyMuPDF
 
         doc = fitz.open(str(file_path))
-        texts = []
+        parts = []
         for page in doc:
-            texts.append(page.get_text())
+            parts.append(page.get_text())
+
+            # Extrai tabelas de forma estruturada (linhas de texto legíveis)
+            try:
+                for table in page.find_tables():
+                    rows = table.extract()
+                    for row in rows:
+                        cells = [str(c).strip() for c in row if c is not None]
+                        if cells:
+                            parts.append(" | ".join(cells))
+            except Exception:
+                pass  # sem tabelas detectáveis — texto simples basta
         doc.close()
-        return "\n".join(texts)
+        return "\n".join(parts)
 
     @staticmethod
     def _extract_html(file_path: Path) -> str:

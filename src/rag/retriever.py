@@ -63,12 +63,13 @@ class HybridRetriever:
 
         # 1. Busca vetorial
         query_vector = self.embedder.embed_query(query)
-        vector_hits = self.client.search(
+        query_resp = self.client.query_points(
             collection_name=self.collection_name,
-            query_vector=query_vector,
+            query=query_vector,
             limit=self.search_top_k,
             query_filter=profile_filter,
         )
+        vector_hits = query_resp.points
 
         # 2. Busca BM25
         bm25_results = self._bm25_search(query)

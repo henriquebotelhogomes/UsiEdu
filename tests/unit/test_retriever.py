@@ -9,9 +9,13 @@ from src.rag.retriever import HybridRetriever, _BM25Index
 
 @pytest.fixture
 def mock_qdrant():
-    """Cliente Qdrant mockado."""
+    """Cliente Qdrant mockado (API nova: query_points)."""
     client = MagicMock()
-    client.search.return_value = []
+
+    class _QueryResponse:
+        points = []
+
+    client.query_points.return_value = _QueryResponse()
     client.retrieve.return_value = []
     return client
 
@@ -173,10 +177,10 @@ class TestSearch:
         retriever.search("Qual o prazo de matrícula?", profile="student")
 
         mock_embedder.embed_query.assert_called_once_with("Qual o prazo de matrícula?")
-        mock_qdrant.search.assert_called_once()
+        mock_qdrant.query_points.assert_called_once()
 
         # Verifica que o filtro de perfil foi passado
-        call_kwargs = mock_qdrant.search.call_args
+        call_kwargs = mock_qdrant.query_points.call_args
         query_filter = call_kwargs.kwargs.get("query_filter") or call_kwargs[1].get("query_filter")
         assert query_filter is not None
 

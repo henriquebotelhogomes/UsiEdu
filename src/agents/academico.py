@@ -167,12 +167,16 @@ def _format_context(results: list) -> str:
 
 
 def _format_messages(messages: list) -> str:
-    """Formata as últimas mensagens para o prompt."""
+    """Formata as últimas perguntas do usuário para o prompt.
+
+    Filtra apenas mensagens do usuário para evitar que o agente
+    repita respostas anteriores (vazamento de contexto entre turnos).
+    """
     from langchain_core.messages import HumanMessage
 
+    user_messages = [m for m in messages if isinstance(m, HumanMessage)]
     text_parts = []
-    for msg in messages[-4:]:
-        role = "Usuário" if isinstance(msg, HumanMessage) else "Sistema"
+    for msg in user_messages[-4:]:
         content = msg.content[:500] if isinstance(msg.content, str) else str(msg.content)[:500]
-        text_parts.append(f"{role}: {content}")
+        text_parts.append(f"Usuário: {content}")
     return "\n".join(text_parts)
