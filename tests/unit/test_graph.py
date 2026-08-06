@@ -39,10 +39,10 @@ class TestGraphRouting:
         assert last_msg.content is not None
 
     @pytest.mark.asyncio
-    async def test_fluxo_fora_escopo_termina_no_supervisor(
+    async def test_fluxo_fora_escopo_responde_redirecionamento(
         self, default_state, default_config
     ) -> None:
-        """Fluxo fora_de_escopo deve terminar sem passar por agente."""
+        """Fluxo fora_de_escopo termina sem agente e com resposta educada (RF-10)."""
         router_llm = FakeChatModel(
             default_response=json.dumps(
                 SupervisorDecision(
@@ -62,6 +62,10 @@ class TestGraphRouting:
 
         # Deve ter supervisor_decision
         assert result["supervisor_decision"]["intent"] == "fora_de_escopo"
+
+        # Última mensagem é o redirecionamento educado
+        messages = result.get("messages", [])
+        assert "fora do meu escopo" in messages[-1].content
 
     @pytest.mark.asyncio
     async def test_fluxo_financeiro_direto(self, default_state, default_config) -> None:

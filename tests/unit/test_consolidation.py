@@ -7,6 +7,7 @@ from langchain_core.messages import HumanMessage
 
 from src.orchestration.consolidation import (
     consolidation_node,
+    fora_de_escopo_node,
     should_continue,
 )
 from src.orchestration.state import AgentResult, SupervisorDecision
@@ -210,6 +211,22 @@ class TestConsolidationNode:
         }
         result = await consolidation_node(state)
         assert result.get("needs_more_info") is False
+
+
+class TestForaDeEscopoNode:
+    """Testes do nó de redirecionamento fora de escopo (RF-10)."""
+
+    @pytest.mark.asyncio
+    async def test_fora_de_escopo_retorna_resposta_educada(self) -> None:
+        """Deve retornar mensagem de redirecionamento sem acionar agentes."""
+        state = {
+            "user_id": "test",
+            "profile": "student",
+            "messages": [HumanMessage(content="Qual a previsão do tempo?")],
+        }
+        result = await fora_de_escopo_node(state)  # type: ignore[arg-type]
+        assert "fora do meu escopo" in result["messages"][0].content
+        assert result["needs_more_info"] is False
 
 
 class TestShouldContinue:

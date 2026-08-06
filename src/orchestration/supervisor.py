@@ -123,7 +123,7 @@ def route_from_supervisor(state: AgentState) -> str | list[str]:
         return "__end__"
 
     if intent == "fora_de_escopo":
-        return "__end__"
+        return "fora_de_escopo"
 
     if intent == "academico":
         return "academico"

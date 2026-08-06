@@ -73,11 +73,11 @@
 
 ## 5. Critérios de aceite do piloto
 
-- [ ] Estudante pergunta algo composto (acadêmico+financeiro) e recebe resposta consolidada com fontes.
-- [ ] Funcionário pergunta norma institucional e recebe resposta **com citação** de documento/seção.
-- [ ] Pergunta sem resposta nos documentos → agente admite não saber (não alucina).
-- [ ] Pergunta fora de escopo → resposta educada de redirecionamento.
-- [ ] Conversa mantém contexto entre turnos (checkpointer).
+- [x] Estudante pergunta algo composto (acadêmico+financeiro) e recebe resposta consolidada com fontes. *(validado 06/08/2026 — `scripts/test_aceite.py` C1)*
+- [x] Funcionário pergunta norma institucional e recebe resposta **com citação** de documento/seção. *(validado 06/08/2026 — `scripts/test_aceite.py` C2, Guia do Servidor)*
+- [x] Pergunta sem resposta nos documentos → agente admite não saber (não alucina). *(validado 06/08/2026 — pergunta sobre laboratórios respondida com honestidade)*
+- [x] Pergunta fora de escopo → resposta educada de redirecionamento. *(validado 06/08/2026 — nó `fora_de_escopo` RF-10)*
+- [x] Conversa mantém contexto entre turnos (checkpointer). *(validado 06/08/2026 — `scripts/test_aceite.py` C5, mesmo thread_id)*
 - [ ] Tracing mostra o caminho completo: supervisor → agentes → retriever → LLM.
 - [ ] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1).
 - [ ] `pytest` verde com cobertura ≥ 80% em orquestração/RAG; `ruff check` sem erros.

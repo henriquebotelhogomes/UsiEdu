@@ -88,15 +88,15 @@ class TestRouteFromSupervisor:
         }
         assert route_from_supervisor(state) == "academico"  # type: ignore[arg-type]
 
-    def test_intent_fora_escopo_rota_para_end(self) -> None:
-        """Intent fora_de_escopo deve rotear para END."""
+    def test_intent_fora_escopo_rota_para_no_de_redirecionamento(self) -> None:
+        """Intent fora_de_escopo deve rotear para o nó fora_de_escopo (RF-10)."""
         state = {
             "supervisor_decision": SupervisorDecision(
                 intent="fora_de_escopo", plan=None, reasoning="teste"
             ),
             "profile": "student",
         }
-        assert route_from_supervisor(state) == "__end__"  # type: ignore[arg-type]
+        assert route_from_supervisor(state) == "fora_de_escopo"  # type: ignore[arg-type]
 
     def test_intent_financeiro_rota_direta(self) -> None:
         """Intent financeiro deve rotear para o nó financeiro (Sprint 3)."""

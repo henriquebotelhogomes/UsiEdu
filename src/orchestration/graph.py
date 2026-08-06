@@ -13,7 +13,11 @@ from langgraph.graph import StateGraph
 from src.agents.academico import make_academico_node
 from src.agents.documental import make_documental_node
 from src.agents.financeiro import make_financeiro_node
-from src.orchestration.consolidation import consolidation_node, should_continue
+from src.orchestration.consolidation import (
+    consolidation_node,
+    fora_de_escopo_node,
+    should_continue,
+)
 from src.orchestration.state import AgentState
 from src.orchestration.supervisor import make_supervisor_node, route_from_supervisor
 
@@ -70,6 +74,7 @@ def create_chat_graph(
     )
 
     builder.add_node("consolidation", consolidation_node)
+    builder.add_node("fora_de_escopo", fora_de_escopo_node)
 
     # === Arestas ===
     builder.add_edge("__start__", "supervisor")
@@ -77,6 +82,7 @@ def create_chat_graph(
     builder.add_edge("academico", "consolidation")
     builder.add_edge("financeiro", "consolidation")
     builder.add_edge("documental", "consolidation")
+    builder.add_edge("fora_de_escopo", "__end__")
     builder.add_conditional_edges("consolidation", should_continue)
 
     # === Checkpointer ===

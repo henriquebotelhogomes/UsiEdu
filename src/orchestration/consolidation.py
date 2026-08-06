@@ -20,6 +20,24 @@ CONSOLIDATION_TEMPLATE = """{intro}
 FOOTER_SEM_INFO = "Caso precise de mais informações, estou aqui para ajudar. 😊"
 FOOTER_MORE_INFO = "Para te ajudar melhor, poderia fornecer mais detalhes?"
 
+FORA_DE_ESCOPO_RESPONSE = (
+    "Sou o assistente da UsiEdu e atendo dúvidas acadêmicas, financeiras e "
+    "institucionais (calendário, notas, faltas, matrícula, boletos, normas e "
+    "políticas da universidade). Esse assunto está fora do meu escopo, mas "
+    "posso ajudar com algum desses temas?"
+)
+
+
+async def fora_de_escopo_node(state: AgentState) -> dict:
+    """Nó de resposta padrão para perguntas fora de escopo (RF-10).
+
+    Nenhum agente é acionado; retorna redirecionamento educado.
+    """
+    return {
+        "messages": [AIMessage(content=FORA_DE_ESCOPO_RESPONSE)],
+        "needs_more_info": False,
+    }
+
 
 async def consolidation_node(state: AgentState) -> dict:
     """Nó de consolidação: formata a resposta final do sistema.
