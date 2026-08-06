@@ -80,7 +80,7 @@
 - [x] Conversa mantém contexto entre turnos (checkpointer). *(validado 06/08/2026 — `scripts/test_aceite.py` C5, mesmo thread_id)*
 - [ ] Tracing mostra o caminho completo: supervisor → agentes → retriever → LLM.
 - [ ] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1).
-- [ ] `pytest` verde com cobertura ≥ 80% em orquestração/RAG; `ruff check` sem erros.
+- [x] `pytest` verde com cobertura ≥ 80% em orquestração/RAG; `ruff check` sem erros. *(validado 06/08/2026 — 206 testes, cobertura 96,7% em orchestration+rag; ruff limpo)*
 - [ ] Site MkDocs publicado (GitHub Pages) com toda a documentação navegável.
 
 ## 6. Base de conhecimento do piloto (fontes abertas reais)

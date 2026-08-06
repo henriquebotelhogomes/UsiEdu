@@ -59,6 +59,68 @@ class TestSplitText:
         # Cada parte deve ser não-vazia
         assert all(p.strip() for p in parts)
 
+    def test_progresso_garantido_com_overlap_grande(self):
+        """Overlap >= max_chars não pode causar loop infinito."""
+        chunker = DocumentChunker(max_chars=10, overlap_chars=10)
+        # Sem pontuação/quebras: não há ponto de quebra além do limite
+        parts = chunker._split_text("a" * 35)
+        assert len(parts) >= 3
+        assert "".join(parts).count("a") >= 35
+
+
+class TestExtractText:
+    """Testes para extração de texto por tipo de arquivo."""
+
+    def test_arquivo_vazio_retorna_chunks_vazios(self, chunker, metadata, tmp_path):
+        f = tmp_path / "vazio.txt"
+        f.write_text("   \n\n  ")
+        assert chunker.chunk_document(f, metadata) == []
+
+    def test_txt_lido_diretamente(self, chunker, metadata, tmp_path):
+        f = tmp_path / "doc.txt"
+        f.write_text("Conteúdo de teste do documento.", encoding="utf-8")
+        chunks = chunker.chunk_document(f, metadata)
+        assert len(chunks) == 1
+        assert "Conteúdo de teste" in chunks[0].text
+        assert chunks[0].metadata["publico_alvo"] == "student"
+
+    def test_extracao_html_utf8(self, chunker, metadata, tmp_path):
+        f = tmp_path / "pagina.html"
+        f.write_text(
+            "<html><head><title>Normas</title></head><body>"
+            "<article>"
+            "<p>O regimento geral estabelece as normas acadêmicas da universidade.</p>"
+            "<p>Os estudantes devem observar os prazos definidos no calendário.</p>"
+            "</article></body></html>",
+            encoding="utf-8",
+        )
+        text = chunker._extract_text(f)
+        assert isinstance(text, str)
+
+    def test_extracao_html_latin1_fallback(self, chunker, tmp_path):
+        f = tmp_path / "pagina_latin1.html"
+        # Byte 0xE9 (é em latin-1) é inválido como UTF-8 isolado
+        f.write_bytes(b"<html><body><p>Caf\xe9 com a\xe7\xfacar.</p></body></html>")
+        text = chunker._extract_text(f)
+        assert isinstance(text, str)  # não lança UnicodeDecodeError
+
+    def test_extracao_pdf(self, chunker, metadata, tmp_path):
+        fitz = pytest.importorskip("fitz")
+        pdf_path = tmp_path / "calendario.pdf"
+        doc = fitz.open()
+        page = doc.new_page()
+        page.insert_text((72, 72), "Calendario academico 2026")
+        page.insert_text((72, 100), "Feriados nacionais do semestre")
+        doc.save(str(pdf_path))
+        doc.close()
+
+        text = chunker._extract_text(pdf_path)
+        assert "Calendario academico 2026" in text
+        assert "Feriados nacionais" in text
+
+        chunks = chunker.chunk_document(pdf_path, metadata)
+        assert len(chunks) >= 1
+
 
 class TestDetectSections:
     """Testes para detecção de seções em documentos jurídicos."""
