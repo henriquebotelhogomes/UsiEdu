@@ -1,0 +1,64 @@
+# ============================================================
+# Dockerfile.frontend — UsiEdu Frontend (React + Vite)
+# ============================================================
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copia arquivos de configuração
+COPY frontend/package.json frontend/package-lock.json* ./
+
+# Instala dependências
+RUN npm ci
+
+# Copia o código fonte
+COPY frontend/ ./
+
+# Build de produção
+RUN npm run build
+
+# ============================================================
+FROM nginx:alpine AS runtime
+
+# Copia o build do Vite para o nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Configuração do nginx com proxy reverso para a API
+COPY <<EOF /etc/nginx/conf.d/default.conf
+server {
+    listen 80;
+    server_name localhost;
+
+    # Frontend
+    location / {
+        root /usr/share/nginx/html;
+        index index.html;
+        try_files \$uri \$uri/ /index.html;
+    }
+
+    # Proxy reverso para a API
+    location /auth/ {
+        proxy_pass http://api:8000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }
+
+    location /chat/ {
+        proxy_pass http://api:8000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }
+
+    location /health {
+        proxy_pass http://api:8000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+    }
+}
+EOF
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

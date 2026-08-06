@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Qoder / agent bridge (local)
+.qoder/
+.agentbridge/
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Ruff
+.ruff_cache/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+.npm
+
+# MkDocs build
+site/
+
+# Docker volumes
+qdrant_storage/
+qdrant_snapshots/
+
+# Knowledge base (large downloaded files)
+knowledge_base/*.pdf
+knowledge_base/*.html
+
+# SQLite checkpoints
+*.db
+usiedu_checkpoints.db*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Misc
+*.log
+.cache/

@@ -1,0 +1,69 @@
+site_name: UsiEdu — Documentação Técnica
+site_description: Plataforma multi-agente de IA conversacional para educação
+site_url: https://henriquebotelho.github.io/usiedu/
+repo_url: https://github.com/henriquebotelho/usiedu
+repo_name: usiedu
+
+theme:
+  name: material
+  language: pt-BR
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Modo escuro
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Modo claro
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - toc.follow
+    - content.code.copy
+
+nav:
+  - Visão Geral:
+    - Arquitetura: 01-visao-geral-arquitetura.md
+    - Agentes e Orquestração: 02-agentes-e-orquestracao.md
+    - RAG e Infraestrutura: 03-rag-e-infraestrutura.md
+  - Piloto:
+    - Piloto e Roadmap: 04-piloto-e-roadmap.md
+    - Fontes da Base de Conhecimento: 05-fontes-base-conhecimento.md
+    - Visão de Escala Global: 06-visao-escala-global.md
+  - Requisitos e Contratos:
+    - PRD: 07-prd-requisitos.md
+    - Plano de Execução: 08-plano-execucao.md
+    - Contratos Técnicos: 09-contratos-tecnicos.md
+  - Avaliação:
+    - Roteiro de Vídeo Demo: 10-roteiro-video-demo.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/henriquebotelho

@@ -1,0 +1,48 @@
+{
+  "documents": [
+    {
+      "name": "Regimento Geral da UnB",
+      "file": "regimento_geral_unb.pdf",
+      "url": "https://unb.br/images/Documentos/Estatuto_e_Regimento_Geral_UnB.pdf",
+      "file_type": "pdf",
+      "instituicao": "UnB",
+      "publico_alvo": "student",
+      "checksum": "29479e40f21d6f0cb7bdb8ec6b10a827a79a2105be3682d77b6fd640dafb4ee0",
+      "indexed": true,
+      "chunks": 239
+    },
+    {
+      "name": "Calendário de Graduação 2026.2",
+      "file": "calendario_graduacao_2026_2.pdf",
+      "url": "https://saa.unb.br/wp-content/uploads/2026/06/2026_2_Calend_Ativ_Grad_15_06_2026.pdf",
+      "file_type": "pdf",
+      "instituicao": "UnB",
+      "publico_alvo": "student",
+      "checksum": "728e767454f254634577c1e751c32737c53675e9df986ffb48812f3b69fc4976",
+      "indexed": true,
+      "chunks": 4
+    },
+    {
+      "name": "Guia do Servidor UnB",
+      "file": "guia_servidor_unb.html",
+      "url": "https://dgp.unb.br/servidor/guia-servidor",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "checksum": "7a4f8abb3da4e5db9e545af9d6977efc19d77292379488a12f07be1c0733b563",
+      "indexed": true,
+      "chunks": 128
+    },
+    {
+      "name": "LDB — Lei 9.394/96",
+      "file": "ldb_9394_96.html",
+      "url": "https://www.planalto.gov.br/ccivil_03/leis/l9394.htm",
+      "file_type": "html",
+      "instituicao": "Brasil",
+      "publico_alvo": "student",
+      "checksum": "07a214e1ac20497abe2e5592b496e70d341ab6dcf60859314622cfc92b53b979",
+      "indexed": true,
+      "chunks": 163
+    }
+  ]
+}
