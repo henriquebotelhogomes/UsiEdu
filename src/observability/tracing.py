@@ -10,26 +10,33 @@ import os
 
 from langsmith import Client as LangSmithClient
 
-# Configuração do LangSmith via variáveis de ambiente
-# LANGCHAIN_TRACING_V2=true
-# LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
-# LANGCHAIN_API_KEY=<key>
-# LANGCHAIN_PROJECT=usiedu
+# Configuração do LangSmith via variáveis de ambiente (aceita os dois prefixos)
+# LANGSMITH_TRACING=true          (ou LANGCHAIN_TRACING_V2=true)
+# LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+# LANGSMITH_API_KEY=<key>
+# LANGSMITH_PROJECT=usiedu
 
 _client: LangSmithClient | None = None
+
+
+def _tracing_enabled() -> bool:
+    """Verifica se o tracing está habilitado (aceita LANGSMITH_TRACING ou LANGCHAIN_TRACING_V2)."""
+    value = os.getenv("LANGSMITH_TRACING") or os.getenv("LANGCHAIN_TRACING_V2", "")
+    return value.strip().lower() == "true"
 
 
 def get_langsmith_client() -> LangSmithClient | None:
     """Retorna o cliente LangSmith se configurado.
 
-    O LangSmith é ativado quando a variável LANGCHAIN_TRACING_V2=true
-    está definida. Caso contrário, retorna None (tracing desligado).
+    O LangSmith é ativado quando LANGSMITH_TRACING=true (ou o
+    equivalente LANGCHAIN_TRACING_V2=true) está definida.
+    Caso contrário, retorna None (tracing desligado).
     """
     global _client
     if _client is not None:
         return _client
 
-    if os.getenv("LANGCHAIN_TRACING_V2", "").lower() != "true":
+    if not _tracing_enabled():
         _client = None
         return None
 

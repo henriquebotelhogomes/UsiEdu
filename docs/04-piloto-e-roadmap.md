@@ -78,7 +78,7 @@
 - [x] Pergunta sem resposta nos documentos → agente admite não saber (não alucina). *(validado 06/08/2026 — pergunta sobre laboratórios respondida com honestidade)*
 - [x] Pergunta fora de escopo → resposta educada de redirecionamento. *(validado 06/08/2026 — nó `fora_de_escopo` RF-10)*
 - [x] Conversa mantém contexto entre turnos (checkpointer). *(validado 06/08/2026 — `scripts/test_aceite.py` C5, mesmo thread_id)*
-- [ ] Tracing mostra o caminho completo: supervisor → agentes → retriever → LLM.
+- [x] Tracing mostra o caminho completo: supervisor → agentes → retriever → LLM. *(validado 07/08/2026 — projeto `usiedu-pilot` no LangSmith: LangGraph → supervisor → ChatOpenAI → route_from_supervisor → academico → ChatOpenAI → consolidation; contexto RAG presente no run do agente; `scripts/verify_tracing.py`)*
 - [ ] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1).
 - [x] `pytest` verde com cobertura ≥ 80% em orquestração/RAG; `ruff check` sem erros. *(validado 06/08/2026 — 206 testes, cobertura 96,7% em orchestration+rag; ruff limpo)*
 - [x] Site MkDocs publicado (GitHub Pages) com toda a documentação navegável. *(validado 07/08/2026 — https://henriquebotelhogomes.github.io/UsiEdu/, republicação automática via `.github/workflows/docs.yml`)*
