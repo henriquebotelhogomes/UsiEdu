@@ -600,6 +600,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#31-plano-de-melhoria-das-metricas-ragas-prioridade-imediata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Plano de melhoria das métricas Ragas (prioridade imediata)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fase-2-expansao-de-agentes-4-semanas" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1077,6 +1088,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#31-plano-de-melhoria-das-metricas-ragas-prioridade-imediata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Plano de melhoria das métricas Ragas (prioridade imediata)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fase-2-expansao-de-agentes-4-semanas" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1263,6 +1285,21 @@ critérios de aceite, cronograma sugerido e riscos.</p>
 <li>Integração com sistemas reais da instituição.</li>
 </ul>
 <h2 id="3-roadmap-pos-piloto">3. Roadmap pós-piloto<a class="headerlink" href="#3-roadmap-pos-piloto" title="Permanent link">&para;</a></h2>
+<h3 id="31-plano-de-melhoria-das-metricas-ragas-prioridade-imediata">3.1 Plano de melhoria das métricas Ragas (prioridade imediata)<a class="headerlink" href="#31-plano-de-melhoria-das-metricas-ragas-prioridade-imediata" title="Permanent link">&para;</a></h3>
+<p>Fechamento honesto do critério 7: o pipeline RAG funciona (contexto recuperado e citado),
+mas as metas do doc 03 (seção 6.1) não foram atingidas no agregado. Plano de convergência:</p>
+<ol>
+<li><strong>Corrigir a régua de medição</strong>: excluir <code>fora_de_escopo</code> do agregado Ragas (guardrail
+   RF-10 não é mensurável por faithfulness/relevancy) e avaliar essa categoria com
+   LLM-as-judge próprio (assertiva de redirecionamento).</li>
+<li><strong>Fechar a lacuna de corpus staff</strong>: indexar a Lei 8.112/90 completa e revisar o Guia
+   do Servidor — 5 perguntas (q018–q022) zeraram por ausência de conteúdo, não por falha
+   de recuperação.</li>
+<li><strong>Fortalecer o juiz</strong>: reavaliar o dataset com um LLM juiz mais forte (avaliação é mais
+   confiável que geração com modelo econômico) e comparar estabilidade dos scores.</li>
+<li><strong>Iterar pipeline e medir regressão</strong>: ajustes de prompts de agentes e reranking,
+   rodando o dataset como experimento no LangSmith a cada mudança.</li>
+</ol>
 <h3 id="fase-2-expansao-de-agentes-4-semanas">Fase 2 — Expansão de agentes (+4 semanas)<a class="headerlink" href="#fase-2-expansao-de-agentes-4-semanas" title="Permanent link">&para;</a></h3>
 <ol>
 <li>Tutor Pedagógico com memória de longo prazo e quizzes adaptativos.</li>
@@ -1320,7 +1357,7 @@ critérios de aceite, cronograma sugerido e riscos.</p>
 <li>[x] Pergunta fora de escopo → resposta educada de redirecionamento. <em>(validado 06/08/2026 — nó <code>fora_de_escopo</code> RF-10)</em></li>
 <li>[x] Conversa mantém contexto entre turnos (checkpointer). <em>(validado 06/08/2026 — <code>scripts/test_aceite.py</code> C5, mesmo thread_id)</em></li>
 <li>[x] Tracing mostra o caminho completo: supervisor → agentes → retriever → LLM. <em>(validado 07/08/2026 — projeto <code>usiedu-pilot</code> no LangSmith: LangGraph → supervisor → ChatOpenAI → route_from_supervisor → academico → ChatOpenAI → consolidation; contexto RAG presente no run do agente; <code>scripts/verify_tracing.py</code>)</em></li>
-<li>[ ] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1).</li>
+<li>[~] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1). <em>(parcialmente validado 07/08/2026 — 30 perguntas avaliadas com Ragas+LLM; metas não atingidas no agregado: faithfulness 0,565, context precision/recall 0,645, answer relevancy 0,565 vs metas 0,90/0,80/0,80/0,85. Causas: artefato de medição nas 4 perguntas fora_de_escopo (comportamento correto RF-10 pontua 0), lacuna de corpus staff em q018–q022 e juiz LLM de baixo custo. <code>sem_resposta</code> = 1,000 em tudo. Leitura crítica e plano de melhoria: seção 3.1 e <code>src/evaluation/relatorio_ragas.md</code>)</em></li>
 <li>[x] <code>pytest</code> verde com cobertura ≥ 80% em orquestração/RAG; <code>ruff check</code> sem erros. <em>(validado 06/08/2026 — 206 testes, cobertura 96,7% em orchestration+rag; ruff limpo)</em></li>
 <li>[x] Site MkDocs publicado (GitHub Pages) com toda a documentação navegável. <em>(validado 07/08/2026 — https://henriquebotelhogomes.github.io/UsiEdu/, republicação automática via <code>.github/workflows/docs.yml</code>)</em></li>
 </ul>
