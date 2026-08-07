@@ -921,6 +921,86 @@ body {
   margin-bottom: 20px;
 }
 
+/* Fontes da base de conhecimento */
+.fonte-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.fonte-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.fonte-badge.pdf {
+  background: var(--color-primary);
+  color: white;
+}
+
+.fonte-badge.html {
+  background: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.fonte-publico {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.fonte-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.btn-download {
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 9px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.btn-download:hover {
+  background: var(--color-primary-hover);
+}
+
+.fonte-oficial {
+  color: var(--color-accent-dark);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.fonte-oficial:hover {
+  text-decoration: underline;
+}
+
+.fontes-note {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  margin-top: 32px;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.fontes-note a {
+  color: var(--color-accent-dark);
+  font-weight: 600;
+}
+
 /* Footer */
 .landing-footer {
   background: #eef2f7;

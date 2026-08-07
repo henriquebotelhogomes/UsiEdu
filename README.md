@@ -89,6 +89,26 @@ python -m src.rag.ingest
 uvicorn src.api.main:app --reload
 ```
 
+## Frontend e Landing Page
+
+O frontend (React + Vite + TypeScript, com `react-router-dom`) tem três rotas:
+
+| Rota | Tela | Acesso |
+|---|---|---|
+| `/` | **Landing page institucional** | público |
+| `/login` | Login (usuários demo visíveis na tela) | público |
+| `/chat` | Chat com os agentes (fontes citadas, agente que respondeu) | autenticado |
+
+A landing page apresenta o projeto para avaliadores/visitantes:
+
+- **Hero** com imagem de campus e chamadas para o login e o repositório.
+- **Menus de navegação** para as seções: Funcionalidades (estudante/funcionário), Agentes (Acadêmico, Financeiro, Documental + Tutor na Fase 2), Arquitetura (diagrama do grafo supervisor), Fontes e Stack.
+- **Fontes da base de conhecimento**: download dos PDFs usados no RAG (Regimento Geral e Calendário 2026.2 da UnB) e links oficiais dos documentos HTML (Guia do Servidor, LDB).
+- **Links externos** para a [documentação técnica](https://henriquebotelhogomes.github.io/UsiEdu/) (MkDocs) e para o repositório no GitHub.
+
+Os documentos da seção Fontes ficam em `frontend/public/documentos/` (cópias dos
+arquivos indexados de `knowledge_base/`, que é recriada por `python -m src.rag.download`).
+
 ## API
 
 | Método | Rota | Auth | Descrição |
@@ -108,7 +128,7 @@ uvicorn src.api.main:app --reload
 | Embeddings | FastEmbed / sentence-transformers (local, ONNX) |
 | Reranker | bge-reranker-base (local) |
 | Observabilidade | LangSmith |
-| Frontend | React + Vite + TypeScript |
+| Frontend | React + Vite + TypeScript + react-router-dom |
 | Qualidade | Ruff, pytest, GitHub Actions |
 | Documentação | MkDocs Material |
 
