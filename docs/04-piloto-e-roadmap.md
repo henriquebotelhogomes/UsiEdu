@@ -48,6 +48,22 @@
 
 ## 3. Roadmap pós-piloto
 
+### 3.1 Plano de melhoria das métricas Ragas (prioridade imediata)
+
+Fechamento honesto do critério 7: o pipeline RAG funciona (contexto recuperado e citado),
+mas as metas do doc 03 (seção 6.1) não foram atingidas no agregado. Plano de convergência:
+
+1. **Corrigir a régua de medição**: excluir `fora_de_escopo` do agregado Ragas (guardrail
+   RF-10 não é mensurável por faithfulness/relevancy) e avaliar essa categoria com
+   LLM-as-judge próprio (assertiva de redirecionamento).
+2. **Fechar a lacuna de corpus staff**: indexar a Lei 8.112/90 completa e revisar o Guia
+   do Servidor — 5 perguntas (q018–q022) zeraram por ausência de conteúdo, não por falha
+   de recuperação.
+3. **Fortalecer o juiz**: reavaliar o dataset com um LLM juiz mais forte (avaliação é mais
+   confiável que geração com modelo econômico) e comparar estabilidade dos scores.
+4. **Iterar pipeline e medir regressão**: ajustes de prompts de agentes e reranking,
+   rodando o dataset como experimento no LangSmith a cada mudança.
+
 ### Fase 2 — Expansão de agentes (+4 semanas)
 1. Tutor Pedagógico com memória de longo prazo e quizzes adaptativos.
 2. Agente de Carreira.
@@ -79,7 +95,7 @@
 - [x] Pergunta fora de escopo → resposta educada de redirecionamento. *(validado 06/08/2026 — nó `fora_de_escopo` RF-10)*
 - [x] Conversa mantém contexto entre turnos (checkpointer). *(validado 06/08/2026 — `scripts/test_aceite.py` C5, mesmo thread_id)*
 - [x] Tracing mostra o caminho completo: supervisor → agentes → retriever → LLM. *(validado 07/08/2026 — projeto `usiedu-pilot` no LangSmith: LangGraph → supervisor → ChatOpenAI → route_from_supervisor → academico → ChatOpenAI → consolidation; contexto RAG presente no run do agente; `scripts/verify_tracing.py`)*
-- [ ] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1).
+- [~] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1). *(parcialmente validado 07/08/2026 — 30 perguntas avaliadas com Ragas+LLM; metas não atingidas no agregado: faithfulness 0,565, context precision/recall 0,645, answer relevancy 0,565 vs metas 0,90/0,80/0,80/0,85. Causas: artefato de medição nas 4 perguntas fora_de_escopo (comportamento correto RF-10 pontua 0), lacuna de corpus staff em q018–q022 e juiz LLM de baixo custo. `sem_resposta` = 1,000 em tudo. Leitura crítica e plano de melhoria: seção 3.1 e `src/evaluation/relatorio_ragas.md`)*
 - [x] `pytest` verde com cobertura ≥ 80% em orquestração/RAG; `ruff check` sem erros. *(validado 06/08/2026 — 206 testes, cobertura 96,7% em orchestration+rag; ruff limpo)*
 - [x] Site MkDocs publicado (GitHub Pages) com toda a documentação navegável. *(validado 07/08/2026 — https://henriquebotelhogomes.github.io/UsiEdu/, republicação automática via `.github/workflows/docs.yml`)*
 

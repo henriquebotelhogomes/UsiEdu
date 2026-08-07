@@ -1,6 +1,10 @@
 # Relatório de Avaliação Ragas — UsiEdu
 
 > Gerado em 2026-08-06T14:50:48.482095+00:00 | Modo: **Ragas+LLM**
+>
+> **Status no piloto (07/08/2026):** metas NÃO atingidas no agregado. O relatório é
+> mantido como evidência honesta; leitura crítica e plano de melhoria em
+> `docs/04-piloto-e-roadmap.md` (critério 7 e seção 3).
 
 ## Metas (doc 03, seção 6.1)
 
@@ -20,6 +24,28 @@
 | fora_de_escopo | 4 | 0.000 | 1.000 | 1.000 | 0.000 |
 | sem_resposta | 4 | 1.000 | 1.000 | 1.000 | 1.000 |
 | tool | 4 | 0.659 | 0.559 | 0.559 | 0.659 |
+
+## Leitura crítica dos resultados (07/08/2026)
+
+O agregado geral esconde dois efeitos distintos:
+
+1. **Artefato de medição em `fora_de_escopo` (4 perguntas):** o sistema responde com o
+   redirecionamento educado previsto no RF-10 — comportamento CORRETO. Porém o Ragas
+   pontua 0 de faithfulness/relevancy por não haver contexto recuperado nem resposta de
+   referência aplicável. Excluindo essa categoria (26 perguntas avaliáveis):
+   faithfulness ≈ 0,65 · context precision/recall ≈ 0,70 · answer relevancy ≈ 0,65.
+2. **Lacuna real de corpus em `direct` (q018–q022, perfil staff):** 5 perguntas sobre
+   Lei 8.112/90, insalubridade, laboratórios e horários zeraram porque o Guia do Servidor
+   indexado não contém essas respostas — o agente respondeu honestamente que não encontrou,
+   mas a referência esperava conteúdo. É gap de base de conhecimento, não de pipeline.
+3. **`sem_resposta` = 1,000 em todas as métricas:** a recusa honesta quando o documento
+   não responde funciona exatamente como projetado (anti-alucinação).
+4. **Juiz de baixo custo:** as métricas Ragas foram calculadas com o mesmo LLM econômico
+   do piloto; juízes mais fortes tendem a produzir avaliações mais estáveis.
+
+**Conclusão:** o pipeline RAG funciona (contexto recuperado e citado nas categorias com
+documento); os gaps são (a) categorias fora do modelo de medição Ragas, (b) cobertura do
+corpus staff e (c) força do modelo juiz — todos endereçados no plano de melhoria do doc 04.
 
 ## Detalhe por pergunta
 
