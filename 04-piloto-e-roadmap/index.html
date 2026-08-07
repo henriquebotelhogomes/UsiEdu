@@ -1319,7 +1319,7 @@ critérios de aceite, cronograma sugerido e riscos.</p>
 <li>[x] Pergunta sem resposta nos documentos → agente admite não saber (não alucina). <em>(validado 06/08/2026 — pergunta sobre laboratórios respondida com honestidade)</em></li>
 <li>[x] Pergunta fora de escopo → resposta educada de redirecionamento. <em>(validado 06/08/2026 — nó <code>fora_de_escopo</code> RF-10)</em></li>
 <li>[x] Conversa mantém contexto entre turnos (checkpointer). <em>(validado 06/08/2026 — <code>scripts/test_aceite.py</code> C5, mesmo thread_id)</em></li>
-<li>[ ] Tracing mostra o caminho completo: supervisor → agentes → retriever → LLM.</li>
+<li>[x] Tracing mostra o caminho completo: supervisor → agentes → retriever → LLM. <em>(validado 07/08/2026 — projeto <code>usiedu-pilot</code> no LangSmith: LangGraph → supervisor → ChatOpenAI → route_from_supervisor → academico → ChatOpenAI → consolidation; contexto RAG presente no run do agente; <code>scripts/verify_tracing.py</code>)</em></li>
 <li>[ ] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1).</li>
 <li>[x] <code>pytest</code> verde com cobertura ≥ 80% em orquestração/RAG; <code>ruff check</code> sem erros. <em>(validado 06/08/2026 — 206 testes, cobertura 96,7% em orchestration+rag; ruff limpo)</em></li>
 <li>[x] Site MkDocs publicado (GitHub Pages) com toda a documentação navegável. <em>(validado 07/08/2026 — https://henriquebotelhogomes.github.io/UsiEdu/, republicação automática via <code>.github/workflows/docs.yml</code>)</em></li>
