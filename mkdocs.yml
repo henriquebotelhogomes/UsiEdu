@@ -31,6 +31,7 @@ theme:
     - content.code.copy
 
 nav:
+  - Início: index.md
   - Visão Geral:
     - Arquitetura: 01-visao-geral-arquitetura.md
     - Agentes e Orquestração: 02-agentes-e-orquestracao.md

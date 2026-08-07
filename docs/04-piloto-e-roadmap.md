@@ -81,7 +81,7 @@
 - [ ] Tracing mostra o caminho completo: supervisor → agentes → retriever → LLM.
 - [ ] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1).
 - [x] `pytest` verde com cobertura ≥ 80% em orquestração/RAG; `ruff check` sem erros. *(validado 06/08/2026 — 206 testes, cobertura 96,7% em orchestration+rag; ruff limpo)*
-- [ ] Site MkDocs publicado (GitHub Pages) com toda a documentação navegável.
+- [x] Site MkDocs publicado (GitHub Pages) com toda a documentação navegável. *(validado 07/08/2026 — https://henriquebotelhogomes.github.io/UsiEdu/, republicação automática via `.github/workflows/docs.yml`)*
 
 ## 6. Base de conhecimento do piloto (fontes abertas reais)
 
