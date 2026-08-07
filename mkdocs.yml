@@ -1,8 +1,8 @@
 site_name: UsiEdu — Documentação Técnica
 site_description: Plataforma multi-agente de IA conversacional para educação
-site_url: https://henriquebotelho.github.io/usiedu/
-repo_url: https://github.com/henriquebotelho/usiedu
-repo_name: usiedu
+site_url: https://henriquebotelhogomes.github.io/UsiEdu/
+repo_url: https://github.com/henriquebotelhogomes/UsiEdu
+repo_name: UsiEdu
 
 theme:
   name: material
@@ -66,4 +66,4 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/henriquebotelho
+      link: https://github.com/henriquebotelhogomes
