@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import type { LoginResponse } from "../types";
 import { login, setToken } from "../api";
 
@@ -51,6 +52,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
   return (
     <div className="login-page">
+      <Link to="/" className="login-back-link">
+        ← Voltar para a página inicial
+      </Link>
       <div className="login-card">
         <h2>UsiEdu</h2>
         <p className="login-subtitle">Assistente Universitário Inteligente</p>

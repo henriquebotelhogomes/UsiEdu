@@ -1,0 +1,6 @@
+# Artefatos de build do TypeScript
+tsconfig.tsbuildinfo
+
+# Originais PNG redundantes (versões finais em JPEG otimizado)
+public/images/hero-campus.png
+public/images/arquitetura.png
