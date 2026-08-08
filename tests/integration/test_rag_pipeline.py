@@ -48,4 +48,4 @@ class TestRAGIntegration:
         # Após ingestão, ambas devem existir
         if "academico" in collections:
             info = client.get_collection("academico")
-            assert info.vectors_config.size > 0
+            assert info.config.params.vectors.size > 0

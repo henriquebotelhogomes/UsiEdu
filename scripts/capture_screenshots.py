@@ -48,6 +48,14 @@ def login_and_chat(page, nome_demo: str, pergunta: str) -> None:
     page.wait_for_timeout(800)
 
 
+def rate_answer(page, rating: str = "up") -> None:
+    """Clica no botão de feedback (human-on-the-loop) da última resposta."""
+    page.wait_for_selector(".feedback-row", timeout=10_000)
+    page.click(f".feedback-btn.{rating}")
+    page.wait_for_selector(".feedback-thanks", timeout=10_000)
+    page.wait_for_timeout(400)
+
+
 def main() -> None:
     OUT.mkdir(exist_ok=True)
     warm_up()
@@ -65,6 +73,7 @@ def main() -> None:
         # 2. Chat como estudante
         print("2/4 Chat estudante...")
         login_and_chat(page, "Ana Souza", "Quais feriados temos esse ano?")
+        rate_answer(page, "up")
         page.screenshot(path=str(OUT / "chat-estudante.png"), full_page=True)
 
         # 3. Chat como funcionário
@@ -72,6 +81,7 @@ def main() -> None:
         page.click(".logout-btn")
         page.wait_for_timeout(500)
         login_and_chat(page, "Carlos Oliveira", "Como funciona a licença capacitação?")
+        rate_answer(page, "up")
         page.screenshot(path=str(OUT / "chat-funcionario.png"), full_page=True)
 
         # 4. Documentação MkDocs

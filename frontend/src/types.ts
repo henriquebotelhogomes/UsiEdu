@@ -24,8 +24,16 @@ export interface ChatRequest {
 
 export interface ChatResponse {
   session_id: string;
+  message_id: string;
   answer: string;
   agents_involved: string[];
   sources: Source[];
   intent: string;
+}
+
+export interface FeedbackRequest {
+  session_id: string;
+  message_id: string;
+  rating: "up" | "down";
+  comment?: string;
 }

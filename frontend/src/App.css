@@ -341,6 +341,57 @@ body {
   border-color: #7fe3d3;
 }
 
+/* Feedback humano (human-on-the-loop) */
+.feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.feedback-label {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.feedback-btn {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.feedback-btn:hover:not(:disabled) {
+  border-color: var(--color-accent-dark);
+  transform: translateY(-1px);
+}
+
+.feedback-btn.up.active {
+  background: #e6faf7;
+  border-color: var(--color-accent-dark);
+}
+
+.feedback-btn.down.active {
+  background: #fdecea;
+  border-color: #c0392b;
+}
+
+.feedback-btn:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.feedback-thanks {
+  font-size: 0.8rem;
+  color: var(--color-accent-dark);
+  font-weight: 600;
+}
+
 .info-card .card-title {
   font-weight: 600;
   margin-bottom: 2px;

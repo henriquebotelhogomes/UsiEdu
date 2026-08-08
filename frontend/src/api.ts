@@ -1,4 +1,4 @@
-import type { ChatRequest, ChatResponse, LoginRequest, LoginResponse } from "./types";
+import type { ChatRequest, ChatResponse, FeedbackRequest, LoginRequest, LoginResponse } from "./types";
 
 const API_BASE = "";
 
@@ -43,4 +43,18 @@ export async function sendChat(data: ChatRequest): Promise<ChatResponse> {
 
 export function generateSessionId(): string {
   return `sess-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export async function sendFeedback(data: FeedbackRequest): Promise<void> {
+  const res = await fetch(`${API_BASE}/feedback`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${_token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    throw new Error("Erro ao enviar feedback");
+  }
 }

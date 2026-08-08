@@ -39,12 +39,40 @@ class ChatResponse(BaseModel):
     """Resposta do chat."""
 
     session_id: str = Field(..., description="ID da sessão")
+    message_id: str = Field(..., description="ID da resposta (run_id do trace para feedback)")
     answer: str = Field(..., description="Resposta do assistente")
     agents_involved: list[str] = Field(default_factory=list, description="Agentes que participaram")
     sources: list[Source] = Field(default_factory=list, description="Fontes consultadas")
     intent: Literal["academico", "financeiro", "institucional", "composta", "fora_de_escopo"] = (
         Field(..., description="Intenção classificada pelo supervisor")
     )
+
+
+class FeedbackRequest(BaseModel):
+    """Feedback humano (human-on-the-loop) sobre uma resposta do chat."""
+
+    session_id: str = Field(..., description="ID da sessão da mensagem avaliada")
+    message_id: str = Field(..., description="ID da resposta avaliada (run_id do trace)")
+    rating: Literal["up", "down"] = Field(
+        ..., description="Polegar para cima (up) ou para baixo (down)"
+    )
+    comment: str | None = Field(default=None, max_length=500, description="Comentário opcional")
+
+
+class FeedbackResponse(BaseModel):
+    """Confirmação de registro de feedback."""
+
+    status: str = Field(default="ok", description="Status do registro")
+    feedback_id: int = Field(..., description="ID do feedback registrado")
+
+
+class FeedbackStats(BaseModel):
+    """Métricas agregadas de feedback."""
+
+    total: int = Field(..., description="Total de feedbacks")
+    up: int = Field(..., description="Respostas avaliadas positivamente")
+    down: int = Field(..., description="Respostas avaliadas negativamente")
+    satisfaction: float = Field(..., description="Taxa de satisfação (0–1)")
 
 
 class ErrorResponse(BaseModel):

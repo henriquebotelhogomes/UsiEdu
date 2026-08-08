@@ -99,6 +99,10 @@ O frontend (React + Vite + TypeScript, com `react-router-dom`) tem três rotas:
 | `/login` | Login (usuários demo visíveis na tela) | público |
 | `/chat` | Chat com os agentes (fontes citadas, agente que respondeu) | autenticado |
 
+No chat, cada resposta traz botões **👍/👎 (human-on-the-loop)**: o feedback é
+persistido em SQLite, anexado ao trace correspondente no LangSmith e agregado
+em `GET /feedback/stats` (taxa de satisfação).
+
 A landing page apresenta o projeto para avaliadores/visitantes:
 
 - **Hero** com imagem de campus e chamadas para o login e o repositório.
@@ -134,10 +138,11 @@ Para regenerar os prints com o sistema rodando localmente: `python scripts/captu
 
 | Método | Rota | Auth | Descrição |
 |---|---|---|---|
-| POST | `/api/v1/auth/login` | não | Autentica e retorna JWT |
-| POST | `/api/v1/chat` | sim | Envia mensagem, recebe resposta (SSE via `?stream=true`) |
-| GET | `/api/v1/sessions/{id}` | sim | Histórico da sessão |
-| GET | `/api/v1/health` | não | Liveness check |
+| POST | `/auth/login` | não | Autentica e retorna JWT |
+| POST | `/chat` | sim | Envia mensagem, recebe resposta com fontes e agentes envolvidos |
+| POST | `/feedback` | sim | Registra avaliação 👍/👎 da resposta (human-on-the-loop) |
+| GET | `/feedback/stats` | sim | Métricas agregadas de satisfação |
+| GET | `/health` | não | Liveness check |
 
 ## Stack
 

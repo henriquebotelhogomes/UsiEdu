@@ -6,6 +6,7 @@ Conforme doc 09 seção 2 — processa mensagens usando o grafo LangGraph.
 from __future__ import annotations
 
 import logging
+import uuid
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -81,10 +82,15 @@ async def chat(
     }
 
     # Configuração para o grafo
+    # run_id fixo: o LangSmith adota esse UUID como id do trace, permitindo
+    # anexar feedback humano (👍/👎) à execução correspondente.
+    run_id = uuid.uuid4()
     config = {
+        "run_id": run_id,
+        "metadata": {"message_id": str(run_id), "session_id": request.session_id},
         "configurable": {
             "thread_id": request.session_id,
-        }
+        },
     }
 
     try:
@@ -112,6 +118,7 @@ async def chat(
 
     return ChatResponse(
         session_id=request.session_id,
+        message_id=str(run_id),
         answer=answer,
         agents_involved=agents_involved,
         sources=sources,

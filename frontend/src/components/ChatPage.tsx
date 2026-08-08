@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import type { ChatResponse, LoginResponse } from "../types";
-import { sendChat, generateSessionId } from "../api";
+import { sendChat, generateSessionId, sendFeedback } from "../api";
 import MessageCard from "./MessageCard";
 
 const SCENARIOS = [
@@ -13,6 +13,8 @@ const SCENARIOS = [
 interface Message {
   role: "user" | "assistant";
   content: string;
+  message_id?: string;
+  feedback?: "up" | "down";
   agents_involved?: string[];
   sources?: ChatResponse["sources"];
 }
@@ -46,6 +48,7 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
       const assistantMsg: Message = {
         role: "assistant",
         content: result.answer,
+        message_id: result.message_id,
         agents_involved: result.agents_involved,
         sources: result.sources,
       };
@@ -58,6 +61,18 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFeedback = async (index: number, msg: Message, rating: "up" | "down") => {
+    if (msg.feedback || !msg.message_id) return;
+    try {
+      await sendFeedback({ session_id: sessionId, message_id: msg.message_id, rating });
+      setMessages((prev) =>
+        prev.map((m, i) => (i === index ? { ...m, feedback: rating } : m))
+      );
+    } catch (err) {
+      console.error("Falha ao enviar feedback:", err);
     }
   };
 
@@ -91,6 +106,32 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
                       agents_involved={msg.agents_involved}
                       sources={msg.sources || []}
                     />
+                  )}
+                  {msg.role === "assistant" && msg.message_id && (
+                    <div className="feedback-row">
+                      <span className="feedback-label">A resposta ajudou?</span>
+                      <button
+                        className={`feedback-btn up${msg.feedback === "up" ? " active" : ""}`}
+                        disabled={!!msg.feedback}
+                        onClick={() => handleFeedback(i, msg, "up")}
+                        title="Resposta útil"
+                        aria-label="Resposta útil"
+                      >
+                        👍
+                      </button>
+                      <button
+                        className={`feedback-btn down${msg.feedback === "down" ? " active" : ""}`}
+                        disabled={!!msg.feedback}
+                        onClick={() => handleFeedback(i, msg, "down")}
+                        title="Resposta não útil"
+                        aria-label="Resposta não útil"
+                      >
+                        👎
+                      </button>
+                      {msg.feedback && (
+                        <span className="feedback-thanks">Obrigado pelo feedback!</span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
