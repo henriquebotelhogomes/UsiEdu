@@ -109,6 +109,27 @@ A landing page apresenta o projeto para avaliadores/visitantes:
 Os documentos da seção Fontes ficam em `frontend/public/documentos/` (cópias dos
 arquivos indexados de `knowledge_base/`, que é recriada por `python -m src.rag.download`).
 
+## Screenshots
+
+**Landing page** — apresentação institucional com funcionalidades, agentes, arquitetura, fontes e stack:
+
+![Landing page](screenshots/landing-page.png)
+
+**Chat como estudante** — pergunta sobre feriados respondida com citação das fontes (Agente Acadêmico):
+
+![Chat estudante](screenshots/chat-estudante.png)
+
+**Chat como funcionário** — licença capacitação respondida pelo Agente Documental com base no Guia do Servidor:
+
+![Chat funcionário](screenshots/chat-funcionario.png)
+
+**Documentação técnica** — MkDocs Material publicada no GitHub Pages:
+
+![Documentação MkDocs](screenshots/docs-mkdocs.png)
+
+Para regenerar os prints com o sistema rodando localmente: `python scripts/capture_screenshots.py`
+(requer `pip install playwright && python -m playwright install chromium`).
+
 ## API
 
 | Método | Rota | Auth | Descrição |
