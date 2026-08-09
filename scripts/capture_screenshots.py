@@ -20,7 +20,10 @@ def _post(url: str, payload: dict, token: str | None = None, timeout: int = 240)
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json", **({"Authorization": f"Bearer {token}"} if token else {})},
+        headers={
+            "Content-Type": "application/json",
+            **({"Authorization": f"Bearer {token}"} if token else {}),
+        },
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode())
@@ -30,7 +33,9 @@ def warm_up() -> None:
     """Aquece a API (login + 1ª chamada ao grafo) para evitar cold start nas capturas."""
     print("Aquecendo a API (1ª chamada ao LLM pode demorar)...")
     login = _post(f"{API}/auth/login", {"email": "ana@demo.usiedu", "password": "estudante123"})
-    _post(f"{API}/chat", {"session_id": "sess-warmup", "message": "Olá"}, token=login["access_token"])
+    _post(
+        f"{API}/chat", {"session_id": "sess-warmup", "message": "Olá"}, token=login["access_token"]
+    )
     print("API aquecida.")
 
 
