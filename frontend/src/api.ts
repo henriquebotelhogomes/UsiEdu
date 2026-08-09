@@ -2,6 +2,9 @@ import type {
   ChatHistoryResponse,
   ChatRequest,
   ChatResponse,
+  ChatStreamEvent,
+  ChatStreamFinal,
+  ChatStreamMeta,
   FeedbackRequest,
   LoginRequest,
   LoginResponse,
@@ -115,6 +118,83 @@ export async function getChatHistory(sessionId: string): Promise<ChatHistoryResp
     throw new Error(err.detail || "Erro ao carregar histórico");
   }
   return res.json();
+}
+
+// === Streaming SSE (T7.3 / RF2-03) ===
+// SSE sobre POST exige fetch + ReadableStream (EventSource é GET-only).
+
+export interface ChatStreamCallbacks {
+  onMeta?: (meta: ChatStreamMeta) => void;
+  onToken?: (delta: string) => void;
+  onFinal?: (final: ChatStreamFinal) => void;
+}
+
+/**
+ * Extrai eventos SSE completos do buffer (separados por linha em branco).
+ * Retorna o resto (evento parcial) para o próximo chunk de rede.
+ */
+export function parseSseEvents(buffer: string): { events: ChatStreamEvent[]; rest: string } {
+  const events: ChatStreamEvent[] = [];
+  let rest = buffer;
+  let sep: number;
+  while ((sep = rest.indexOf("\n\n")) !== -1) {
+    const rawEvent = rest.slice(0, sep);
+    rest = rest.slice(sep + 2);
+    for (const line of rawEvent.split("\n")) {
+      if (!line.startsWith("data: ")) continue;
+      events.push(JSON.parse(line.slice("data: ".length)) as ChatStreamEvent);
+    }
+  }
+  return { events, rest };
+}
+
+/**
+ * Envia mensagem via streaming SSE. Dispara os callbacks conforme os eventos
+ * chegam (meta → token(s) → final). Erros de rede/parse propagam para o
+ * chamador, que deve fazer fallback para `sendChat`.
+ */
+export async function sendChatStream(
+  data: ChatRequest,
+  callbacks: ChatStreamCallbacks,
+  signal?: AbortSignal
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/chat/stream`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${_token}`,
+    },
+    body: JSON.stringify(data),
+    signal,
+  });
+  ensureAuthorized(res);
+  if (!res.ok || !res.body) {
+    const err = await res.json().catch(() => ({ detail: "Erro no streaming" }));
+    throw new Error(err.detail || "Erro no streaming");
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const { events, rest } = parseSseEvents(buffer);
+      buffer = rest;
+      for (const event of events) {
+        if (event.event === "meta") callbacks.onMeta?.(event);
+        else if (event.event === "token") callbacks.onToken?.(event.delta ?? "");
+        else if (event.event === "final") callbacks.onFinal?.(event);
+        else if (event.event === "error") {
+          throw new Error(event.detail || "Erro no stream");
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 export function generateSessionId(): string {

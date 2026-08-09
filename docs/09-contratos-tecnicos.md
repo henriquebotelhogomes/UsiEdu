@@ -35,7 +35,8 @@
 | Método | Rota | Auth | Descrição |
 |---|---|---|---|
 | POST | `/auth/login` | não | Autentica e retorna JWT |
-| POST | `/chat` | sim | Envia mensagem e recebe resposta (streaming SSE opcional via `?stream=true`) |
+| POST | `/chat` | sim | Envia mensagem e recebe resposta (fallback obrigatório do streaming) |
+| POST | `/chat/stream` | sim | Streama a resposta via SSE (T7.3); body idêntico a `ChatRequest` |
 | GET | `/chat/history?session_id={id}` | sim | Retorna histórico da sessão (T7.4): 404 se inexistente, 403 se pertence a outro usuário |
 | GET | `/health` | não | Liveness: `{ "status": "ok" }` |
 
@@ -82,6 +83,21 @@ class ChatHistoryResponse(BaseModel):
     session_id: str
     messages: list[ChatHistoryMessage]     # agentes/fontes omitidos: só texto
 ```
+
+### 2.2.1 Eventos SSE do `POST /chat/stream` (T7.3)
+
+Linhas `data: {json}\n\n` com o tipo no campo `event`:
+
+| Evento | Payload | Quando |
+|---|---|---|
+| `meta` | `{session_id, message_id}` | início (`message_id` = `run_id` do LangSmith, usado no feedback) |
+| `token` | `{delta}` | cada chunk do LLM dos agentes finais (supervisor nunca é streamado) |
+| `final` | `{agents, sources, usage, answer}` | fim do grafo (`answer` é extra ao contrato do PRD: reconcilia o texto final) |
+| `error` | `{detail}` | qualquer exceção (fecha o stream) |
+
+O frontend usa `fetch` + `ReadableStream` (SSE sobre POST; `EventSource` é GET-only)
+e faz fallback automático para `POST /chat` em erro de rede/parse antes de receber tokens.
+Nginx exige `proxy_buffering off` no `location /chat/stream`.
 
 ### 2.3 Erros padronizados
 

@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage
+from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 
 
 class FakeChatModel(BaseChatModel):
@@ -39,6 +40,45 @@ class FakeChatModel(BaseChatModel):
 
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content=response_text))])
 
+    def _stream(
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
+        **kwargs: Any,
+    ):
+        """Simula streaming dividindo a resposta em blocos de palavras.
+
+        Garante que `astream_events` emita eventos `on_chat_model_stream`
+        nos testes do endpoint de streaming (T7.3).
+        """
+        result = self._generate(messages, stop=stop, **kwargs)
+        text = result.generations[0].message.content
+        for piece in _split_for_streaming(text):
+            yield ChatGenerationChunk(message=AIMessageChunk(content=piece))
+
+    async def _astream(
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: Any = None,
+        **kwargs: Any,
+    ):
+        """Versão assíncrona do streaming fake (T7.3)."""
+        for chunk in self._stream(messages, stop=stop, **kwargs):
+            yield chunk
+
     @property
     def _llm_type(self) -> str:
         return "fake"
+
+
+def _split_for_streaming(text: str) -> list[str]:
+    """Divide o texto em blocos de até 4 palavras preservando os separadores.
+
+    A concatenação dos blocos reproduz o texto original exatamente.
+    """
+    tokens = re.findall(r"\S+\s*", text)
+    if not tokens:
+        return [text] if text else []
+    return ["".join(tokens[i : i + 4]) for i in range(0, len(tokens), 4)]

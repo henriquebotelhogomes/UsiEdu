@@ -18,6 +18,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from src.api.auth import router as auth_router
 from src.api.chat import init_graph
 from src.api.chat import router as chat_router
+from src.api.chat_stream import router as chat_stream_router
 from src.api.feedback import router as feedback_router
 from src.llm.provider import get_chat_model
 from src.observability.logging import setup_logging
@@ -138,6 +139,7 @@ def create_app() -> FastAPI:
     # Rotas
     app.include_router(auth_router)
     app.include_router(chat_router)
+    app.include_router(chat_stream_router)
     app.include_router(feedback_router)
 
     @app.get("/health")

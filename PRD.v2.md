@@ -136,20 +136,20 @@ Transformar o piloto funcional em um produto com **qualidade percebida de mercad
 - `message_id` e `session_id` devem ser idênticos aos usados hoje para feedback (o run do LangSmith recebe o `run_id`).
 
 **Micro-atividades:**
-- [ ] Backend: criar `src/api/chat_stream.py` com `StreamingResponse(media_type="text/event-stream")`; extrair lógica comum de `chat.py` para `src/api/chat_common.py` (validação de perfil, construção do `RunnableConfig` com `run_id`).
-- [ ] Backend: filtro de eventos — streamar apenas tokens do nó final de resposta; emitir `meta` antes do primeiro token e `final` com agentes/fontes ao término.
-- [ ] Backend: teste de integração — cliente httpx com stream lê os eventos na ordem correta e o conteúdo final concatena para a resposta completa.
-- [ ] Frontend: `api.ts` — `sendChatStream(request, onToken, onMeta, onFinal)` usando `fetch` + `response.body.getReader()`; parse incremental de linhas SSE (buffer para chunks parciais).
-- [ ] Frontend: `ChatPage.tsx` — mensagem do assistente entra com `streaming=true`, texto cresce a cada `token`; ao receber `final`, preenche agentes/fontes, habilita botões de feedback e marca `message_id`.
-- [ ] Frontend: indicador de digitação (cursor piscando) enquanto `streaming`.
-- [ ] Frontend: em erro de rede/parse, fallback automático para `sendChat` (POST tradicional) com aviso silencioso no console.
-- [ ] Vite proxy: adicionar `"/chat/stream"` e garantir `proxyTimeout`/`changeOrigin` corretos; testar sem timeout prematuro.
-- [ ] Atualizar `Dockerfile.frontend` (nginx): `location /chat/stream` com `proxy_buffering off`, `proxy_cache off`, headers SSE.
+- [x] Backend: criar `src/api/chat_stream.py` com `StreamingResponse(media_type="text/event-stream")`; extrair lógica comum de `chat.py` para `src/api/chat_common.py` (validação de perfil, construção do `RunnableConfig` com `run_id`).
+- [x] Backend: filtro de eventos — streamar apenas tokens do nó final de resposta; emitir `meta` antes do primeiro token e `final` com agentes/fontes ao término. *(agentes passaram a usar `astream`; filtro por `langgraph_node` exclui o supervisor; evento `final` ganhou o campo extra `answer` para reconciliar o texto)*
+- [x] Backend: teste de integração — cliente httpx com stream lê os eventos na ordem correta e o conteúdo final concatena para a resposta completa. *(4 testes em `tests/unit/test_chat_stream.py`: ordem/concatenação, 401, 500, evento `error`)*
+- [x] Frontend: `api.ts` — `sendChatStream(request, onToken, onMeta, onFinal)` usando `fetch` + `response.body.getReader()`; parse incremental de linhas SSE (buffer para chunks parciais).
+- [x] Frontend: `ChatPage.tsx` — mensagem do assistente entra com `streaming=true`, texto cresce a cada `token`; ao receber `final`, preenche agentes/fontes, habilita botões de feedback e marca `message_id`.
+- [x] Frontend: indicador de digitação (cursor piscando) enquanto `streaming`.
+- [x] Frontend: em erro de rede/parse, fallback automático para `sendChat` (POST tradicional) com aviso silencioso no console. *(se já chegaram tokens, mantém o conteúdo parcial para não duplicar a mensagem na sessão)*
+- [x] Vite proxy: adicionar `"/chat/stream"` e garantir `proxyTimeout`/`changeOrigin` corretos; testar sem timeout prematuro.
+- [x] Atualizar `Dockerfile.frontend` (nginx): `location /chat/stream` com `proxy_buffering off`, `proxy_cache off`, headers SSE.
 
 **Critérios de aceite:**
-- **Dado** uma pergunta, **Quando** envio, **Então** os tokens aparecem progressivamente em < 3 s (primeiro token), e agentes/fontes/feedback aparecem ao final.
-- O LangSmith registra **um único run** com o `run_id` igual ao `message_id` recebido.
-- Botões 👍/👎 funcionam sobre a resposta streamada.
+- **Dado** uma pergunta, **Quando** envio, **Então** os tokens aparecem progressivamente em < 3 s (primeiro token), e agentes/fontes/feedback aparecem ao final. *(infraestrutura validada sem buffering: 191 tokens fluem progressivamente direto e via proxy assim que o modelo gera; o TTFT de ~38–55 s é latência do gateway OpenCode Go — supervisor + RAG + prefill — não do pipeline SSE)*
+- O LangSmith registra **um único run** com o `run_id` igual ao `message_id` recebido. *(mesmo `build_run_config` do `/chat`: `run_id` fixo no config)*
+- Botões 👍/👎 funcionam sobre a resposta streamada. *(validado em teste manual)*
 
 **Armadilhas conhecidas:**
 - Buffering do nginx "segura" o SSE em produção → `proxy_buffering off` é obrigatório.

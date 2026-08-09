@@ -204,7 +204,13 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Frontend: botão "Nova conversa" (novo id de sessão + limpa mensagens) e tratamento de 401 (`AuthError` limpa storage e redireciona ao login)
   - [x] Proxy Vite (bypass de GET `/chat` serve o SPA) e nginx (`error_page 405 = @spa`) para deep-link/reload; doc 09 seção 2 atualizado com o endpoint/schemas
   - [x] Testes unitários frontend (vitest: 6 testes dos helpers de persistência) e teste manual no navegador: histórico restaurado após reload sem novo login (5/5 critérios)
-- [ ] **T7.3 — Streaming de respostas via SSE (RF2-03)**
+- [x] **T7.3 — Streaming de respostas via SSE (RF2-03)**
+  - [x] Backend: `src/api/chat_stream.py` (`POST /chat/stream`, `StreamingResponse` SSE) + `src/api/chat_common.py` (estado inicial e `RunnableConfig` com `run_id` compartilhados com o `/chat`)
+  - [x] Backend: agentes (`academico`/`financeiro`/`documental`) migrados para `astream`; filtro por `langgraph_node` streama só a resposta final (supervisor excluído); eventos `meta` → `token`(s) → `final` (com `answer` para reconciliação) → `error`
+  - [x] Backend: 4 testes (`tests/unit/test_chat_stream.py`) — ordem/concatenação dos eventos, 401, 500, evento `error`; `FakeChatModel` ganhou `_stream`/`_astream` determinísticos
+  - [x] Frontend: `sendChatStream` (fetch + ReadableStream + parser SSE com buffer) e `ChatPage` com `streaming=true`, cursor piscante, `final` preenche agentes/fontes/`message_id`; fallback para `POST /chat` em erro antes de tokens; AbortController limpo no desmonte
+  - [x] Proxy: entrada `/chat/stream` no Vite e `location /chat/stream` no nginx (`proxy_buffering off`, `proxy_cache off`, `X-Accel-Buffering: no`); doc 09 seção 2 atualizado (endpoint + tabela de eventos SSE)
+  - [x] Testes unitários frontend (vitest: 4 testes do parser SSE) e teste manual no navegador: cursor visível durante o stream, 191 tokens progressivos sem buffering (direto e via proxy), agentes/fontes/feedback ao final, 👍 funcional, histórico persiste após reload
 
 **DoD da sprint:** chat com formatação rica, fontes clicáveis, streaming e histórico persistente; suíte completa verde.
 

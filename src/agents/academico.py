@@ -79,10 +79,13 @@ def make_academico_node(
             HumanMessage(content=last_message),
         ]
 
-        response = agent_llm.invoke(llm_messages)
-        response_text = (
-            response.content.strip() if isinstance(response.content, str) else str(response.content)
-        )
+        # Stream dos tokens do LLM (T7.3): o endpoint /chat/stream captura
+        # estes chunks via astream_events e os envia por SSE ao cliente.
+        response_parts: list[str] = []
+        async for chunk in agent_llm.astream(llm_messages):
+            part = chunk.content if isinstance(chunk.content, str) else str(chunk.content)
+            response_parts.append(part)
+        response_text = "".join(response_parts).strip()
 
         # Constrói resultado
         result = {

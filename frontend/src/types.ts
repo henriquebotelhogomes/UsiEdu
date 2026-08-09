@@ -53,3 +53,24 @@ export interface ChatHistoryResponse {
   session_id: string;
   messages: ChatHistoryMessage[];
 }
+
+// === Streaming SSE (T7.3 / RF2-03) ===
+
+export interface ChatStreamMeta {
+  session_id: string;
+  message_id: string;
+}
+
+export interface ChatStreamFinal {
+  agents: string[];
+  sources: Source[];
+  usage: { intent?: string };
+  /** Campo extra do backend para reconciliar o texto final com os tokens. */
+  answer: string;
+}
+
+export type ChatStreamEvent =
+  | ({ event: "meta" } & ChatStreamMeta)
+  | { event: "token"; delta: string }
+  | ({ event: "final" } & ChatStreamFinal)
+  | { event: "error"; detail: string };

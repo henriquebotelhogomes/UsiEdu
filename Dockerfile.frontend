@@ -44,6 +44,21 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     }
 
+    # Streaming SSE (T7.3): buffering desligado é obrigatório,
+    # senão o nginx "segura" os eventos até o fim da resposta.
+    location /chat/stream {
+        proxy_pass http://api:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Connection '';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 300s;
+        chunked_transfer_encoding on;
+    }
+
     location /chat {
         proxy_pass http://api:8000;
         proxy_set_header Host \$host;

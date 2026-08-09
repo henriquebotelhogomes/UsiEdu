@@ -91,6 +91,23 @@ body {
   cursor: default;
 }
 
+/* Cursor de digitação enquanto a resposta é streamada (T7.3) */
+.streaming-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1em;
+  margin-left: 2px;
+  background: currentColor;
+  vertical-align: text-bottom;
+  animation: cursor-blink 1s steps(2, start) infinite;
+}
+
+@keyframes cursor-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 /* Login Page */
 .login-page {
   flex: 1;

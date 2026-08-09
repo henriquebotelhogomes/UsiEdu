@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import HumanMessage
 
 from src.api.auth import get_current_user
+from src.api.chat_common import build_initial_state, build_run_config
 from src.api.schemas import (
     ChatHistoryMessage,
     ChatHistoryResponse,
@@ -74,36 +75,13 @@ async def chat(
         },
     )
 
-    state = {
-        "user_id": current_user["email"],
-        "profile": current_user["profile"],
-        "messages": [HumanMessage(content=request.message)],
-        "plan": None,
-        "delegations": [],
-        "agent_results": {},
-        "retrieved_sources": [],
-        "needs_more_info": False,
-        "cycle_count": 0,
-        "supervisor_decision": None,
-    }
+    state = build_initial_state(current_user, request.message)
 
     # Configuração para o grafo
     # run_id fixo: o LangSmith adota esse UUID como id do trace, permitindo
     # anexar feedback humano (👍/👎) à execução correspondente.
     run_id = uuid.uuid4()
-    config = {
-        "run_id": run_id,
-        "metadata": {
-            "message_id": str(run_id),
-            "session_id": request.session_id,
-            # Associa a thread ao usuário (T7.4): gravado nos metadados do
-            # checkpoint a cada escrita; usado na validação de posse do histórico.
-            "user_email": current_user["email"],
-        },
-        "configurable": {
-            "thread_id": request.session_id,
-        },
-    }
+    config = build_run_config(current_user, request.session_id, run_id)
 
     try:
         result = await _graph.ainvoke(state, config)

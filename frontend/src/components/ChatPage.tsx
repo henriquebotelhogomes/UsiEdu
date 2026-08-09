@@ -6,6 +6,7 @@ import {
   getChatHistory,
   getSessionIdFor,
   sendChat,
+  sendChatStream,
   sendFeedback,
   storeSessionId,
 } from "../api";
@@ -26,6 +27,7 @@ interface Message {
   feedback?: "up" | "down";
   agents_involved?: string[];
   sources?: ChatResponse["sources"];
+  streaming?: boolean;
 }
 
 interface ChatPageProps {
@@ -42,6 +44,10 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
     () => getSessionIdFor(user.email) ?? generateSessionId()
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Aborta o stream pendente ao desmontar (navegação para outra rota) (T7.3)
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   // Persiste a sessão ativa por usuário (T7.4 / RF2-04)
   useEffect(() => {
@@ -81,40 +87,109 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
   }, [messages]);
 
   const handleNewConversation = () => {
+    abortRef.current?.abort();
     setSessionId(generateSessionId());
     setMessages([]);
     setInput("");
+  };
+
+  const updateLastAssistant = (updater: (m: Message) => Message) => {
+    setMessages((prev) => {
+      const idx = prev.length - 1;
+      if (idx < 0 || prev[idx].role !== "assistant") return prev;
+      const next = [...prev];
+      next[idx] = updater(next[idx]);
+      return next;
+    });
   };
 
   const handleSend = async (text: string) => {
     if (!text.trim() || loading) return;
 
     const userMsg: Message = { role: "user", content: text };
-    setMessages((prev) => [...prev, userMsg]);
+    const streamingMsg: Message = { role: "assistant", content: "", streaming: true };
+    setMessages((prev) => [...prev, userMsg, streamingMsg]);
     setInput("");
     setLoading(true);
 
+    let streamMessageId: string | undefined;
+    let receivedTokens = false;
+    let finalized = false;
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
-      const result = await sendChat({ session_id: sessionId, message: text });
-      const assistantMsg: Message = {
-        role: "assistant",
-        content: result.answer,
-        message_id: result.message_id,
-        agents_involved: result.agents_involved,
-        sources: result.sources,
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+      await sendChatStream(
+        { session_id: sessionId, message: text },
+        {
+          onMeta: (meta) => {
+            streamMessageId = meta.message_id;
+          },
+          onToken: (delta) => {
+            receivedTokens = true;
+            updateLastAssistant((m) => ({ ...m, content: m.content + delta }));
+          },
+          onFinal: (final) => {
+            finalized = true;
+            updateLastAssistant((m) => ({
+              ...m,
+              // Reconcilia com o texto oficial (a consolidação pode adicionar
+              // sufixos que não passaram pelo stream de tokens)
+              content: final.answer || m.content,
+              message_id: streamMessageId,
+              agents_involved: final.agents,
+              sources: final.sources,
+              streaming: false,
+            }));
+          },
+        },
+        controller.signal
+      );
+      // Stream terminou sem evento final: libera o cursor de digitação
+      if (!finalized) {
+        updateLastAssistant((m) => ({ ...m, streaming: false }));
+      }
     } catch (err) {
       if (err instanceof AuthError) {
         onLogout();
         return;
       }
-      const errorMsg: Message = {
-        role: "assistant",
-        content: err instanceof Error ? err.message : "Erro ao processar mensagem",
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      if (err instanceof DOMException && err.name === "AbortError") {
+        updateLastAssistant((m) => ({ ...m, streaming: false }));
+        return;
+      }
+      if (receivedTokens) {
+        // Já há conteúdo parcial do stream; reenviar duplicaria a mensagem
+        // na sessão — mantém o que chegou.
+        console.warn("Stream interrompido após tokens; mantendo conteúdo parcial:", err);
+        updateLastAssistant((m) => ({ ...m, streaming: false }));
+        return;
+      }
+      // Fallback obrigatório (T7.3): erro de rede/parse usa o POST tradicional
+      console.warn("Streaming indisponível; usando fallback POST /chat:", err);
+      try {
+        const result = await sendChat({ session_id: sessionId, message: text });
+        updateLastAssistant(() => ({
+          role: "assistant",
+          content: result.answer,
+          message_id: result.message_id,
+          agents_involved: result.agents_involved,
+          sources: result.sources,
+        }));
+      } catch (fallbackErr) {
+        if (fallbackErr instanceof AuthError) {
+          onLogout();
+          return;
+        }
+        updateLastAssistant((m) => ({
+          ...m,
+          content:
+            fallbackErr instanceof Error ? fallbackErr.message : "Erro ao processar mensagem",
+          streaming: false,
+        }));
+      }
     } finally {
+      abortRef.current = null;
       setLoading(false);
     }
   };
@@ -166,7 +241,12 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
               <div key={i}>
                 <div className={`message ${msg.role}`}>
                   {msg.role === "assistant" ? (
-                    <Markdown content={msg.content} />
+                    <>
+                      <Markdown content={msg.content} />
+                      {msg.streaming && (
+                        <span className="streaming-cursor" aria-hidden="true" />
+                      )}
+                    </>
                   ) : (
                     <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
                   )}
