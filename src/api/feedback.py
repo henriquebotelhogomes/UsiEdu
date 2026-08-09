@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends
 
 from src.api.auth import get_current_user
 from src.api.schemas import (
+    ErrorResponse,
     FeedbackRequest,
     FeedbackResponse,
     FeedbackStats,
@@ -59,12 +60,19 @@ def _envia_feedback_langsmith(message_id: str, rating: str, comment: str | None)
         logger.debug("LangSmith indisponível; feedback mantido apenas em SQLite.")
 
 
-@router.post("", response_model=FeedbackResponse)
+@router.post(
+    "",
+    response_model=FeedbackResponse,
+    responses={401: {"model": ErrorResponse}},
+)
 async def registrar_feedback(
     request: FeedbackRequest,
     current_user: dict = Depends(get_current_user),
 ) -> FeedbackResponse:
-    """Registra avaliação 👍/👎 de uma resposta do chat."""
+    """Registra avaliação 👍/👎 de uma resposta do chat.
+
+    Requer autenticação JWT (401 sem token válido).
+    """
     async with aiosqlite.connect(_db_path()) as db:
         await db.execute(_CREATE_TABLE)
         cursor = await db.execute(
@@ -100,11 +108,18 @@ async def registrar_feedback(
     return FeedbackResponse(feedback_id=feedback_id or 0)
 
 
-@router.get("/stats", response_model=FeedbackStats)
+@router.get(
+    "/stats",
+    response_model=FeedbackStats,
+    responses={401: {"model": ErrorResponse}},
+)
 async def stats_feedback(
     current_user: dict = Depends(get_current_user),
 ) -> FeedbackStats:
-    """Retorna métricas agregadas de satisfação."""
+    """Retorna métricas agregadas de satisfação.
+
+    Requer autenticação JWT (401 sem token válido).
+    """
     async with aiosqlite.connect(_db_path()) as db:
         await db.execute(_CREATE_TABLE)
         async with db.execute("SELECT rating, COUNT(*) FROM feedback GROUP BY rating") as cursor:
