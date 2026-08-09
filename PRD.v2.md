@@ -88,12 +88,12 @@ Transformar o piloto funcional em um produto com **qualidade percebida de mercad
 - Remover o `whiteSpace: 'pre-wrap'` inline do container da resposta (o Markdown gera os blocos); quebras de linha simples devem continuar funcionando (configurar `remark-breaks` ou CSS).
 
 **Micro-atividades:**
-- [ ] Instalar `react-markdown remark-gfm` no `frontend/`.
-- [ ] Criar `frontend/src/components/Markdown.tsx` com mapeamento de componentes (`h1`–`h4`, `ul/ol/li`, `table`, `code`, `a` com `target="_blank" rel="noopener noreferrer"`).
-- [ ] Substituir a renderização de texto em `ChatPage.tsx` pelo componente Markdown.
-- [ ] Adicionar estilos `.markdown-body` em `frontend/src/App.css` (espaçamento de listas, bordas de tabela, blocos de código com fundo, links na cor da marca).
-- [ ] Teste manual com resposta que contenha negrito, lista numerada e tabela (pergunta de cenário: "quais feriados 2026?").
-- [ ] Teste unitário do componente (renderiza lista e link com `target=_blank`; não executa HTML cru).
+- [x] Instalar `react-markdown remark-gfm` no `frontend/`.
+- [x] Criar `frontend/src/components/Markdown.tsx` com mapeamento de componentes (`h1`–`h4`, `ul/ol/li`, `table`, `code`, `a` com `target="_blank" rel="noopener noreferrer"`).
+- [x] Substituir a renderização de texto em `ChatPage.tsx` pelo componente Markdown.
+- [x] Adicionar estilos `.markdown-body` em `frontend/src/App.css` (espaçamento de listas, bordas de tabela, blocos de código com fundo, links na cor da marca).
+- [x] Teste manual com resposta que contenha negrito, lista numerada e tabela (pergunta de cenário: "quais feriados 2026?").
+- [x] Teste unitário do componente (renderiza lista e link com `target=_blank`; não executa HTML cru).
 
 **Critérios de aceite:**
 - **Dado** uma resposta com `**negrito**` e `### título`, **Quando** exibida, **Então** aparece formatada, sem caracteres `**`/`###` visíveis.

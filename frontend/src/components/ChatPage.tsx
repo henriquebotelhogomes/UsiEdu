@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { ChatResponse, LoginResponse } from "../types";
 import { sendChat, generateSessionId, sendFeedback } from "../api";
+import Markdown from "./Markdown";
 import MessageCard from "./MessageCard";
 
 const SCENARIOS = [
@@ -100,7 +101,11 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
             {messages.map((msg, i) => (
               <div key={i}>
                 <div className={`message ${msg.role}`}>
-                  <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
+                  {msg.role === "assistant" ? (
+                    <Markdown content={msg.content} />
+                  ) : (
+                    <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
+                  )}
                   {msg.role === "assistant" && msg.agents_involved && (
                     <MessageCard
                       agents_involved={msg.agents_involved}

@@ -179,6 +179,26 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
 
 ---
 
+## Sprint 7 — Qualidade Percebida (UX do chat) — PRD v2
+
+**Épico:** o chat deve parecer um produto comercial, não um protótipo (`PRD.v2.md` seção 4).
+**Ordem sugerida:** T7.1 → T7.2 → T7.4 → T7.3.
+
+- [x] **T7.1 — Renderização Markdown nas respostas (RF2-01)**
+  - [x] Instalar `react-markdown`, `remark-gfm`, `remark-breaks` no `frontend/`
+  - [x] Criar `Markdown.tsx` com mapeamento de componentes (h1–h4, listas, tabela, code, links `target="_blank" rel="noopener noreferrer"`)
+  - [x] Substituir renderização de texto em `ChatPage.tsx` (apenas mensagens do assistente)
+  - [x] Estilos `.markdown-body` em `App.css`
+  - [x] Teste unitário do componente (vitest + testing-library: 6 testes — lista, link seguro, tabela GFM, sem execução de HTML cru)
+  - [x] Teste manual no navegador: resposta real com negrito/itálico renderizada sem marcadores `**`/`###` visíveis; feedback 👍 funcional
+- [ ] **T7.2 — Fontes clicáveis com trecho em destaque (RF2-02)**
+- [ ] **T7.4 — Sessão persistente e histórico ao recarregar (RF2-04, RF2-05)**
+- [ ] **T7.3 — Streaming de respostas via SSE (RF2-03)**
+
+**DoD da sprint:** chat com formatação rica, fontes clicáveis, streaming e histórico persistente; suíte completa verde.
+
+---
+
 ## Regras de execução (para qualquer implementador)
 
 1. **Uma tarefa por vez**; microtarefas são commits.

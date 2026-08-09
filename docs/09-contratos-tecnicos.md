@@ -230,7 +230,10 @@ tests/
 | `ruff`, `mkdocs-material` | Qualidade + docs |
 
 Frontend: `react`, `react-dom`, `vite`, `typescript` (sem UI kit obrigatório;
-CSS puro ou Tailwind à escolha do implementador).
+CSS puro ou Tailwind à escolha do implementador). Renderização Markdown das
+respostas (T7.1): `react-markdown`, `remark-gfm`, `remark-breaks`. Testes de
+componente: `vitest`, `@testing-library/react`, `@testing-library/jest-dom`,
+`jsdom` (dev).
 
 ## 9. Definition of Done global
 
