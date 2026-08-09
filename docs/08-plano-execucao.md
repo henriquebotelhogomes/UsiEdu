@@ -225,7 +225,12 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Relatório ganha seção "Casos de feedback negativo (T8.1)" — validado com 👎 real (similaridade 0,06 → resposta alterada)
   - [x] Testes: 8 em `tests/unit/test_export_feedback.py` (filtro down, idempotência, dry-run, JSONL válido, recuperação via checkpointer real em tmp, sessão inexistente, CLI) + 5 em `tests/unit/test_evaluation.py` (Jaccard, seção vazia/com casos, reavaliação, pulo sem pergunta)
   - [x] Fluxo documentado em `docs/04-piloto-e-roadmap.md` seção 3.1 (item 5)
-- [ ] **T8.2 — Página de satisfação `/insights`**
+- [x] **T8.2 — Página de satisfação `/insights`**
+  - [x] Backend: `GET /feedback/recent?limit=20` (JWT) em `src/api/feedback.py` com `message_ref` = sha256 truncado (8 chars, sem expor UUID do run) e limite validado [1, 100]; schemas `FeedbackRecentItem/Response`; 6 testes (auth 401, vazio, ordenação mais recente primeiro, limite, hash ≠ message_id, 422)
+  - [x] Frontend: `InsightsPage.tsx` com 4 cards (Total, 👍, 👎, Taxa de satisfação %) + tabela dos últimos feedbacks; `getFeedbackStats`/`getFeedbackRecent` no `api.ts`; rota protegida `/insights` em `App.tsx`; links discretos no header do chat e no footer da landing
+  - [x] Estado vazio ("Ainda não há feedback registrado"), taxa "—" sem avaliações e 401 → logout via `AuthError`; 3 testes vitest do componente
+  - [x] Proxies: nenhuma alteração necessária (`/feedback` já proxied no Vite e nginx; GET `/insights` cai no SPA)
+  - [x] Teste manual no navegador: cards coerentes com o banco (7 avaliações: 6 👍 / 1 👎 / 86%), tabela com 7 linhas, rota protegida redireciona ao login (6/6 critérios)
 
 **DoD da sprint:** cada 👎 vira caso de regressão automático; satisfação visível em `/insights`.
 

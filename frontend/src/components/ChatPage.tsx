@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import type { ChatResponse, StoredUser } from "../types";
 import {
   AuthError,
@@ -211,6 +212,9 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
       <header className="header">
         <h1>UsiEdu — Chat</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Link to="/insights" className="insights-back-link">
+            Satisfação
+          </Link>
           <span className="header-user">{user.display_name} ({user.profile})</span>
           <button
             className="new-chat-btn"

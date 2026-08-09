@@ -5,7 +5,9 @@ import type {
   ChatStreamEvent,
   ChatStreamFinal,
   ChatStreamMeta,
+  FeedbackRecentResponse,
   FeedbackRequest,
+  FeedbackStats,
   LoginRequest,
   LoginResponse,
   StoredUser,
@@ -214,4 +216,28 @@ export async function sendFeedback(data: FeedbackRequest): Promise<void> {
   if (!res.ok) {
     throw new Error("Erro ao enviar feedback");
   }
+}
+
+// === Insights / satisfação (T8.2) ===
+
+export async function getFeedbackStats(): Promise<FeedbackStats> {
+  const res = await fetch(`${API_BASE}/feedback/stats`, {
+    headers: { Authorization: `Bearer ${_token}` },
+  });
+  ensureAuthorized(res);
+  if (!res.ok) {
+    throw new Error("Erro ao carregar métricas de satisfação");
+  }
+  return res.json();
+}
+
+export async function getFeedbackRecent(limit = 20): Promise<FeedbackRecentResponse> {
+  const res = await fetch(`${API_BASE}/feedback/recent?limit=${limit}`, {
+    headers: { Authorization: `Bearer ${_token}` },
+  });
+  ensureAuthorized(res);
+  if (!res.ok) {
+    throw new Error("Erro ao carregar feedbacks recentes");
+  }
+  return res.json();
 }

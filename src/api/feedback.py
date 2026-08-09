@@ -7,17 +7,20 @@ tracing está ativo, anexa o feedback ao trace correspondente no LangSmith
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import uuid
 from datetime import UTC, datetime
 
 import aiosqlite
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from src.api.auth import get_current_user
 from src.api.schemas import (
     ErrorResponse,
+    FeedbackRecentItem,
+    FeedbackRecentResponse,
     FeedbackRequest,
     FeedbackResponse,
     FeedbackStats,
@@ -134,3 +137,44 @@ async def stats_feedback(
         down=down,
         satisfaction=round(up / total, 4) if total else 0.0,
     )
+
+
+@router.get(
+    "/recent",
+    response_model=FeedbackRecentResponse,
+    responses={401: {"model": ErrorResponse}},
+)
+async def recent_feedback(
+    current_user: dict = Depends(get_current_user),
+    limit: int = Query(default=20, ge=1, le=100, description="Máximo de registros"),
+) -> FeedbackRecentResponse:
+    """Retorna os feedbacks mais recentes (T8.2 — página /insights).
+
+    O `message_id` cru não é exposto: retorna apenas um hash truncado
+    (sha256, 8 caracteres) para referência sem vazar UUIDs de run.
+    Requer autenticação JWT (401 sem token válido).
+    """
+    async with aiosqlite.connect(_db_path()) as db:
+        await db.execute(_CREATE_TABLE)
+        async with db.execute(
+            """
+            SELECT rating, comment, profile, created_at, message_id
+            FROM feedback
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ) as cursor:
+            rows = await cursor.fetchall()
+
+    items = [
+        FeedbackRecentItem(
+            rating=row[0],
+            comment=row[1],
+            profile=row[2],
+            created_at=row[3],
+            message_ref=hashlib.sha256(row[4].encode("utf-8")).hexdigest()[:8],
+        )
+        for row in rows
+    ]
+    return FeedbackRecentResponse(items=items)

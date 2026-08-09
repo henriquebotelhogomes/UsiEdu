@@ -383,6 +383,7 @@ export default function LandingPage() {
             Sul Educacional
           </span>
           <div className="footer-links">
+            <Link to="/insights">Satisfação</Link>
             <a href={DOCS_URL} target="_blank" rel="noreferrer">
               Documentação
             </a>

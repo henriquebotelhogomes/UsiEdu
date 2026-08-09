@@ -5,6 +5,7 @@ import { clearStoredSession, loadStoredSession, setToken, storeSession } from ".
 import LandingPage from "./components/LandingPage";
 import LoginPage from "./components/LoginPage";
 import ChatPage from "./components/ChatPage";
+import InsightsPage from "./components/InsightsPage";
 
 export default function App() {
   // Restaura a sessão persistida no localStorage (T7.4 / RF2-04)
@@ -47,6 +48,18 @@ export default function App() {
           user ? (
             <div className="app">
               <ChatPage user={user} onLogout={handleLogout} />
+            </div>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/insights"
+        element={
+          user ? (
+            <div className="app">
+              <InsightsPage user={user} onLogout={handleLogout} />
             </div>
           ) : (
             <Navigate to="/login" replace />

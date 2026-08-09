@@ -95,6 +95,24 @@ class FeedbackStats(BaseModel):
     satisfaction: float = Field(..., description="Taxa de satisfação (0–1)")
 
 
+class FeedbackRecentItem(BaseModel):
+    """Item da lista de feedbacks recentes (T8.2)."""
+
+    rating: Literal["up", "down"] = Field(..., description="Avaliação registrada")
+    comment: str | None = Field(default=None, description="Comentário opcional do usuário")
+    profile: str = Field(..., description="Perfil de quem avaliou (student/staff)")
+    created_at: str = Field(..., description="Data/hora do registro (ISO 8601)")
+    message_ref: str = Field(
+        ..., description="Hash truncado do message_id (não expõe o UUID do run)"
+    )
+
+
+class FeedbackRecentResponse(BaseModel):
+    """Lista dos feedbacks mais recentes (T8.2 — página /insights)."""
+
+    items: list[FeedbackRecentItem] = Field(..., description="Feedbacks mais recentes primeiro")
+
+
 class ErrorResponse(BaseModel):
     """Resposta de erro padrão."""
 

@@ -210,13 +210,13 @@ Transformar o piloto funcional em um produto com **qualidade percebida de mercad
 - Layout: 3 cards (Total, 👍, 👎) + card grande de taxa de satisfação (%) + tabela dos últimos feedbacks.
 
 **Micro-atividades:**
-- [ ] Backend: rota `recent` + testes (auth, ordenação, limite).
-- [ ] Frontend: `api.ts` (`getFeedbackRecent`), `FeedbackPage.tsx`, rota em `App.tsx`, estilos coerentes com a landing.
-- [ ] Estado vazio ("Ainda não há feedback registrado") e tratamento de erro 401.
-- [ ] Proxy Vite/nginx para a nova rota (se novo path de API).
+- [x] Backend: rota `recent` + testes (auth, ordenação, limite). *(6 testes em `tests/unit/test_feedback.py`; `message_ref` = sha256 truncado a 8 chars; limite validado [1, 100] com 422)*
+- [x] Frontend: `api.ts` (`getFeedbackRecent`), `FeedbackPage.tsx`, rota em `App.tsx`, estilos coerentes com a landing. *(componente `InsightsPage.tsx`; também adicionado `getFeedbackStats` ao `api.ts`)*
+- [x] Estado vazio ("Ainda não há feedback registrado") e tratamento de erro 401. *(401 dispara logout via `AuthError`; sem feedbacks a taxa mostra "—")*
+- [x] Proxy Vite/nginx para a nova rota (se novo path de API). *(nenhuma alteração necessária: `/feedback` já é proxied no Vite e nginx; GET `/insights` cai no SPA)*
 
 **Critérios de aceite:**
-- **Dado** feedbacks registrados, **Quando** acesso `/insights` logado, **Então** vejo os números coerentes com `GET /feedback/stats` e a lista dos últimos registros.
+- **Dado** feedbacks registrados, **Quando** acesso `/insights` logado, **Então** vejo os números coerentes com `GET /feedback/stats` e a lista dos últimos registros. *(validado no navegador: cards Total 7 / 👍 6 / 👎 1 / 86% coerentes com o banco; tabela com 7 linhas; rota protegida redireciona ao login; links no header do chat e footer da landing)*
 
 ---
 

@@ -43,6 +43,28 @@ export interface FeedbackRequest {
   comment?: string;
 }
 
+// === Insights / satisfação (T8.2) ===
+
+export interface FeedbackStats {
+  total: number;
+  up: number;
+  down: number;
+  satisfaction: number;
+}
+
+export interface FeedbackRecentItem {
+  rating: "up" | "down";
+  comment: string | null;
+  profile: string;
+  created_at: string;
+  /** Hash truncado do message_id (o UUID do run não é exposto). */
+  message_ref: string;
+}
+
+export interface FeedbackRecentResponse {
+  items: FeedbackRecentItem[];
+}
+
 export interface ChatHistoryMessage {
   role: "user" | "assistant";
   content: string;
