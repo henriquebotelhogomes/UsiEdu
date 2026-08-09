@@ -232,10 +232,10 @@ Transformar o piloto funcional em um produto com **qualidade percebida de mercad
 - Resposta `429` com corpo `{detail}` padrão do projeto e header `Retry-After`.
 
 **Micro-atividades:**
-- [ ] Configurar `Limiter` no `main.py` com handler de exceção 429 padronizado.
-- [ ] Decorar rotas conforme limites; login limitado por IP mesmo com proxy (documentar confiança em `X-Forwarded-For` no deploy).
-- [ ] Testes: estourar limite retorna 429; após janela, volta a 200 (usar monkeypatch no tempo ou limite 2/min em teste).
-- [ ] Frontend: exibir mensagem amigável ao receber 429 ("Você fez muitas perguntas em pouco tempo. Aguarde alguns segundos.").
+- [x] Configurar `Limiter` no `main.py` com handler de exceção 429 padronizado. *(módulo `src/api/rate_limit.py`; handler `{detail}` + `Retry-After` via `headers_enabled=True`)*
+- [x] Decorar rotas conforme limites; login limitado por IP mesmo com proxy (documentar confiança em `X-Forwarded-For` no deploy). *(chat/stream 10/min por usuário, login 5/min por IP, feedback 30/min; confiança em `X-Forwarded-For` documentada no docstring de `rate_limit.py`; parâmetro de body renomeado para `payload` — slowapi exige `request` nomeado)*
+- [x] Testes: estourar limite retorna 429; após janela, volta a 200 (usar monkeypatch no tempo ou limite 2/min em teste). *(8 testes em `tests/unit/test_rate_limit.py`; janela simulada via `limiter.reset()`; fixture autouse reseta contadores entre testes)*
+- [x] Frontend: exibir mensagem amigável ao receber 429 ("Você fez muitas perguntas em pouco tempo. Aguarde alguns segundos."). *(`RateLimitError` em `api.ts`; ChatPage exibe a mensagem sem fallback POST)*
 
 **Critérios de aceite:** 11ª pergunta em 1 minuto → `429` com `Retry-After`.
 

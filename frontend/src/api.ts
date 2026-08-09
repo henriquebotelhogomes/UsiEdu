@@ -25,11 +25,32 @@ let _token: string | null = null;
 /** Token expirado/inválido: localStorage foi limpo; redirecionar ao login. */
 export class AuthError extends Error {}
 
+/** 429 — limite de requisições excedido (T9.1); não reenviar a requisição. */
+export class RateLimitError extends Error {}
+
+/** Mensagem amigável exibida ao usuário quando a API responde 429 (T9.1). */
+export const RATE_LIMIT_MESSAGE =
+  "Você fez muitas perguntas em pouco tempo. Aguarde alguns segundos.";
+
 function ensureAuthorized(res: Response) {
   if (res.status === 401) {
     clearStoredSession();
     throw new AuthError("Sessão expirada. Faça login novamente.");
   }
+}
+
+/**
+ * Constrói o erro de uma resposta não-ok. 429 vira RateLimitError com a
+ * mensagem amigável (T9.1); demais statuses usam o {detail} do backend.
+ */
+async function erroDaResposta(
+  res: Response,
+  fallback: string,
+  limiteMsg: string = RATE_LIMIT_MESSAGE
+): Promise<Error> {
+  if (res.status === 429) return new RateLimitError(limiteMsg);
+  const err = await res.json().catch(() => ({ detail: fallback }));
+  return new Error(err.detail || fallback);
 }
 
 export function setToken(token: string | null) {
@@ -86,8 +107,11 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: "Erro de autenticação" }));
-    throw new Error(err.detail || "Erro de autenticação");
+    throw await erroDaResposta(
+      res,
+      "Erro de autenticação",
+      "Muitas tentativas de login. Aguarde alguns segundos."
+    );
   }
   return res.json();
 }
@@ -103,8 +127,7 @@ export async function sendChat(data: ChatRequest): Promise<ChatResponse> {
   });
   ensureAuthorized(res);
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: "Erro no chat" }));
-    throw new Error(err.detail || "Erro no chat");
+    throw await erroDaResposta(res, "Erro no chat");
   }
   return res.json();
 }
@@ -171,8 +194,7 @@ export async function sendChatStream(
   });
   ensureAuthorized(res);
   if (!res.ok || !res.body) {
-    const err = await res.json().catch(() => ({ detail: "Erro no streaming" }));
-    throw new Error(err.detail || "Erro no streaming");
+    throw await erroDaResposta(res, "Erro no streaming");
   }
 
   const reader = res.body.getReader();
@@ -214,7 +236,7 @@ export async function sendFeedback(data: FeedbackRequest): Promise<void> {
   });
   ensureAuthorized(res);
   if (!res.ok) {
-    throw new Error("Erro ao enviar feedback");
+    throw await erroDaResposta(res, "Erro ao enviar feedback");
   }
 }
 

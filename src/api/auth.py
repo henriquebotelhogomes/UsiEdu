@@ -10,9 +10,10 @@ from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from src.api.rate_limit import LIMITE_LOGIN, chave_ip, limiter
 from src.api.schemas import ErrorResponse, LoginRequest, LoginResponse
 from src.tools.mock_data import USUARIOS_DEMO
 
@@ -25,11 +26,16 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post(
     "/login",
     response_model=LoginResponse,
-    responses={401: {"model": ErrorResponse}},
+    responses={401: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
 )
-async def login(request: LoginRequest) -> LoginResponse:
-    """Autentica usuário e retorna token JWT."""
-    result = autenticar_usuario(request.email, request.password)
+@limiter.limit(LIMITE_LOGIN, key_func=chave_ip)
+async def login(request: Request, payload: LoginRequest, response: Response) -> LoginResponse:
+    """Autentica usuário e retorna token JWT.
+
+    Limitado por IP (T9.1) para mitigar força bruta. O parâmetro
+    ``response`` permite ao slowapi injetar headers de rate limit.
+    """
+    result = autenticar_usuario(payload.email, payload.password)
     if result is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

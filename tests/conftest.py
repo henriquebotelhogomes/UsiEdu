@@ -16,6 +16,20 @@ if TYPE_CHECKING:
     from langgraph.graph.state import CompiledStateGraph
 
 
+@pytest.fixture(autouse=True)
+def _reseta_rate_limiting():
+    """Zera os contadores de rate limiting entre testes (T9.1).
+
+    O limiter do slowapi é um singleton em memória compartilhado por toda a
+    suíte; sem o reset, limites baixos (ex.: login 5/min) interfeririam
+    entre os testes.
+    """
+    from src.api.rate_limit import limiter
+
+    limiter.reset()
+    yield
+
+
 @pytest.fixture
 def fake_router_llm() -> FakeChatModel:
     """LLM fake com respostas padrão para o supervisor."""

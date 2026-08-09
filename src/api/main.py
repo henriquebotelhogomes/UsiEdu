@@ -14,12 +14,14 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from slowapi.errors import RateLimitExceeded
 
 from src.api.auth import router as auth_router
 from src.api.chat import init_graph
 from src.api.chat import router as chat_router
 from src.api.chat_stream import router as chat_stream_router
 from src.api.feedback import router as feedback_router
+from src.api.rate_limit import limiter, rate_limit_exceeded_handler
 from src.llm.provider import get_chat_model
 from src.observability.logging import setup_logging
 from src.orchestration.graph import create_chat_graph
@@ -135,6 +137,10 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Rate limiting (T9.1): handler 429 padronizado ({detail} + Retry-After)
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
     # Rotas
     app.include_router(auth_router)

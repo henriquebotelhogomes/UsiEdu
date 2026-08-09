@@ -20,12 +20,13 @@ import logging
 import uuid
 from typing import AsyncIterator
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from src.api import chat as chat_module
 from src.api.auth import get_current_user
 from src.api.chat_common import build_initial_state, build_run_config
+from src.api.rate_limit import LIMITE_CHAT, limiter
 from src.api.schemas import ChatRequest, ErrorResponse
 from src.rag.models import Source
 
@@ -45,16 +46,23 @@ def _sse(payload: dict) -> str:
 
 @router.post(
     "/stream",
-    responses={401: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+    responses={
+        401: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
 )
+@limiter.limit(LIMITE_CHAT)
 async def chat_stream(
-    request: ChatRequest,
+    request: Request,
+    payload: ChatRequest,
     current_user: dict = Depends(get_current_user),
 ) -> StreamingResponse:
     """Processa uma mensagem e streama a resposta via SSE.
 
     O `message_id` enviado em `meta` é o `run_id` do trace no LangSmith —
-    o mesmo usado no endpoint de feedback.
+    o mesmo usado no endpoint de feedback. Limitado por usuário (T9.1);
+    o parâmetro `request` é o starlette Request exigido pelo slowapi.
     """
     graph = chat_module._graph
     if graph is None:
@@ -64,21 +72,21 @@ async def chat_stream(
         )
 
     run_id = uuid.uuid4()
-    state = build_initial_state(current_user, request.message)
-    config = build_run_config(current_user, request.session_id, run_id)
+    state = build_initial_state(current_user, payload.message)
+    config = build_run_config(current_user, payload.session_id, run_id)
 
     logger.info(
         "Chat stream request received",
         extra={
             "profile": current_user["profile"],
             "user": current_user["email"],
-            "session_id": request.session_id,
-            "message_length": len(request.message),
+            "session_id": payload.session_id,
+            "message_length": len(payload.message),
         },
     )
 
     async def event_stream() -> AsyncIterator[str]:
-        yield _sse({"event": "meta", "session_id": request.session_id, "message_id": str(run_id)})
+        yield _sse({"event": "meta", "session_id": payload.session_id, "message_id": str(run_id)})
         try:
             async for event in graph.astream_events(state, config, version="v2"):
                 if event["event"] != "on_chat_model_stream":

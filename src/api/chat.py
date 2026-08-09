@@ -9,11 +9,12 @@ import logging
 import uuid
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from langchain_core.messages import HumanMessage
 
 from src.api.auth import get_current_user
 from src.api.chat_common import build_initial_state, build_run_config
+from src.api.rate_limit import LIMITE_CHAT, limiter
 from src.api.schemas import (
     ChatHistoryMessage,
     ChatHistoryResponse,
@@ -44,16 +45,27 @@ def init_graph(graph: CompiledStateGraph) -> None:
 @router.post(
     "",
     response_model=ChatResponse,
-    responses={401: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+    responses={
+        401: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
 )
+@limiter.limit(LIMITE_CHAT)
 async def chat(
-    request: ChatRequest,
+    request: Request,
+    payload: ChatRequest,
+    response: Response,
     current_user: dict = Depends(get_current_user),
 ) -> ChatResponse:
     """Processa uma mensagem do chat.
 
     Recebe a mensagem do usuário, invoca o grafo LangGraph de orquestração
     e retorna a resposta consolidada com fontes e agentes envolvidos.
+    Limitado por usuário autenticado (T9.1).
+
+    Nota: o slowapi exige um parâmetro chamado ``request`` (starlette
+    Request); o corpo Pydantic é recebido em ``payload``.
     """
     if _graph is None:
         raise HTTPException(
@@ -70,18 +82,18 @@ async def chat(
             TRACE_ID_CTX_KEY: trace_id,
             "profile": current_user["profile"],
             "user": current_user["email"],
-            "session_id": request.session_id,
-            "message_length": len(request.message),
+            "session_id": payload.session_id,
+            "message_length": len(payload.message),
         },
     )
 
-    state = build_initial_state(current_user, request.message)
+    state = build_initial_state(current_user, payload.message)
 
     # Configuração para o grafo
     # run_id fixo: o LangSmith adota esse UUID como id do trace, permitindo
     # anexar feedback humano (👍/👎) à execução correspondente.
     run_id = uuid.uuid4()
-    config = build_run_config(current_user, request.session_id, run_id)
+    config = build_run_config(current_user, payload.session_id, run_id)
 
     try:
         result = await _graph.ainvoke(state, config)
@@ -107,7 +119,7 @@ async def chat(
     intent = decision.get("intent", "fora_de_escopo") if decision else "fora_de_escopo"
 
     return ChatResponse(
-        session_id=request.session_id,
+        session_id=payload.session_id,
         message_id=str(run_id),
         answer=answer,
         agents_involved=agents_involved,

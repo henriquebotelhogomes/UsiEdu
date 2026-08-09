@@ -14,9 +14,10 @@ import uuid
 from datetime import UTC, datetime
 
 import aiosqlite
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request, Response
 
 from src.api.auth import get_current_user
+from src.api.rate_limit import LIMITE_FEEDBACK, limiter
 from src.api.schemas import (
     ErrorResponse,
     FeedbackRecentItem,
@@ -66,15 +67,19 @@ def _envia_feedback_langsmith(message_id: str, rating: str, comment: str | None)
 @router.post(
     "",
     response_model=FeedbackResponse,
-    responses={401: {"model": ErrorResponse}},
+    responses={401: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
 )
+@limiter.limit(LIMITE_FEEDBACK)
 async def registrar_feedback(
-    request: FeedbackRequest,
+    request: Request,
+    payload: FeedbackRequest,
+    response: Response,
     current_user: dict = Depends(get_current_user),
 ) -> FeedbackResponse:
     """Registra avaliação 👍/👎 de uma resposta do chat.
 
-    Requer autenticação JWT (401 sem token válido).
+    Requer autenticação JWT (401 sem token válido). Limitado por usuário
+    (T9.1); o parâmetro `request` é o starlette Request exigido pelo slowapi.
     """
     async with aiosqlite.connect(_db_path()) as db:
         await db.execute(_CREATE_TABLE)
@@ -85,10 +90,10 @@ async def registrar_feedback(
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                request.session_id,
-                request.message_id,
-                request.rating,
-                request.comment,
+                payload.session_id,
+                payload.message_id,
+                payload.rating,
+                payload.comment,
                 current_user["email"],
                 current_user["profile"],
                 datetime.now(UTC).isoformat(),
@@ -97,14 +102,14 @@ async def registrar_feedback(
         await db.commit()
         feedback_id = cursor.lastrowid
 
-    _envia_feedback_langsmith(request.message_id, request.rating, request.comment)
+    _envia_feedback_langsmith(payload.message_id, payload.rating, payload.comment)
 
     logger.info(
         "Feedback registrado",
         extra={
             "feedback_id": feedback_id,
-            "message_id": request.message_id,
-            "rating": request.rating,
+            "message_id": payload.message_id,
+            "rating": payload.rating,
             "user": current_user["email"],
         },
     )

@@ -236,6 +236,21 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
 
 ---
 
+## Sprint 9 — Piloto Público (PRD v2)
+
+- [x] **T9.1 — Rate limiting**
+  - [x] `src/api/rate_limit.py`: `Limiter` do slowapi (memória, `headers_enabled=True`) com chave = e-mail do JWT quando autenticado, senão IP; handler 429 padronizado (`{detail}` + `Retry-After`) registrado em `main.py`
+  - [x] Rotas decoradas: `/chat` e `/chat/stream` → 10/min por usuário (`USIEDU_RATE_CHAT`); `/auth/login` → 5/min por IP (`USIEDU_RATE_LOGIN`); `/feedback` → 30/min por usuário (`USIEDU_RATE_FEEDBACK`); variáveis documentadas no `.env.example`
+  - [x] Detalhe do slowapi: o decorador exige parâmetro nomeado `request` (starlette Request) e `response: Response` para injetar headers — parâmetros de body renomeados para `payload` nos endpoints decorados (contrato HTTP inalterado)
+  - [x] Deploy atrás de proxy: `chave_ip` confia no `X-Forwarded-For` (primeiro endereço) — o proxy DEVE sobrescrever o header com o IP real do cliente (documentado no docstring de `rate_limit.py`)
+  - [x] Testes: 8 em `tests/unit/test_rate_limit.py` (login 429 + Retry-After, volta a 200 após janela via `limiter.reset()`, contadores separados por IP, 11ª pergunta → 429, limites independentes por usuário, limite do stream, feedback 30/min) + fixture autouse no `conftest.py` que reseta o limiter entre testes
+  - [x] Frontend: `RateLimitError` + `RATE_LIMIT_MESSAGE` no `api.ts` (mensagem exata do PRD); ChatPage exibe a mensagem amigável sem fallback POST; 2 testes vitest
+  - [x] Teste manual: 6º login → 429 com `Retry-After=60` (curl); quota de chat exaurida → UI exibe "Você fez muitas perguntas em pouco tempo. Aguarde alguns segundos." sem fallback
+
+**DoD da sprint (parcial):** sistema exposto publicamente sem surpresas de custo/abuso.
+
+---
+
 ## Regras de execução (para qualquer implementador)
 
 1. **Uma tarefa por vez**; microtarefas são commits.

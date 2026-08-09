@@ -1,8 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  RATE_LIMIT_MESSAGE,
+  RateLimitError,
   clearStoredSession,
   getSessionIdFor,
   loadStoredSession,
+  sendChat,
+  sendChatStream,
   setToken,
   storeSession,
   storeSessionId,
@@ -65,5 +69,45 @@ describe("persistência de sessão (T7.4)", () => {
     expect(localStorage.getItem("usiedu_token")).toBe("tok-abc");
     setToken(null);
     expect(localStorage.getItem("usiedu_token")).toBeNull();
+  });
+});
+
+describe("rate limiting 429 (T9.1)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    setToken("token-123");
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    localStorage.clear();
+    setToken(null);
+  });
+
+  function mockFetch429() {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ detail: "Limite de requisições excedido" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json", "Retry-After": "30" },
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+  }
+
+  it("sendChat lança RateLimitError com mensagem amigável no 429", async () => {
+    mockFetch429();
+    await expect(
+      sendChat({ session_id: "s1", message: "olá" })
+    ).rejects.toThrow(RateLimitError);
+    await expect(
+      sendChat({ session_id: "s1", message: "olá" })
+    ).rejects.toThrow(RATE_LIMIT_MESSAGE);
+  });
+
+  it("sendChatStream lança RateLimitError com mensagem amigável no 429", async () => {
+    mockFetch429();
+    await expect(
+      sendChatStream({ session_id: "s1", message: "olá" }, {})
+    ).rejects.toThrow(RATE_LIMIT_MESSAGE);
   });
 });

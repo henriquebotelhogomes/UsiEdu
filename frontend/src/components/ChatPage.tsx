@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import type { ChatResponse, StoredUser } from "../types";
 import {
   AuthError,
+  RateLimitError,
   generateSessionId,
   getChatHistory,
   getSessionIdFor,
@@ -153,6 +154,11 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
     } catch (err) {
       if (err instanceof AuthError) {
         onLogout();
+        return;
+      }
+      if (err instanceof RateLimitError) {
+        // 429: exibe a mensagem amigável sem fallback POST (T9.1)
+        updateLastAssistant((m) => ({ ...m, content: err.message, streaming: false }));
         return;
       }
       if (err instanceof DOMException && err.name === "AbortError") {
