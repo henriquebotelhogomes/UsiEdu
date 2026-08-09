@@ -63,6 +63,14 @@ mas as metas do doc 03 (seção 6.1) não foram atingidas no agregado. Plano de 
    confiável que geração com modelo econômico) e comparar estabilidade dos scores.
 4. **Iterar pipeline e medir regressão**: ajustes de prompts de agentes e reranking,
    rodando o dataset como experimento no LangSmith a cada mudança.
+5. **Laço de feedback negativo (T8.1)**: cada 👎 vira caso de regressão automático —
+   `python scripts/export_feedback_to_eval.py` exporta os 👎 do banco de feedback para
+   `src/evaluation/feedback_negativo.jsonl` (idempotente por `message_id`; pergunta e
+   resposta rejeitada recuperadas do checkpointer da sessão; sem checkpoint, exporta com
+   `question: null`). O `run_ragas.py` reexecuta esses casos e o relatório ganha a seção
+   "Casos de feedback negativo", comparando a nova resposta com a rejeitada (heurística
+   Jaccard offline; em modo Ragas+LLM recomenda-se confirmar com LLM judge). Casos com
+   `question: null` são contabilizados como pulados.
 
 ### Fase 2 — Expansão de agentes (+4 semanas)
 1. Tutor Pedagógico com memória de longo prazo e quizzes adaptativos.

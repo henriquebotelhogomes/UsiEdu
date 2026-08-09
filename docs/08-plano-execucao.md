@@ -216,6 +216,21 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
 
 ---
 
+## Sprint 8 — Avaliação Contínua (PRD v2)
+
+- [x] **T8.1 — Exportar 👎 para o dataset de avaliação**
+  - [x] `scripts/export_feedback_to_eval.py` (CLI `--db`/`--out`/`--checkpointer-db`/`--dry-run`): lê só `rating='down'`, deduplica por `message_id` (reexecutar não duplica — verificado: 2ª execução = 0 novos) e anexa a `src/evaluation/feedback_negativo.jsonl` (dataset versionado, commitado)
+  - [x] Pergunta e resposta rejeitada recuperadas do checkpointer: metadados do checkpoint trazem o `message_id` da execução; snapshot mais recente com o id contém a última `HumanMessage` (pergunta) e `AIMessage` (resposta); sem checkpoint disponível, exporta com `question: null`
+  - [x] `run_ragas.py`: parâmetro `feedback_path`/CLI `--feedback`; casos com pergunta são reexecutados no grafo e comparados com a rejeitada (Jaccard ≥ 0,95 → "repete resposta rejeitada"; abaixo → "alterada — revisão manual"); `question: null` contabilizado como pulado; casos fora do agregado Ragas principal
+  - [x] Relatório ganha seção "Casos de feedback negativo (T8.1)" — validado com 👎 real (similaridade 0,06 → resposta alterada)
+  - [x] Testes: 8 em `tests/unit/test_export_feedback.py` (filtro down, idempotência, dry-run, JSONL válido, recuperação via checkpointer real em tmp, sessão inexistente, CLI) + 5 em `tests/unit/test_evaluation.py` (Jaccard, seção vazia/com casos, reavaliação, pulo sem pergunta)
+  - [x] Fluxo documentado em `docs/04-piloto-e-roadmap.md` seção 3.1 (item 5)
+- [ ] **T8.2 — Página de satisfação `/insights`**
+
+**DoD da sprint:** cada 👎 vira caso de regressão automático; satisfação visível em `/insights`.
+
+---
+
 ## Regras de execução (para qualquer implementador)
 
 1. **Uma tarefa por vez**; microtarefas são commits.

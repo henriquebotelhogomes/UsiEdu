@@ -187,18 +187,18 @@ Transformar o piloto funcional em um produto com **qualidade percebida de mercad
 - Novo script: `scripts/export_feedback_to_eval.py`.
 - Fonte: banco SQLite do feedback (`USIEDU_FEEDBACK_DB`); destino: `src/evaluation/feedback_negativo.jsonl` (uma entrada por 👎: `{question, rejected_answer, user_comment, profile, session_id, message_id, created_at}` — a pergunta é recuperada do histórico da sessão; se indisponível, registrar com `question: null` e pular na etapa Ragas).
 - O script é **idempotente** (reexportar não duplica; chave = `message_id`).
-- Integrar ao pipeline `src/evaluation/run_ragas.py`: amostras de `feedback_negativo.jsonl` entram no dataset com `expected_feedback="down"`; o relatório Markdown ganha seção "Casos de feedback negativo" mostrando se as novas respostas melhoraram (comparação com `rejected_answer` via LLM judge ou Ragas `answer_relevancy`).
+- Integrar ao pipeline `src/evaluation/run_ragas.py`: amostras de `feedback_negativo.jsonl` entram no dataset com `expected_feedback="down"`; o relatório Markdown ganha seção "Casos de feedback negativo" mostrando se as novas respostas melhoraram (comparação com `rejected_answer` via LLM judge ou Ragas `answer_relevancy`). *(implementado: casos tratados em fluxo próprio com status de melhora por similaridade, fora do agregado Ragas principal — o rótulo "down" fica implícito na origem do JSONL)*
 
 **Micro-atividades:**
-- [ ] Script de exportação com CLI (`--db`, `--out`, `--dry-run`).
-- [ ] Recuperação da pergunta original via checkpointer (`session_id` + posição do `message_id` no histórico).
-- [ ] Testes unitários: idempotência, filtro apenas `rating='down'`, JSONL válido.
-- [ ] Extensão do `src/evaluation/run_ragas.py` para aceitar datasets extras e renderizar a seção no relatório.
-- [ ] Documentar o fluxo em `docs/04-piloto-e-roadmap.md` (seção de melhoria de planos já existente).
+- [x] Script de exportação com CLI (`--db`, `--out`, `--dry-run`). *(feito; `--checkpointer-db` adicional para apontar o banco do checkpointer)*
+- [x] Recuperação da pergunta original via checkpointer (`session_id` + posição do `message_id` no histórico). *(metadados do checkpoint trazem o `message_id`; snapshot mais recente com o id guarda pergunta/resposta do turno)*
+- [x] Testes unitários: idempotência, filtro apenas `rating='down'`, JSONL válido. *(8 testes em `tests/unit/test_export_feedback.py`)*
+- [x] Extensão do `src/evaluation/run_ragas.py` para aceitar datasets extras e renderizar a seção no relatório. *(parâmetro `feedback_path`/CLI `--feedback`; comparação Jaccard offline — LLM judge recomendado em modo Ragas+LLM; casos fora do agregado principal)*
+- [x] Documentar o fluxo em `docs/04-piloto-e-roadmap.md` (seção de melhoria de planos já existente). *(seção 3.1, item 5)*
 
 **Critérios de aceite:**
-- **Dado** um 👎 registrado no chat, **Quando** executo o script, **Então** o caso aparece no JSONL e no próximo relatório Ragas na seção dedicada.
-- Executar o script duas vezes não duplica registros.
+- **Dado** um 👎 registrado no chat, **Quando** executo o script, **Então** o caso aparece no JSONL e no próximo relatório Ragas na seção dedicada. *(validado com 👎 real: caso "Quais feriados temos em 2026?" exportado e reavaliado na seção)*
+- Executar o script duas vezes não duplica registros. *(validado: 2ª execução = 0 novos, 1 já presente)*
 
 ---
 

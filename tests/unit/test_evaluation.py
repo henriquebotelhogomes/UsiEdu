@@ -255,3 +255,111 @@ class TestRunRagas:
         )
         main()
         assert (tmp_path / "r.md").exists()
+
+
+class TestFeedbackNegativo:
+    """Testes da integração do feedback negativo no relatório (T8.1)."""
+
+    def test_similaridade_jaccard(self) -> None:
+        """Jaccard: idênticas → 1.0, disjuntas → 0.0, parciais entre 0 e 1."""
+        from src.evaluation.run_ragas import _similaridade_jaccard
+
+        assert _similaridade_jaccard("a b c", "A B C") == 1.0
+        assert _similaridade_jaccard("a b", "c d") == 0.0
+        assert _similaridade_jaccard("", "") == 1.0
+        assert _similaridade_jaccard("a", "") == 0.0
+        assert _similaridade_jaccard("a b", "a c") == pytest.approx(1 / 3)
+
+    def test_secao_feedback_vazia(self) -> None:
+        """Sem casos exportados, a seção orienta rodar o script de exportação."""
+        from src.evaluation.run_ragas import _gerar_secao_feedback
+
+        linhas = _gerar_secao_feedback([], pulados=0)
+        texto = "\n".join(linhas)
+        assert "## Casos de feedback negativo (T8.1)" in texto
+        assert "export_feedback_to_eval.py" in texto
+
+    def test_secao_feedback_com_casos(self) -> None:
+        """Casos avaliados devem aparecer em tabela com status e pulados."""
+        from src.evaluation.run_ragas import _gerar_secao_feedback
+
+        resultados = [
+            {
+                "message_id": "abcdef12-0000-0000-0000-000000000000",
+                "question": "Quando começa o semestre?",
+                "user_comment": "resposta errada",
+                "similaridade": 0.20,
+                "status": "🔄 Alterada — revisão manual",
+            },
+            {
+                "message_id": "fedcba98-0000-0000-0000-000000000000",
+                "question": "Quais os requisitos?",
+                "user_comment": None,
+                "similaridade": 0.98,
+                "status": "❌ Repete resposta rejeitada",
+            },
+        ]
+        texto = "\n".join(_gerar_secao_feedback(resultados, pulados=1))
+        assert "2 caso(s) reavaliado(s), 1 pulado(s)" in texto
+        assert "abcdef12" in texto
+        assert "❌ Repete resposta rejeitada" in texto
+        assert "0.20" in texto
+
+    @pytest.mark.asyncio
+    async def test_executar_avaliacao_com_feedback(self, tmp_path, monkeypatch) -> None:
+        """executar_avaliacao deve reavaliar casos do JSONL e renderizar a seção."""
+        from src.evaluation.run_ragas import executar_avaliacao
+
+        monkeypatch.delenv("OPENCODE_GO_API_KEY", raising=False)  # modo offline/fake
+
+        feedback_path = tmp_path / "feedback_negativo.jsonl"
+        caso = {
+            "question": "Quando começa o semestre letivo 2026.2?",
+            "rejected_answer": "Resposta antiga rejeitada pelo usuário.",
+            "user_comment": "não respondeu",
+            "profile": "student",
+            "session_id": "s1",
+            "message_id": "abcdef12-0000-0000-0000-000000000000",
+            "created_at": "2026-08-01T10:00:00",
+        }
+        feedback_path.write_text(json.dumps(caso, ensure_ascii=False) + "\n", encoding="utf-8")
+
+        output = tmp_path / "relatorio_fb.md"
+        await executar_avaliacao(
+            dataset_path=DATASET_PATH,
+            output_path=output,
+            limit=1,
+            feedback_path=feedback_path,
+        )
+        conteudo = output.read_text(encoding="utf-8")
+        assert "## Casos de feedback negativo (T8.1)" in conteudo
+        assert "abcdef12" in conteudo
+
+    @pytest.mark.asyncio
+    async def test_executar_avaliacao_pula_sem_pergunta(self, tmp_path, monkeypatch) -> None:
+        """Casos com question: null devem ser contabilizados como pulados."""
+        from src.evaluation.run_ragas import executar_avaliacao
+
+        monkeypatch.delenv("OPENCODE_GO_API_KEY", raising=False)  # modo offline/fake
+
+        feedback_path = tmp_path / "feedback_negativo.jsonl"
+        caso = {
+            "question": None,
+            "rejected_answer": None,
+            "user_comment": None,
+            "profile": "student",
+            "session_id": "s1",
+            "message_id": "sem-pergunta",
+            "created_at": "2026-08-01T10:00:00",
+        }
+        feedback_path.write_text(json.dumps(caso, ensure_ascii=False) + "\n", encoding="utf-8")
+
+        output = tmp_path / "relatorio_pulo.md"
+        await executar_avaliacao(
+            dataset_path=DATASET_PATH,
+            output_path=output,
+            limit=1,
+            feedback_path=feedback_path,
+        )
+        conteudo = output.read_text(encoding="utf-8")
+        assert "1 pulado(s) sem pergunta" in conteudo
