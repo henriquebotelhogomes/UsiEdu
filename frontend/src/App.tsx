@@ -1,21 +1,30 @@
 import { useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import type { LoginResponse } from "./types";
-import { setToken } from "./api";
+import type { LoginResponse, StoredUser } from "./types";
+import { clearStoredSession, loadStoredSession, setToken, storeSession } from "./api";
 import LandingPage from "./components/LandingPage";
 import LoginPage from "./components/LoginPage";
 import ChatPage from "./components/ChatPage";
 
 export default function App() {
-  const [user, setUser] = useState<LoginResponse | null>(null);
+  // Restaura a sessão persistida no localStorage (T7.4 / RF2-04)
+  const [user, setUser] = useState<StoredUser | null>(() => {
+    const stored = loadStoredSession();
+    if (stored) setToken(stored.access_token);
+    return stored;
+  });
   const navigate = useNavigate();
 
-  const handleLogin = (loggedUser: LoginResponse) => {
-    setUser(loggedUser);
+  const handleLogin = (loggedUser: LoginResponse, email: string) => {
+    const storedUser: StoredUser = { ...loggedUser, email };
+    storeSession(storedUser);
+    setToken(storedUser.access_token);
+    setUser(storedUser);
     navigate("/chat");
   };
 
   const handleLogout = () => {
+    clearStoredSession();
     setToken(null);
     setUser(null);
     navigate("/");

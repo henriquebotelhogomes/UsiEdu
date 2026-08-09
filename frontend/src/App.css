@@ -71,6 +71,26 @@ body {
   background: rgba(255, 255, 255, 0.25);
 }
 
+.new-chat-btn {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.new-chat-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.new-chat-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 /* Login Page */
 .login-page {
   flex: 1;

@@ -197,7 +197,13 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Estilos `.fonte-trecho` (fundo sutil + borda esquerda) e `.fonte-link` em `App.css`
   - [x] Teste unitário do card (vitest + user-event: 3 testes — link seguro, ausência de link sem url, trecho em destaque)
   - [x] Teste manual no navegador: 5 fontes com links corretos (planalto.gov.br e saa.unb.br) e trechos destacados
-- [ ] **T7.4 — Sessão persistente e histórico ao recarregar (RF2-04, RF2-05)**
+- [x] **T7.4 — Sessão persistente e histórico ao recarregar (RF2-04, RF2-05)**
+  - [x] Backend: `GET /chat/history` lê o estado da thread via `aget_state` e converte `messages` (posse validada por `user_id` do estado: 403 para sessão alheia, 404 para inexistente; `user_email` gravado nos metadados do checkpoint)
+  - [x] Backend: testes (5) — 401 sem token, 500 sem grafo, 404 sessão inexistente, histórico próprio na ordem, sessão de outro usuário 403
+  - [x] Frontend: helpers de localStorage (`usiedu_token`, `usiedu_user`, `usiedu_session_id:<email>`); `App` restaura sessão na montagem, `ChatPage` restaura histórico via `GET /chat/history` (agentes/fontes omitidos — documentado)
+  - [x] Frontend: botão "Nova conversa" (novo id de sessão + limpa mensagens) e tratamento de 401 (`AuthError` limpa storage e redireciona ao login)
+  - [x] Proxy Vite (bypass de GET `/chat` serve o SPA) e nginx (`error_page 405 = @spa`) para deep-link/reload; doc 09 seção 2 atualizado com o endpoint/schemas
+  - [x] Testes unitários frontend (vitest: 6 testes dos helpers de persistência) e teste manual no navegador: histórico restaurado após reload sem novo login (5/5 critérios)
 - [ ] **T7.3 — Streaming de respostas via SSE (RF2-03)**
 
 **DoD da sprint:** chat com formatação rica, fontes clicáveis, streaming e histórico persistente; suíte completa verde.

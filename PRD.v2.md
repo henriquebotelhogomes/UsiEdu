@@ -166,11 +166,11 @@ Transformar o piloto funcional em um produto com **qualidade percebida de mercad
 - JWT expira em 1 h: ao receber 401 em qualquer chamada, limpar `localStorage` e redirecionar para login.
 
 **Micro-atividades:**
-- [ ] Backend: utilitário para ler estado da thread do checkpointer (`get_state(config)`) e converter `messages` para o schema de resposta.
-- [ ] Backend: teste — histórico de sessão de outro usuário retorna 403/404; histórico próprio retorna as mensagens na ordem.
-- [ ] Frontend: persistir token/sessão no login; restaurar no `App`/`ChatPage`.
-- [ ] Frontend: botão "Nova conversa" (limpa `session_id` e gera novo UUID).
-- [ ] Atualizar proxy Vite/nginx para `/chat/history`.
+- [x] Backend: utilitário para ler estado da thread do checkpointer (`get_state(config)`) e converter `messages` para o schema de resposta.
+- [x] Backend: teste — histórico de sessão de outro usuário retorna 403/404; histórico próprio retorna as mensagens na ordem.
+- [x] Frontend: persistir token/sessão no login; restaurar no `App`/`ChatPage`.
+- [x] Frontend: botão "Nova conversa" (limpa `session_id` e gera novo UUID).
+- [x] Atualizar proxy Vite/nginx para `/chat/history`. *(bypass de GET `/chat` no Vite e `error_page 405` no nginx para deep-link/reload servir o SPA)*
 
 **Critérios de aceite:**
 - **Dado** que conversei e recarreguei a página, **Quando** volto ao chat, **Então** minhas mensagens anteriores estão lá e posso continuar a conversa com contexto (o checkpointer já garante a memória no backend).

@@ -19,6 +19,13 @@ export default defineConfig({
       "/chat": {
         target: "http://localhost:8000",
         changeOrigin: true,
+        // Deep-link/reload (T7.4): GET /chat serve o SPA; GET /chat/history e
+        // POST /chat continuam para a API.
+        bypass: (req) => {
+          if (req.method === "GET" && (req.url === "/chat" || req.url?.startsWith("/chat?"))) {
+            return "/index.html";
+          }
+        },
       },
       "/feedback": {
         target: "http://localhost:8000",

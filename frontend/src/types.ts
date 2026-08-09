@@ -10,6 +10,11 @@ export interface LoginResponse {
   display_name: string;
 }
 
+/** Usuário logado com e-mail (T7.4): o e-mail identifica a sessão persistida. */
+export interface StoredUser extends LoginResponse {
+  email: string;
+}
+
 export interface Source {
   document: string;
   section: string | null;
@@ -36,4 +41,15 @@ export interface FeedbackRequest {
   message_id: string;
   rating: "up" | "down";
   comment?: string;
+}
+
+export interface ChatHistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string | null;
+}
+
+export interface ChatHistoryResponse {
+  session_id: string;
+  messages: ChatHistoryMessage[];
 }

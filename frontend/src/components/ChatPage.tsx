@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import type { ChatResponse, LoginResponse } from "../types";
-import { sendChat, generateSessionId, sendFeedback } from "../api";
+import type { ChatResponse, StoredUser } from "../types";
+import {
+  AuthError,
+  generateSessionId,
+  getChatHistory,
+  getSessionIdFor,
+  sendChat,
+  sendFeedback,
+  storeSessionId,
+} from "../api";
 import Markdown from "./Markdown";
 import MessageCard from "./MessageCard";
 
@@ -21,7 +29,7 @@ interface Message {
 }
 
 interface ChatPageProps {
-  user: LoginResponse;
+  user: StoredUser;
   onLogout: () => void;
 }
 
@@ -29,12 +37,54 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sessionId] = useState(generateSessionId);
+  const [restoring, setRestoring] = useState(false);
+  const [sessionId, setSessionId] = useState<string>(
+    () => getSessionIdFor(user.email) ?? generateSessionId()
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Persiste a sessão ativa por usuário (T7.4 / RF2-04)
+  useEffect(() => {
+    storeSessionId(user.email, sessionId);
+  }, [user.email, sessionId]);
+
+  // Restaura o histórico na montagem (T7.4 / RF2-05). Agentes/fontes são
+  // omitidos no histórico — apenas o texto é devolvido pelo backend.
+  useEffect(() => {
+    let active = true;
+    setRestoring(true);
+    getChatHistory(sessionId)
+      .then((history) => {
+        if (active) {
+          setMessages(history.messages.map((m) => ({ role: m.role, content: m.content })));
+        }
+      })
+      .catch((err) => {
+        if (err instanceof AuthError) {
+          onLogout();
+          return;
+        }
+        // 404 (sessão nova) ou sessão indisponível: conversa vazia
+      })
+      .finally(() => {
+        if (active) setRestoring(false);
+      });
+    return () => {
+      active = false;
+    };
+    // Roda apenas na montagem; "Nova conversa" troca sessionId e limpa localmente
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleNewConversation = () => {
+    setSessionId(generateSessionId());
+    setMessages([]);
+    setInput("");
+  };
 
   const handleSend = async (text: string) => {
     if (!text.trim() || loading) return;
@@ -55,6 +105,10 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err) {
+      if (err instanceof AuthError) {
+        onLogout();
+        return;
+      }
       const errorMsg: Message = {
         role: "assistant",
         content: err instanceof Error ? err.message : "Erro ao processar mensagem",
@@ -83,12 +137,22 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
         <h1>UsiEdu — Chat</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span className="header-user">{user.display_name} ({user.profile})</span>
+          <button
+            className="new-chat-btn"
+            onClick={handleNewConversation}
+            disabled={loading || restoring}
+            aria-label="Iniciar nova conversa"
+          >
+            Nova conversa
+          </button>
           <button className="logout-btn" onClick={onLogout}>Sair</button>
         </div>
       </header>
 
       <div className="chat-page">
-        {messages.length === 0 && (
+        {restoring && <div className="loading">Carregando histórico</div>}
+
+        {messages.length === 0 && !restoring && (
           <div className="empty-state">
             <div className="icon">🎓</div>
             <h2>Bem-vindo ao UsiEdu!</h2>

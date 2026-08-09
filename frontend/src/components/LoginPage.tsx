@@ -21,7 +21,7 @@ const DEMO_USERS = [
 ];
 
 interface LoginPageProps {
-  onLogin: (user: LoginResponse) => void;
+  onLogin: (user: LoginResponse, email: string) => void;
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
@@ -37,7 +37,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     try {
       const result = await login({ email, password });
       setToken(result.access_token);
-      onLogin(result);
+      onLogin(result, email);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao fazer login");
     } finally {

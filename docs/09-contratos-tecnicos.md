@@ -36,7 +36,7 @@
 |---|---|---|---|
 | POST | `/auth/login` | não | Autentica e retorna JWT |
 | POST | `/chat` | sim | Envia mensagem e recebe resposta (streaming SSE opcional via `?stream=true`) |
-| GET | `/sessions/{session_id}` | sim | Retorna histórico da sessão |
+| GET | `/chat/history?session_id={id}` | sim | Retorna histórico da sessão (T7.4): 404 se inexistente, 403 se pertence a outro usuário |
 | GET | `/health` | não | Liveness: `{ "status": "ok" }` |
 
 ### 2.2 Schemas (Pydantic)
@@ -71,6 +71,16 @@ class ChatResponse(BaseModel):
     sources: list[Source]
     intent: Literal["academico", "financeiro", "institucional",
                     "composta", "fora_de_escopo"]
+
+# histórico (T7.4)
+class ChatHistoryMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+    timestamp: str | None = None   # o checkpointer não persiste timestamp
+
+class ChatHistoryResponse(BaseModel):
+    session_id: str
+    messages: list[ChatHistoryMessage]     # agentes/fontes omitidos: só texto
 ```
 
 ### 2.3 Erros padronizados

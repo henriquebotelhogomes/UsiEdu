@@ -48,6 +48,26 @@ class ChatResponse(BaseModel):
     )
 
 
+class ChatHistoryMessage(BaseModel):
+    """Mensagem persistida de uma sessão (T7.4 / RF2-05)."""
+
+    role: Literal["user", "assistant"] = Field(..., description="Autor da mensagem")
+    content: str = Field(..., description="Conteúdo textual da mensagem")
+    timestamp: str | None = Field(
+        default=None,
+        description="Timestamp da mensagem (o checkpointer não persiste; nulo)",
+    )
+
+
+class ChatHistoryResponse(BaseModel):
+    """Histórico de mensagens persistidas de uma sessão (T7.4 / RF2-05)."""
+
+    session_id: str = Field(..., description="ID da sessão (thread_id)")
+    messages: list[ChatHistoryMessage] = Field(
+        default_factory=list, description="Mensagens na ordem da conversa"
+    )
+
+
 class FeedbackRequest(BaseModel):
     """Feedback humano (human-on-the-loop) sobre uma resposta do chat."""
 

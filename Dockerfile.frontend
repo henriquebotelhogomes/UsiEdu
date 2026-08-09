@@ -49,6 +49,15 @@ server {
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        # Deep-link/reload (T7.4): GET /chat cai na API e retorna 405;
+        # nesse caso serve o SPA (index.html).
+        proxy_intercept_errors on;
+        error_page 405 = @spa;
+    }
+
+    location @spa {
+        root /usr/share/nginx/html;
+        try_files /index.html =404;
     }
 
     location /feedback {

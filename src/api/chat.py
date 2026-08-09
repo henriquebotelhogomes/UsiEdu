@@ -13,7 +13,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import HumanMessage
 
 from src.api.auth import get_current_user
-from src.api.schemas import ChatRequest, ChatResponse, ErrorResponse
+from src.api.schemas import (
+    ChatHistoryMessage,
+    ChatHistoryResponse,
+    ChatRequest,
+    ChatResponse,
+    ErrorResponse,
+)
 from src.observability.logging import TRACE_ID_CTX_KEY, generate_trace_id
 from src.rag.models import Source
 
@@ -87,7 +93,13 @@ async def chat(
     run_id = uuid.uuid4()
     config = {
         "run_id": run_id,
-        "metadata": {"message_id": str(run_id), "session_id": request.session_id},
+        "metadata": {
+            "message_id": str(run_id),
+            "session_id": request.session_id,
+            # Associa a thread ao usuário (T7.4): gravado nos metadados do
+            # checkpoint a cada escrita; usado na validação de posse do histórico.
+            "user_email": current_user["email"],
+        },
         "configurable": {
             "thread_id": request.session_id,
         },
@@ -124,3 +136,56 @@ async def chat(
         sources=sources,
         intent=intent,
     )
+
+
+@router.get(
+    "/history",
+    response_model=ChatHistoryResponse,
+    responses={
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
+)
+async def chat_history(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+) -> ChatHistoryResponse:
+    """Retorna as mensagens persistidas de uma sessão (T7.4 / RF2-04, RF2-05).
+
+    Lê o estado da thread no checkpointer do grafo. A posse é validada pelo
+    campo `user_id` do estado (gravado a cada escrita no `/chat`); sessões
+    legadas sem associação são legíveis e associadas na próxima escrita.
+    Agentes/fontes são omitidos no histórico — apenas o texto (documentado).
+    """
+    if _graph is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Grafo não inicializado. Configure a aplicação antes de usar o chat.",
+        )
+
+    config = {"configurable": {"thread_id": session_id}}
+    snapshot = await _graph.aget_state(config)
+    values = getattr(snapshot, "values", None) or {}
+    state_messages = values.get("messages") or []
+    if not state_messages:
+        raise HTTPException(status_code=404, detail="Sessão não encontrada")
+
+    owner = values.get("user_id")
+    if owner is not None and owner != current_user["email"]:
+        raise HTTPException(status_code=403, detail="Sessão pertence a outro usuário")
+
+    messages = [
+        ChatHistoryMessage(
+            role="user" if isinstance(m, HumanMessage) else "assistant",
+            content=m.content,
+        )
+        for m in state_messages
+    ]
+
+    logger.info(
+        "Chat history served",
+        extra={"session_id": session_id, "user": current_user["email"], "count": len(messages)},
+    )
+
+    return ChatHistoryResponse(session_id=session_id, messages=messages)
