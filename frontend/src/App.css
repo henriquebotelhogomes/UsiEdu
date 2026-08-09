@@ -550,6 +550,37 @@ body {
   line-height: 1.4;
 }
 
+/* Fontes clicáveis com trecho em destaque (T7.2 / RF2-02) */
+.fonte-item {
+  margin-bottom: 8px;
+}
+
+.fonte-item:last-child {
+  margin-bottom: 0;
+}
+
+.fonte-trecho {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin: 4px 0;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 4px 4px 0;
+}
+
+.fonte-link {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-accent-dark);
+  text-decoration: none;
+}
+
+.fonte-link:hover {
+  text-decoration: underline;
+}
+
 /* Input Area */
 .input-area {
   display: flex;

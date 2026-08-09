@@ -33,12 +33,24 @@ export default function MessageCard({ agents_involved, sources }: MessageCardPro
           {expandedSource === "all" && (
             <div className="card-expanded">
               {sources.map((s, i) => (
-                <div key={i} style={{ marginBottom: 8 }}>
+                <div key={i} className="fonte-item">
                   <strong>{s.document}</strong>
                   {s.section && <div>Seção: {s.section}</div>}
-                  <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: 2 }}>
+                  <div className="fonte-trecho" title={s.excerpt}>
                     {s.excerpt.slice(0, 120)}...
                   </div>
+                  {s.url && (
+                    <a
+                      className="fonte-link"
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Abrir documento oficial ${s.document} em nova aba`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Ver documento oficial ↗
+                    </a>
+                  )}
                 </div>
               ))}
             </div>

@@ -109,10 +109,10 @@ Transformar o piloto funcional em um produto com **qualidade percebida de mercad
 - O campo `trecho` já exibido deve ganhar destaque visual (fundo sutil, borda esquerda, fonte menor).
 
 **Micro-atividades:**
-- [ ] Verificar no navegador (ou em `tests/integration`) que as respostas reais retornam `url` preenchida para os 4 documentos do piloto.
-- [ ] Se `url` vier vazia para algum documento, corrigir os metadados na ingestão (`scripts/ingest_knowledge_base.py`, campo `url_fonte`) e reingerir.
-- [ ] Atualizar o card de fonte em `frontend/src/components/` com link condicional e estilos `.fonte-trecho`, `.fonte-link`.
-- [ ] `aria-label` nos links ("Abrir documento oficial {nome} em nova aba").
+- [x] Verificar no navegador (ou em `tests/integration`) que as respostas reais retornam `url` preenchida para os 4 documentos do piloto.
+- [x] Se `url` vier vazia para algum documento, corrigir os metadados na ingestão (`scripts/ingest_knowledge_base.py`, campo `url_fonte`) e reingerir. *(não necessário: `url_fonte` já preenchida nos payloads das duas coleções; a CLI real de ingestão é `src/rag/ingest.py`)*
+- [x] Atualizar o card de fonte em `frontend/src/components/` com link condicional e estilos `.fonte-trecho`, `.fonte-link`.
+- [x] `aria-label` nos links ("Abrir documento oficial {nome} em nova aba").
 
 **Critérios de aceite:**
 - **Dado** uma resposta com fontes, **Quando** clico em "Ver documento oficial", **Então** abre o documento oficial em nova aba.

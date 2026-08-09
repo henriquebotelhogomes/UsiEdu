@@ -191,7 +191,12 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Estilos `.markdown-body` em `App.css`
   - [x] Teste unitário do componente (vitest + testing-library: 6 testes — lista, link seguro, tabela GFM, sem execução de HTML cru)
   - [x] Teste manual no navegador: resposta real com negrito/itálico renderizada sem marcadores `**`/`###` visíveis; feedback 👍 funcional
-- [ ] **T7.2 — Fontes clicáveis com trecho em destaque (RF2-02)**
+- [x] **T7.2 — Fontes clicáveis com trecho em destaque (RF2-02)**
+  - [x] Verificado em runtime (payload Qdrant + navegador) que `url_fonte` vem preenchida nos 4 documentos — sem backend change
+  - [x] Link condicional "Ver documento oficial ↗" (`target="_blank" rel="noopener noreferrer"` + `aria-label`) no `MessageCard.tsx`
+  - [x] Estilos `.fonte-trecho` (fundo sutil + borda esquerda) e `.fonte-link` em `App.css`
+  - [x] Teste unitário do card (vitest + user-event: 3 testes — link seguro, ausência de link sem url, trecho em destaque)
+  - [x] Teste manual no navegador: 5 fontes com links corretos (planalto.gov.br e saa.unb.br) e trechos destacados
 - [ ] **T7.4 — Sessão persistente e histórico ao recarregar (RF2-04, RF2-05)**
 - [ ] **T7.3 — Streaming de respostas via SSE (RF2-03)**
 
