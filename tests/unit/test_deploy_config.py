@@ -119,3 +119,10 @@ def test_frontend_proxy_preserves_upstream_host_for_container_apps() -> None:
 
     assert "proxy_set_header Host $proxy_host;" in config
     assert "proxy_set_header Host $host;" not in config
+
+
+def test_api_image_declares_jwt_library_used_by_authentication() -> None:
+    """A imagem deve instalar o pacote que fornece o modulo ``jwt``."""
+    pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
+
+    assert '"PyJWT>=' in pyproject
