@@ -271,7 +271,29 @@ usiedu/
 └── README.md                    # quickstart + link para demo
 ```
 
-## 10. Decisões em aberto *(para revisão)*
+## 10. Guardrails contra prompt injection (T9.3)
+
+Defesa em três camadas, implementada em `src/security/guardrails.py` com
+heurísticas determinísticas (regex em constantes nomeadas) — **testável sem LLM**.
+
+| Camada | Onde | Comportamento |
+|---|---|---|
+| **1. Ingestão** | `src/rag/ingest.py` | Cada chunk passa por `detect_injection`; chunks sinalizados ganham `suspicious=true` e são **excluídos do índice** com log de auditoria (`guardrail_triggered`, `origem=ingest`) |
+| **2. Entrada do usuário** | `POST /chat` e `/chat/stream` | O mesmo detector roda na pergunta; se sinalizada, o trace recebe `flagged=true` + `injection_patterns`. A pergunta **não é bloqueada** (risco de falso positivo), apenas observada |
+| **3. Saída** | após o grafo, antes de responder | `validate_answer` detecta eco do prompt de sistema, eco de jailbreak ou tentativa de mudança de comportamento ("a partir de agora..."); resposta insegura é substituída por `RESPOSTA_SEGURA_PADRAO` e o evento `guardrail_triggered` é registrado no log JSON e no LangSmith (best-effort) |
+
+**Decisões de política:**
+- Respostas bloqueadas pelo guardrail **nunca alimentam o cache semântico** (T9.2).
+- No streaming os tokens já emitidos não podem ser desfeitos: o evento `final`
+  carrega a resposta segura e o cliente reconcilia o texto pelo campo `answer`.
+- Fragmentos de detecção de eco são derivados dos prompts reais na importação
+  (sem dessincronização).
+- Fixture de teste: `tests/fixtures/documento_malicioso.html` (documento com
+  injeção embutida).
+
+---
+
+## 11. Decisões em aberto *(para revisão)*
 
 - [ ] Reranker: manter local (`bge-reranker`) ou testar Vertex AI ranking na comparação final?
 - [ ] Grafana/Prometheus entram no piloto ou só na Fase 2 (para reduzir complexidade)?

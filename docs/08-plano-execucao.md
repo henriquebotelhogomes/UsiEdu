@@ -253,6 +253,15 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Observabilidade: log estruturado `cache_hit=true/false` + contadores `cache_hits`/`cache_misses` em `GET /health`
   - [x] Testes: 21 em `tests/unit/test_cache.py` (normalização/chaves, similaridade, doc_version, hit exato, hit semântico por paráfrase, miss por perfil, TTL, invalidação por versão, política, endpoints /chat e /chat/stream, /health) + fixture autouse que reseta contadores no `conftest.py`
   - [x] Teste manual: pergunta institucional repetida em sessão nova → `from_cache=true` instantâneo + `/health` com `cache_hits: 1`
+- [x] **T9.3 — Guardrails contra prompt injection**
+  - [x] `src/security/guardrails.py`: `detect_injection` (heurísticas regex em constantes nomeadas: ignorar instruções, nova identidade, marcador system, delimitadores de prompt, revelar system prompt) + `validate_answer → GuardrailResult` (eco de prompt de sistema, eco de jailbreak, mudança de comportamento) — testável sem LLM; fragmentos de eco derivados dos prompts reais na importação
+  - [x] Camada ingestão: chunks sinalizados ganham `suspicious=true` e são excluídos do índice com log de auditoria (`guardrail_triggered`, `origem=ingest`); fixture `tests/fixtures/documento_malicioso.html`
+  - [x] Camada entrada (`/chat` e `/chat/stream`): pergunta sinalizada não é bloqueada — `flagged=true` + `injection_patterns` nos metadados do trace + log estruturado
+  - [x] Camada saída: resposta insegura substituída por `RESPOSTA_SEGURA_PADRAO`; no stream o evento `final` carrega a resposta segura + `guardrail_triggered` (cliente reconcilia pelo campo `answer`); respostas bloqueadas nunca alimentam o cache (T9.2)
+  - [x] Registro `guardrail_triggered`: log JSON + LangSmith best-effort (`create_feedback` key `guardrail_triggered`)
+  - [x] Testes: 25 em `tests/unit/test_guardrails.py` (detecção parametrizada, validação de saída, separação de chunks, ingestão com auditoria, endpoints /chat e /chat/stream, LangSmith espião/falha) — incl. usuário staff, pois o intent institucional só aciona o agente documental para esse perfil
+  - [x] Política documentada em `docs/03-rag-e-infraestrutura.md` (seção 10)
+  - [x] Teste manual: pergunta com injeção → 200 com resposta cordial + log JSON `guardrail_triggered=true, origem=entrada, padroes=[ignorar_instrucoes, revelar_system_prompt]`
 
 **DoD da sprint (parcial):** sistema exposto publicamente sem surpresas de custo/abuso.
 

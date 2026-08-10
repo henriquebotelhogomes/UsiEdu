@@ -14,6 +14,7 @@ from src.rag.chunker import DocumentChunker
 from src.rag.embedder import Embedder
 from src.rag.models import Chunk, DocumentMetadata
 from src.rag.settings import RagSettings
+from src.security.guardrails import detect_injection, separar_chunks_suspeitos
 
 logger = logging.getLogger(__name__)
 
@@ -152,6 +153,33 @@ def ingest_document(
         return 0
 
     logger.info("  %d chunks gerados.", len(chunks))
+
+    # 1.5 Guardrail de ingestão (T9.3): chunks com padrões de injeção são
+    # marcados suspicious=true e excluídos do índice, com log de auditoria.
+    chunks, suspeitos = separar_chunks_suspeitos(chunks)
+    for chunk in suspeitos:
+        chunk.metadata["suspicious"] = True
+        logger.warning(
+            "Chunk excluído do índice por suspeita de injeção (guardrail T9.3)",
+            extra={
+                "guardrail_triggered": True,
+                "origem": "ingest",
+                "chunk_id": chunk.id,
+                "documento": doc_entry["name"],
+                "padroes": detect_injection(chunk.text),
+            },
+        )
+    if suspeitos:
+        logger.info(
+            "  %d chunks suspeitos excluídos; %d seguem para indexação.",
+            len(suspeitos),
+            len(chunks),
+        )
+    if not chunks:
+        logger.warning(
+            "Todos os chunks de '%s' foram bloqueados pelo guardrail.", doc_entry["name"]
+        )
+        return 0
 
     # 2. Embeddings (com batching e cache)
     texts = [c.text for c in chunks]

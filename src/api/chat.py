@@ -31,6 +31,13 @@ from src.api.schemas import (
 from src.observability.logging import TRACE_ID_CTX_KEY, generate_trace_id
 from src.rag.cache import get_chat_cache
 from src.rag.models import Source
+from src.security.guardrails import (
+    RESPOSTA_SEGURA_PADRAO,
+    detect_injection,
+    log_guardrail,
+    registrar_guardrail_langsmith,
+    validate_answer,
+)
 
 if TYPE_CHECKING:
     from langgraph.graph.state import CompiledStateGraph
@@ -131,6 +138,23 @@ async def chat(
     run_id = uuid.uuid4()
     config = build_run_config(current_user, payload.session_id, run_id)
 
+    # Guardrail de entrada (T9.3): pergunta sinalizada não é bloqueada
+    # (risco de falso positivo) — apenas marcada no trace (flagged=true).
+    padroes_entrada = detect_injection(payload.message)
+    if padroes_entrada:
+        config["metadata"]["flagged"] = True
+        config["metadata"]["injection_patterns"] = padroes_entrada
+        logger.warning(
+            "Pergunta sinalizada pelo guardrail (observada, não bloqueada)",
+            extra={
+                TRACE_ID_CTX_KEY: trace_id,
+                "guardrail_triggered": True,
+                "origem": "entrada",
+                "padroes": padroes_entrada,
+                "session_id": payload.session_id,
+            },
+        )
+
     try:
         result = await _graph.ainvoke(state, config)
     except Exception as exc:
@@ -154,9 +178,19 @@ async def chat(
     decision = result.get("supervisor_decision", {})
     intent = decision.get("intent", "fora_de_escopo") if decision else "fora_de_escopo"
 
+    # Guardrail de saída (T9.3): resposta insegura é substituída pela
+    # resposta padrão segura e nunca alimenta o cache.
+    validacao = validate_answer(answer)
+    guardrail_disparado = not validacao.safe
+    if guardrail_disparado:
+        log_guardrail(run_id, validacao.reasons, origem="chat", session_id=payload.session_id)
+        registrar_guardrail_langsmith(run_id, validacao.reasons)
+        answer = RESPOSTA_SEGURA_PADRAO
+
     # Alimenta o cache (T9.2): 1ª mensagem da sessão + intenção cacheável;
-    # erros (exceção acima) e fora_de_escopo nunca são cacheados.
-    if resposta_cacheavel(intent, primeira_mensagem):
+    # erros (exceção acima), fora_de_escopo e respostas bloqueadas pelo
+    # guardrail nunca são cacheados.
+    if resposta_cacheavel(intent, primeira_mensagem) and not guardrail_disparado:
         await cache.store(
             current_user["profile"],
             payload.message,

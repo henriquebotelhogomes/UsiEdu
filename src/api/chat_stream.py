@@ -36,6 +36,13 @@ from src.api.rate_limit import LIMITE_CHAT, limiter
 from src.api.schemas import ChatRequest, ErrorResponse
 from src.rag.cache import get_chat_cache
 from src.rag.models import Source
+from src.security.guardrails import (
+    RESPOSTA_SEGURA_PADRAO,
+    detect_injection,
+    log_guardrail,
+    registrar_guardrail_langsmith,
+    validate_answer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +88,21 @@ async def chat_stream(
     run_id = uuid.uuid4()
     state = build_initial_state(current_user, payload.message)
     config = build_run_config(current_user, payload.session_id, run_id)
+
+    # Guardrail de entrada (T9.3): observa sem bloquear (falso positivo)
+    padroes_entrada = detect_injection(payload.message)
+    if padroes_entrada:
+        config["metadata"]["flagged"] = True
+        config["metadata"]["injection_patterns"] = padroes_entrada
+        logger.warning(
+            "Pergunta sinalizada pelo guardrail (observada, não bloqueada)",
+            extra={
+                "guardrail_triggered": True,
+                "origem": "entrada",
+                "padroes": padroes_entrada,
+                "session_id": payload.session_id,
+            },
+        )
 
     logger.info(
         "Chat stream request received",
@@ -154,6 +176,19 @@ async def chat_stream(
             decision = values.get("supervisor_decision") or {}
             intent = decision.get("intent", "fora_de_escopo")
 
+            # Guardrail de saída (T9.3): os tokens já streamados não podem
+            # ser desfeitos, mas o evento `final` carrega a resposta segura
+            # e o cliente reconcilia o texto pelo campo `answer`.
+            texto_final = answer if isinstance(answer, str) else str(answer)
+            validacao = validate_answer(texto_final)
+            guardrail_disparado = not validacao.safe
+            if guardrail_disparado:
+                log_guardrail(
+                    run_id, validacao.reasons, origem="chat_stream", session_id=payload.session_id
+                )
+                registrar_guardrail_langsmith(run_id, validacao.reasons)
+                texto_final = RESPOSTA_SEGURA_PADRAO
+
             yield _sse(
                 {
                     "event": "final",
@@ -163,21 +198,18 @@ async def chat_stream(
                     # Campo extra além do contrato do PRD: permite ao cliente
                     # reconciliar o texto final (a consolidação pode adicionar
                     # sufixos que não passaram pelo stream de tokens).
-                    "answer": answer if isinstance(answer, str) else str(answer),
+                    "answer": texto_final,
+                    "guardrail_triggered": guardrail_disparado,
                 }
             )
 
-            # Alimenta o cache (T9.2): 1ª mensagem + intenção cacheável
-            if resposta_cacheavel(intent, primeira_mensagem):
+            # Alimenta o cache (T9.2): 1ª mensagem + intenção cacheável;
+            # respostas bloqueadas pelo guardrail nunca são cacheadas.
+            if resposta_cacheavel(intent, primeira_mensagem) and not guardrail_disparado:
                 await cache.store(
                     current_user["profile"],
                     payload.message,
-                    payload_para_cache(
-                        answer if isinstance(answer, str) else str(answer),
-                        agents,
-                        sources,
-                        intent,
-                    ),
+                    payload_para_cache(texto_final, agents, sources, intent),
                 )
         except asyncio.CancelledError:
             # Cliente desconectou — propaga para o FastAPI encerrar o stream.
