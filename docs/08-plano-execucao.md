@@ -263,7 +263,7 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Política documentada em `docs/03-rag-e-infraestrutura.md` (seção 10)
   - [x] Teste manual: pergunta com injeção → 200 com resposta cordial + log JSON `guardrail_triggered=true, origem=entrada, padroes=[ignorar_instrucoes, revelar_system_prompt]`
 - [~] **T9.4 — Deploy público em nuvem** *(artefatos concluídos; provisionamento e aceite HTTPS aguardam execução na assinatura Azure do proprietário)*
-  - [x] `infra/azure/registry.bicep`, `main.bicep` e `deploy.ps1`: ACR Basic, ambiente Container Apps, frontend externo, API/Qdrant internos, Azure Files persistente e job manual de ingestão.
+  - [x] `infra/azure/registry.bicep`, `main.bicep` e `deploy.ps1`: ACR Basic, ambiente Container Apps, frontend externo, API/Qdrant internos, Azure Files para Qdrant, PostgreSQL gerenciado para estado transacional e job manual de ingestão.
   - [x] Secrets/env vars de produção documentados e declarados: `JWT_SECRET`, `OPENCODE_*`, `LANGSMITH_*`/`LANGCHAIN_*`, `QDRANT_URL`, SQLite, cache, rate limit e CORS.
   - [x] `scripts/ingest_knowledge_base.py` para o job de seed; imagem da API passa a incluir `scripts/`.
   - [x] Proxy nginx configurável por `UPSTREAM_API_URL`; CORS deixa de aceitar wildcard com credenciais.

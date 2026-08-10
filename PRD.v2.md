@@ -294,8 +294,8 @@ _Decisões de política (doc 03 seção 10):_ camada de entrada observa sem bloq
 
 **Contrato técnico:**
 - Empacotar os 3 serviços existentes (`Dockerfile.api`, `Dockerfile.frontend`, imagem oficial `qdrant/qdrant`) na plataforma escolhida com rede interna.
-- Variáveis de ambiente obrigatórias documentadas em `docs/03-rag-e-infraestrutura.md`: `JWT_SECRET` (gerar novo, nunca o local), `OPENCODE_*`/LLM, `LANGCHAIN_*`, `USIEDU_FEEDBACK_DB`, `USIEDU_CACHE_*`, `USIEDU_RATE_*`, `QDRANT_URL` interna.
-- Persistência: Qdrant com volume; SQLite de feedback/cache em volume ou migrar para Postgres gerenciado se o free tier permitir.
+- Variáveis de ambiente obrigatórias documentadas em `docs/03-rag-e-infraestrutura.md`: `JWT_SECRET` (gerar novo, nunca o local), `OPENCODE_*`/LLM, `LANGCHAIN_*`, `USIEDU_DATABASE_URL`, `USIEDU_CACHE_*`, `USIEDU_RATE_*`, `QDRANT_URL` interna.
+- Persistência: Qdrant com volume; PostgreSQL gerenciado para checkpointer, feedback e cache no piloto público.
 - **Seed inicial:** job/one-off que roda `scripts/ingest_knowledge_base.py` contra o Qdrant da nuvem.
 - Health checks: `/health` público; frontend apontando para a API via mesma origem (nginx já faz proxy).
 

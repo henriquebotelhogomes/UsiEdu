@@ -278,10 +278,12 @@ O deploy público usa três Container Apps no mesmo ambiente: **frontend**
 frontend nginx faz o proxy dos caminhos de API para `http://<nome-da-api>`;
 assim o navegador usa uma única origem e o backend não fica exposto à internet.
 
-O estado do Qdrant e os bancos SQLite de feedback, cache e checkpointer ficam
-em Azure Files separados. A ingestão é um Container Apps Job manual: ela usa a
-mesma imagem da API e executa `scripts/ingest_knowledge_base.py` apenas depois
-que o Qdrant estiver disponível.
+O estado do Qdrant fica em Azure Files. Sessões do LangGraph, feedback e cache
+semântico ficam em PostgreSQL Flexible Server gerenciado: SQLite/WAL sobre
+Azure Files pode bloquear operações concorrentes. A ingestão é um Container
+Apps Job manual: ela usa a mesma imagem da API e executa
+`scripts/ingest_knowledge_base.py` apenas depois que o Qdrant estiver
+disponível.
 
 Os artefatos versionados ficam em `infra/azure/`:
 
@@ -293,8 +295,8 @@ Os artefatos versionados ficam em `infra/azure/`:
 
 As variáveis obrigatórias em produção são configuradas como secrets ou env vars
 no template: `JWT_SECRET`, `OPENCODE_GO_API_KEY`, `OPENCODE_GO_BASE_URL`,
-`LANGSMITH_*`/`LANGCHAIN_*`, `QDRANT_URL`, `USIEDU_FEEDBACK_DB`,
-`USIEDU_CHECKPOINTER_DB`, `USIEDU_CACHE_*`, `USIEDU_RATE_*` e
+`LANGSMITH_*`/`LANGCHAIN_*`, `QDRANT_URL`, `USIEDU_DATABASE_URL`,
+`USIEDU_CACHE_*`, `USIEDU_RATE_*` e
 `USIEDU_CORS_ORIGINS`. Nunca reutilizar o segredo JWT local e nunca versionar
 valores reais em `.env` ou Bicep.
 

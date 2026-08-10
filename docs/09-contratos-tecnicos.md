@@ -145,6 +145,8 @@ RERANKER_MODEL=BAAI/bge-reranker-base
 USIEDU_ENV=dev                          # dev | test | prod
 LOG_LEVEL=INFO
 USIEDU_CORS_ORIGINS=http://localhost:5173,http://localhost:5174
+# Produção: URL PostgreSQL com sslmode=require. Ausente = fallback SQLite local.
+USIEDU_DATABASE_URL=
 USIEDU_FEEDBACK_DB=usiedu_feedback.db
 USIEDU_CHECKPOINTER_DB=usiedu_checkpoints.db
 ```
