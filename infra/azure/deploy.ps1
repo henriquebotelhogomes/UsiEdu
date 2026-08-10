@@ -73,7 +73,7 @@ if (-not $JwtSecret) {
     Write-Host 'JWT_SECRET gerado para este deploy. Guarde-o em um gerenciador de segredos.' -ForegroundColor Yellow
 }
 
-$result = az deployment group create `
+$deploymentJson = az deployment group create `
     --resource-group $ResourceGroup `
     --template-file infra/azure/main.bicep `
     --parameters `
@@ -87,7 +87,15 @@ $result = az deployment group create `
         jwtSecret=$JwtSecret `
         opencodeApiKey=$OpenCodeApiKey `
         langsmithApiKey=$LangSmithApiKey `
-    --query properties.outputs -o json | ConvertFrom-Json
+    --query properties.outputs -o json
+if ($LASTEXITCODE -ne 0) {
+    throw 'Deploy ARM falhou. Consulte as operacoes do deployment para obter detalhes.'
+}
+
+$result = ($deploymentJson -join [Environment]::NewLine) | ConvertFrom-Json
+if (-not $result.frontendUrl.value -or -not $result.ingestJobName.value) {
+    throw 'Deploy ARM nao retornou os outputs esperados.'
+}
 
 Write-Host "Deploy concluído: $($result.frontendUrl.value)" -ForegroundColor Green
 Write-Host "Execute agora: az containerapp job start --name $($result.ingestJobName.value) --resource-group $ResourceGroup"

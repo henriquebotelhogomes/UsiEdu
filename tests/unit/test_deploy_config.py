@@ -65,6 +65,14 @@ def test_azure_deploy_expands_acr_credentials_in_powershell() -> None:
     assert "registryPassword=$($registryCredentials.password)" in script
 
 
+def test_azure_deploy_does_not_report_success_after_arm_failure() -> None:
+    """Uma falha ARM deve interromper o script antes das instrucoes finais."""
+    script = Path("infra/azure/deploy.ps1").read_text(encoding="utf-8")
+
+    assert "$deploymentJson = az deployment group create" in script
+    assert "if ($LASTEXITCODE -ne 0)" in script
+
+
 def test_dockerignore_excludes_local_runtime_data_from_build_context() -> None:
     """Imagens não enviam Qdrant, bancos ou segredos locais ao daemon Docker."""
     dockerignore = Path(".dockerignore")
