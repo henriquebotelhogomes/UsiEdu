@@ -282,10 +282,17 @@ class TestMain:
         client = _client_sem_colecoes()
         import qdrant_client
 
-        monkeypatch.setattr(qdrant_client, "QdrantClient", lambda url="": client)
+        client_options = {}
+
+        def _qdrant_client(url="", timeout=None):
+            client_options.update(url=url, timeout=timeout)
+            return client
+
+        monkeypatch.setattr(qdrant_client, "QdrantClient", _qdrant_client)
 
         main()
 
+        assert client_options == {"url": "http://localhost:6333", "timeout": 60.0}
         updated = json.loads((kb_dir / "manifest.json").read_text(encoding="utf-8"))
         doc = updated["documents"][0]
         assert doc["indexed"] is True

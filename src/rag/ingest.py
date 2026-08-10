@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 KNOWLEDGE_BASE_DIR = Path("knowledge_base")
 MANIFEST_PATH = KNOWLEDGE_BASE_DIR / "manifest.json"
+_QDRANT_TIMEOUT_SECONDS = 60.0
 
 
 def load_manifest() -> dict:
@@ -222,7 +223,10 @@ def main() -> None:
 
     from qdrant_client import QdrantClient
 
-    client = QdrantClient(url=settings.qdrant_url)
+    client = QdrantClient(
+        url=settings.qdrant_url,
+        timeout=_QDRANT_TIMEOUT_SECONDS,
+    )
 
     # Garante que as coleções existem
     ensure_collections(client, embedder.dimension)
