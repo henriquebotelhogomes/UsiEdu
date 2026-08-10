@@ -82,6 +82,13 @@ def test_azure_ingest_job_has_memory_for_embedding_model() -> None:
     assert "memory: '2Gi'" in ingest_job
 
 
+def test_azure_qdrant_urls_include_internal_port() -> None:
+    """API e ingestao devem acessar o Qdrant na porta interna 6333."""
+    content = Path("infra/azure/main.bicep").read_text(encoding="utf-8")
+
+    assert content.count("value: 'http://${qdrantApp.name}:6333'") == 2
+
+
 def test_dockerignore_excludes_local_runtime_data_from_build_context() -> None:
     """Imagens não enviam Qdrant, bancos ou segredos locais ao daemon Docker."""
     dockerignore = Path(".dockerignore")
