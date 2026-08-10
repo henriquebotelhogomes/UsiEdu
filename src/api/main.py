@@ -25,6 +25,7 @@ from src.api.rate_limit import limiter, rate_limit_exceeded_handler
 from src.llm.provider import get_chat_model
 from src.observability.logging import setup_logging
 from src.orchestration.graph import create_chat_graph
+from src.rag.cache import get_chat_cache
 
 # Carrega variáveis do .env (se existir) antes de qualquer configuração
 load_dotenv()
@@ -150,7 +151,8 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     async def health():
-        return {"status": "ok", "version": "0.2.0"}
+        # Contadores do cache semântico (T9.2)
+        return {"status": "ok", "version": "0.2.0", **get_chat_cache().stats()}
 
     return app
 

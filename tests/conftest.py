@@ -30,6 +30,15 @@ def _reseta_rate_limiting():
     yield
 
 
+@pytest.fixture(autouse=True)
+def _reseta_contadores_cache():
+    """Zera os contadores de hit/miss do cache semântico entre testes (T9.2)."""
+    from src.rag.cache import get_chat_cache
+
+    get_chat_cache().reset_contadores()
+    yield
+
+
 @pytest.fixture
 def fake_router_llm() -> FakeChatModel:
     """LLM fake com respostas padrão para o supervisor."""

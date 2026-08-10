@@ -25,9 +25,16 @@ from fastapi.responses import StreamingResponse
 
 from src.api import chat as chat_module
 from src.api.auth import get_current_user
-from src.api.chat_common import build_initial_state, build_run_config
+from src.api.chat_common import (
+    build_initial_state,
+    build_run_config,
+    payload_para_cache,
+    resposta_cacheavel,
+    sessao_sem_historico,
+)
 from src.api.rate_limit import LIMITE_CHAT, limiter
 from src.api.schemas import ChatRequest, ErrorResponse
+from src.rag.cache import get_chat_cache
 from src.rag.models import Source
 
 logger = logging.getLogger(__name__)
@@ -85,6 +92,42 @@ async def chat_stream(
         },
     )
 
+    # Cache semântico (T9.2): hit dispensa o grafo; stream sintético com o
+    # mesmo contrato (meta → token → final com from_cache)
+    cache = get_chat_cache()
+    primeira_mensagem = await sessao_sem_historico(graph, payload.session_id)
+    hit = (
+        await cache.lookup(current_user["profile"], payload.message) if primeira_mensagem else None
+    )
+    if hit:
+        cached = hit["answer"]
+
+        async def cached_stream() -> AsyncIterator[str]:
+            yield _sse(
+                {"event": "meta", "session_id": payload.session_id, "message_id": str(run_id)}
+            )
+            yield _sse({"event": "token", "delta": cached["answer"]})
+            yield _sse(
+                {
+                    "event": "final",
+                    "agents": cached.get("agents", []),
+                    "sources": cached.get("sources", []),
+                    "usage": {"intent": cached.get("intent", "institucional")},
+                    "answer": cached["answer"],
+                    "from_cache": True,
+                }
+            )
+
+        logger.info(
+            "Chat stream served from cache",
+            extra={"session_id": payload.session_id, "exact": hit["exact"], "cache_hit": True},
+        )
+        return StreamingResponse(
+            cached_stream(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
     async def event_stream() -> AsyncIterator[str]:
         yield _sse({"event": "meta", "session_id": payload.session_id, "message_id": str(run_id)})
         try:
@@ -123,6 +166,19 @@ async def chat_stream(
                     "answer": answer if isinstance(answer, str) else str(answer),
                 }
             )
+
+            # Alimenta o cache (T9.2): 1ª mensagem + intenção cacheável
+            if resposta_cacheavel(intent, primeira_mensagem):
+                await cache.store(
+                    current_user["profile"],
+                    payload.message,
+                    payload_para_cache(
+                        answer if isinstance(answer, str) else str(answer),
+                        agents,
+                        sources,
+                        intent,
+                    ),
+                )
         except asyncio.CancelledError:
             # Cliente desconectou — propaga para o FastAPI encerrar o stream.
             raise

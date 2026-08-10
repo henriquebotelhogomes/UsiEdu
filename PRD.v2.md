@@ -253,10 +253,12 @@ Transformar o piloto funcional em um produto com **qualidade percebida de mercad
 - Não cachear: erros, respostas fora de escopo dinâmicas, sessões com contexto prévio relevante (cache vale apenas para a primeira mensagem da sessão ou quando o histórico é irrelevante — decidir e documentar; recomendação: cachear apenas perguntas idênticas com histórico vazio).
 
 **Micro-atividades:**
-- [ ] Módulo `src/rag/cache.py` (tabela, normalização, embedding, similaridade numpy).
-- [ ] Integração em `chat.py`/`chat_stream.py` com flag env `USIEDU_CACHE_ENABLED` (default `true` local).
-- [ ] Testes: hit exato, hit semântico (paráfrase leve), miss por perfil diferente, expiração por TTL, invalidação por `doc_version`.
-- [ ] Log estruturado `cache_hit=true/false` + contadores em `GET /health` (`cache_hits`, `cache_misses`).
+- [x] Módulo `src/rag/cache.py` (tabela, normalização, embedding, similaridade numpy).
+- [x] Integração em `chat.py`/`chat_stream.py` com flag env `USIEDU_CACHE_ENABLED` (default `true` local).
+- [x] Testes: hit exato, hit semântico (paráfrase leve), miss por perfil diferente, expiração por TTL, invalidação por `doc_version`.
+- [x] Log estruturado `cache_hit=true/false` + contadores em `GET /health` (`cache_hits`, `cache_misses`).
+
+_Decisões de política (documentadas em `src/rag/cache.py`):_ cache apenas para a **primeira mensagem da sessão** (histórico vazio) e apenas respostas de intent **institucional** — `academico`/`financeiro` podem conter dados pessoais de tools; erros e `fora_de_escopo` nunca são cacheados. No stream, hit serve eventos sintéticos (meta → token único → final com `from_cache`). `doc_version` = sha256 do `knowledge_base/manifest.json`.
 
 **Critérios de aceite:**
 - **Dado** "quais feriados em 2026?" já respondida, **Quando** outro usuário faz a mesma pergunta, **Então** recebe a resposta em < 500 ms sem chamada ao LLM, com `from_cache` nos metadados.

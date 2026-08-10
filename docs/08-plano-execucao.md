@@ -246,6 +246,13 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Testes: 8 em `tests/unit/test_rate_limit.py` (login 429 + Retry-After, volta a 200 após janela via `limiter.reset()`, contadores separados por IP, 11ª pergunta → 429, limites independentes por usuário, limite do stream, feedback 30/min) + fixture autouse no `conftest.py` que reseta o limiter entre testes
   - [x] Frontend: `RateLimitError` + `RATE_LIMIT_MESSAGE` no `api.ts` (mensagem exata do PRD); ChatPage exibe a mensagem amigável sem fallback POST; 2 testes vitest
   - [x] Teste manual: 6º login → 429 com `Retry-After=60` (curl); quota de chat exaurida → UI exibe "Você fez muitas perguntas em pouco tempo. Aguarde alguns segundos." sem fallback
+- [x] **T9.2 — Cache semântico**
+  - [x] `src/rag/cache.py`: tabela SQLite `chat_cache` (key sha256(perfil + pergunta normalizada), embedding BLOB, `doc_version`, `created_at`); camadas exato → semântico (cosseno ≥ `USIEDU_CACHE_SIMILARITY`, default 0.97); TTL `USIEDU_CACHE_TTL_DAYS` (default 30); invalidação por `doc_version` = sha256 do `manifest.json`; embedder lazy (mesmo modelo da ingestão); falhas nunca derrubam o chat
+  - [x] Política (documentada no módulo): só **primeira mensagem da sessão** (histórico vazio) + intent **institucional**; `academico`/`financeiro` podem conter dados pessoais de tools; erros e `fora_de_escopo` nunca cacheados; `message_id` novo por resposta servida
+  - [x] Integração em `chat.py` e `chat_stream.py` (hit no stream serve eventos sintéticos meta → token único → final) com flag `USIEDU_CACHE_ENABLED` (default true); `from_cache` adicionado a `ChatResponse`
+  - [x] Observabilidade: log estruturado `cache_hit=true/false` + contadores `cache_hits`/`cache_misses` em `GET /health`
+  - [x] Testes: 21 em `tests/unit/test_cache.py` (normalização/chaves, similaridade, doc_version, hit exato, hit semântico por paráfrase, miss por perfil, TTL, invalidação por versão, política, endpoints /chat e /chat/stream, /health) + fixture autouse que reseta contadores no `conftest.py`
+  - [x] Teste manual: pergunta institucional repetida em sessão nova → `from_cache=true` instantâneo + `/health` com `cache_hits: 1`
 
 **DoD da sprint (parcial):** sistema exposto publicamente sem surpresas de custo/abuso.
 

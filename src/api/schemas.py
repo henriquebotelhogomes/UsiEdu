@@ -46,6 +46,9 @@ class ChatResponse(BaseModel):
     intent: Literal["academico", "financeiro", "institucional", "composta", "fora_de_escopo"] = (
         Field(..., description="Intenção classificada pelo supervisor")
     )
+    from_cache: bool = Field(
+        False, description="True quando a resposta veio do cache semântico (T9.2)"
+    )
 
 
 class ChatHistoryMessage(BaseModel):

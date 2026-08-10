@@ -13,7 +13,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from langchain_core.messages import HumanMessage
 
 from src.api.auth import get_current_user
-from src.api.chat_common import build_initial_state, build_run_config
+from src.api.chat_common import (
+    build_initial_state,
+    build_run_config,
+    payload_para_cache,
+    resposta_cacheavel,
+    sessao_sem_historico,
+)
 from src.api.rate_limit import LIMITE_CHAT, limiter
 from src.api.schemas import (
     ChatHistoryMessage,
@@ -23,6 +29,7 @@ from src.api.schemas import (
     ErrorResponse,
 )
 from src.observability.logging import TRACE_ID_CTX_KEY, generate_trace_id
+from src.rag.cache import get_chat_cache
 from src.rag.models import Source
 
 if TYPE_CHECKING:
@@ -87,6 +94,35 @@ async def chat(
         },
     )
 
+    # Cache semântico (T9.2): após validação e antes do grafo — somente para
+    # a primeira mensagem da sessão (política documentada em src/rag/cache.py)
+    cache = get_chat_cache()
+    primeira_mensagem = await sessao_sem_historico(_graph, payload.session_id)
+    hit = (
+        await cache.lookup(current_user["profile"], payload.message) if primeira_mensagem else None
+    )
+    if hit:
+        cached = hit["answer"]
+        run_id = uuid.uuid4()  # message_id novo por resposta servida (PRD T9.2)
+        logger.info(
+            "Chat served from cache",
+            extra={
+                TRACE_ID_CTX_KEY: trace_id,
+                "session_id": payload.session_id,
+                "exact": hit["exact"],
+                "cache_hit": True,
+            },
+        )
+        return ChatResponse(
+            session_id=payload.session_id,
+            message_id=str(run_id),
+            answer=cached["answer"],
+            agents_involved=cached.get("agents", []),
+            sources=[Source(**s) for s in cached.get("sources", [])],
+            intent=cached.get("intent", "institucional"),
+            from_cache=True,
+        )
+
     state = build_initial_state(current_user, payload.message)
 
     # Configuração para o grafo
@@ -117,6 +153,15 @@ async def chat(
     # Intenção
     decision = result.get("supervisor_decision", {})
     intent = decision.get("intent", "fora_de_escopo") if decision else "fora_de_escopo"
+
+    # Alimenta o cache (T9.2): 1ª mensagem da sessão + intenção cacheável;
+    # erros (exceção acima) e fora_de_escopo nunca são cacheados.
+    if resposta_cacheavel(intent, primeira_mensagem):
+        await cache.store(
+            current_user["profile"],
+            payload.message,
+            payload_para_cache(answer, agents_involved, sources, intent),
+        )
 
     return ChatResponse(
         session_id=payload.session_id,
