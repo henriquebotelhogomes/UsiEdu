@@ -794,6 +794,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#sprint-7-qualidade-percebida-ux-do-chat-prd-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 7 — Qualidade Percebida (UX do chat) — PRD v2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sprint-8-avaliacao-continua-prd-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 8 — Avaliação Contínua (PRD v2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sprint-9-piloto-publico-prd-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 9 — Piloto Público (PRD v2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#regras-de-execucao-para-qualquer-implementador" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1047,6 +1080,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#sprint-7-qualidade-percebida-ux-do-chat-prd-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 7 — Qualidade Percebida (UX do chat) — PRD v2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sprint-8-avaliacao-continua-prd-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 8 — Avaliação Contínua (PRD v2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sprint-9-piloto-publico-prd-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 9 — Piloto Público (PRD v2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#regras-de-execucao-para-qualquer-implementador" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1231,6 +1297,87 @@ Regra de ouro: <strong>uma sprint não começa sem a anterior concluída</strong
 <li>[x] Rodar checklist de aceite do doc 07 seção 7 item a item</li>
 </ul>
 <p><strong>DoD da sprint:</strong> todos os gates de entrega do PRD fechados; pacote pronto para envio.</p>
+<hr />
+<h2 id="sprint-7-qualidade-percebida-ux-do-chat-prd-v2">Sprint 7 — Qualidade Percebida (UX do chat) — PRD v2<a class="headerlink" href="#sprint-7-qualidade-percebida-ux-do-chat-prd-v2" title="Permanent link">&para;</a></h2>
+<p><strong>Épico:</strong> o chat deve parecer um produto comercial, não um protótipo (<code>PRD.v2.md</code> seção 4).
+<strong>Ordem sugerida:</strong> T7.1 → T7.2 → T7.4 → T7.3.</p>
+<ul>
+<li>[x] <strong>T7.1 — Renderização Markdown nas respostas (RF2-01)</strong></li>
+<li>[x] Instalar <code>react-markdown</code>, <code>remark-gfm</code>, <code>remark-breaks</code> no <code>frontend/</code></li>
+<li>[x] Criar <code>Markdown.tsx</code> com mapeamento de componentes (h1–h4, listas, tabela, code, links <code>target="_blank" rel="noopener noreferrer"</code>)</li>
+<li>[x] Substituir renderização de texto em <code>ChatPage.tsx</code> (apenas mensagens do assistente)</li>
+<li>[x] Estilos <code>.markdown-body</code> em <code>App.css</code></li>
+<li>[x] Teste unitário do componente (vitest + testing-library: 6 testes — lista, link seguro, tabela GFM, sem execução de HTML cru)</li>
+<li>[x] Teste manual no navegador: resposta real com negrito/itálico renderizada sem marcadores <code>**</code>/<code>###</code> visíveis; feedback 👍 funcional</li>
+<li>[x] <strong>T7.2 — Fontes clicáveis com trecho em destaque (RF2-02)</strong></li>
+<li>[x] Verificado em runtime (payload Qdrant + navegador) que <code>url_fonte</code> vem preenchida nos 4 documentos — sem backend change</li>
+<li>[x] Link condicional "Ver documento oficial ↗" (<code>target="_blank" rel="noopener noreferrer"</code> + <code>aria-label</code>) no <code>MessageCard.tsx</code></li>
+<li>[x] Estilos <code>.fonte-trecho</code> (fundo sutil + borda esquerda) e <code>.fonte-link</code> em <code>App.css</code></li>
+<li>[x] Teste unitário do card (vitest + user-event: 3 testes — link seguro, ausência de link sem url, trecho em destaque)</li>
+<li>[x] Teste manual no navegador: 5 fontes com links corretos (planalto.gov.br e saa.unb.br) e trechos destacados</li>
+<li>[x] <strong>T7.4 — Sessão persistente e histórico ao recarregar (RF2-04, RF2-05)</strong></li>
+<li>[x] Backend: <code>GET /chat/history</code> lê o estado da thread via <code>aget_state</code> e converte <code>messages</code> (posse validada por <code>user_id</code> do estado: 403 para sessão alheia, 404 para inexistente; <code>user_email</code> gravado nos metadados do checkpoint)</li>
+<li>[x] Backend: testes (5) — 401 sem token, 500 sem grafo, 404 sessão inexistente, histórico próprio na ordem, sessão de outro usuário 403</li>
+<li>[x] Frontend: helpers de localStorage (<code>usiedu_token</code>, <code>usiedu_user</code>, <code>usiedu_session_id:&lt;email&gt;</code>); <code>App</code> restaura sessão na montagem, <code>ChatPage</code> restaura histórico via <code>GET /chat/history</code> (agentes/fontes omitidos — documentado)</li>
+<li>[x] Frontend: botão "Nova conversa" (novo id de sessão + limpa mensagens) e tratamento de 401 (<code>AuthError</code> limpa storage e redireciona ao login)</li>
+<li>[x] Proxy Vite (bypass de GET <code>/chat</code> serve o SPA) e nginx (<code>error_page 405 = @spa</code>) para deep-link/reload; doc 09 seção 2 atualizado com o endpoint/schemas</li>
+<li>[x] Testes unitários frontend (vitest: 6 testes dos helpers de persistência) e teste manual no navegador: histórico restaurado após reload sem novo login (5/5 critérios)</li>
+<li>[x] <strong>T7.3 — Streaming de respostas via SSE (RF2-03)</strong></li>
+<li>[x] Backend: <code>src/api/chat_stream.py</code> (<code>POST /chat/stream</code>, <code>StreamingResponse</code> SSE) + <code>src/api/chat_common.py</code> (estado inicial e <code>RunnableConfig</code> com <code>run_id</code> compartilhados com o <code>/chat</code>)</li>
+<li>[x] Backend: agentes (<code>academico</code>/<code>financeiro</code>/<code>documental</code>) migrados para <code>astream</code>; filtro por <code>langgraph_node</code> streama só a resposta final (supervisor excluído); eventos <code>meta</code> → <code>token</code>(s) → <code>final</code> (com <code>answer</code> para reconciliação) → <code>error</code></li>
+<li>[x] Backend: 4 testes (<code>tests/unit/test_chat_stream.py</code>) — ordem/concatenação dos eventos, 401, 500, evento <code>error</code>; <code>FakeChatModel</code> ganhou <code>_stream</code>/<code>_astream</code> determinísticos</li>
+<li>[x] Frontend: <code>sendChatStream</code> (fetch + ReadableStream + parser SSE com buffer) e <code>ChatPage</code> com <code>streaming=true</code>, cursor piscante, <code>final</code> preenche agentes/fontes/<code>message_id</code>; fallback para <code>POST /chat</code> em erro antes de tokens; AbortController limpo no desmonte</li>
+<li>[x] Proxy: entrada <code>/chat/stream</code> no Vite e <code>location /chat/stream</code> no nginx (<code>proxy_buffering off</code>, <code>proxy_cache off</code>, <code>X-Accel-Buffering: no</code>); doc 09 seção 2 atualizado (endpoint + tabela de eventos SSE)</li>
+<li>[x] Testes unitários frontend (vitest: 4 testes do parser SSE) e teste manual no navegador: cursor visível durante o stream, 191 tokens progressivos sem buffering (direto e via proxy), agentes/fontes/feedback ao final, 👍 funcional, histórico persiste após reload</li>
+</ul>
+<p><strong>DoD da sprint:</strong> chat com formatação rica, fontes clicáveis, streaming e histórico persistente; suíte completa verde.</p>
+<hr />
+<h2 id="sprint-8-avaliacao-continua-prd-v2">Sprint 8 — Avaliação Contínua (PRD v2)<a class="headerlink" href="#sprint-8-avaliacao-continua-prd-v2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[x] <strong>T8.1 — Exportar 👎 para o dataset de avaliação</strong></li>
+<li>[x] <code>scripts/export_feedback_to_eval.py</code> (CLI <code>--db</code>/<code>--out</code>/<code>--checkpointer-db</code>/<code>--dry-run</code>): lê só <code>rating='down'</code>, deduplica por <code>message_id</code> (reexecutar não duplica — verificado: 2ª execução = 0 novos) e anexa a <code>src/evaluation/feedback_negativo.jsonl</code> (dataset versionado, commitado)</li>
+<li>[x] Pergunta e resposta rejeitada recuperadas do checkpointer: metadados do checkpoint trazem o <code>message_id</code> da execução; snapshot mais recente com o id contém a última <code>HumanMessage</code> (pergunta) e <code>AIMessage</code> (resposta); sem checkpoint disponível, exporta com <code>question: null</code></li>
+<li>[x] <code>run_ragas.py</code>: parâmetro <code>feedback_path</code>/CLI <code>--feedback</code>; casos com pergunta são reexecutados no grafo e comparados com a rejeitada (Jaccard ≥ 0,95 → "repete resposta rejeitada"; abaixo → "alterada — revisão manual"); <code>question: null</code> contabilizado como pulado; casos fora do agregado Ragas principal</li>
+<li>[x] Relatório ganha seção "Casos de feedback negativo (T8.1)" — validado com 👎 real (similaridade 0,06 → resposta alterada)</li>
+<li>[x] Testes: 8 em <code>tests/unit/test_export_feedback.py</code> (filtro down, idempotência, dry-run, JSONL válido, recuperação via checkpointer real em tmp, sessão inexistente, CLI) + 5 em <code>tests/unit/test_evaluation.py</code> (Jaccard, seção vazia/com casos, reavaliação, pulo sem pergunta)</li>
+<li>[x] Fluxo documentado em <code>docs/04-piloto-e-roadmap.md</code> seção 3.1 (item 5)</li>
+<li>[x] <strong>T8.2 — Página de satisfação <code>/insights</code></strong></li>
+<li>[x] Backend: <code>GET /feedback/recent?limit=20</code> (JWT) em <code>src/api/feedback.py</code> com <code>message_ref</code> = sha256 truncado (8 chars, sem expor UUID do run) e limite validado [1, 100]; schemas <code>FeedbackRecentItem/Response</code>; 6 testes (auth 401, vazio, ordenação mais recente primeiro, limite, hash ≠ message_id, 422)</li>
+<li>[x] Frontend: <code>InsightsPage.tsx</code> com 4 cards (Total, 👍, 👎, Taxa de satisfação %) + tabela dos últimos feedbacks; <code>getFeedbackStats</code>/<code>getFeedbackRecent</code> no <code>api.ts</code>; rota protegida <code>/insights</code> em <code>App.tsx</code>; links discretos no header do chat e no footer da landing</li>
+<li>[x] Estado vazio ("Ainda não há feedback registrado"), taxa "—" sem avaliações e 401 → logout via <code>AuthError</code>; 3 testes vitest do componente</li>
+<li>[x] Proxies: nenhuma alteração necessária (<code>/feedback</code> já proxied no Vite e nginx; GET <code>/insights</code> cai no SPA)</li>
+<li>[x] Teste manual no navegador: cards coerentes com o banco (7 avaliações: 6 👍 / 1 👎 / 86%), tabela com 7 linhas, rota protegida redireciona ao login (6/6 critérios)</li>
+</ul>
+<p><strong>DoD da sprint:</strong> cada 👎 vira caso de regressão automático; satisfação visível em <code>/insights</code>.</p>
+<hr />
+<h2 id="sprint-9-piloto-publico-prd-v2">Sprint 9 — Piloto Público (PRD v2)<a class="headerlink" href="#sprint-9-piloto-publico-prd-v2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[x] <strong>T9.1 — Rate limiting</strong></li>
+<li>[x] <code>src/api/rate_limit.py</code>: <code>Limiter</code> do slowapi (memória, <code>headers_enabled=True</code>) com chave = e-mail do JWT quando autenticado, senão IP; handler 429 padronizado (<code>{detail}</code> + <code>Retry-After</code>) registrado em <code>main.py</code></li>
+<li>[x] Rotas decoradas: <code>/chat</code> e <code>/chat/stream</code> → 10/min por usuário (<code>USIEDU_RATE_CHAT</code>); <code>/auth/login</code> → 5/min por IP (<code>USIEDU_RATE_LOGIN</code>); <code>/feedback</code> → 30/min por usuário (<code>USIEDU_RATE_FEEDBACK</code>); variáveis documentadas no <code>.env.example</code></li>
+<li>[x] Detalhe do slowapi: o decorador exige parâmetro nomeado <code>request</code> (starlette Request) e <code>response: Response</code> para injetar headers — parâmetros de body renomeados para <code>payload</code> nos endpoints decorados (contrato HTTP inalterado)</li>
+<li>[x] Deploy atrás de proxy: <code>chave_ip</code> confia no <code>X-Forwarded-For</code> (primeiro endereço) — o proxy DEVE sobrescrever o header com o IP real do cliente (documentado no docstring de <code>rate_limit.py</code>)</li>
+<li>[x] Testes: 8 em <code>tests/unit/test_rate_limit.py</code> (login 429 + Retry-After, volta a 200 após janela via <code>limiter.reset()</code>, contadores separados por IP, 11ª pergunta → 429, limites independentes por usuário, limite do stream, feedback 30/min) + fixture autouse no <code>conftest.py</code> que reseta o limiter entre testes</li>
+<li>[x] Frontend: <code>RateLimitError</code> + <code>RATE_LIMIT_MESSAGE</code> no <code>api.ts</code> (mensagem exata do PRD); ChatPage exibe a mensagem amigável sem fallback POST; 2 testes vitest</li>
+<li>[x] Teste manual: 6º login → 429 com <code>Retry-After=60</code> (curl); quota de chat exaurida → UI exibe "Você fez muitas perguntas em pouco tempo. Aguarde alguns segundos." sem fallback</li>
+<li>[x] <strong>T9.2 — Cache semântico</strong></li>
+<li>[x] <code>src/rag/cache.py</code>: tabela SQLite <code>chat_cache</code> (key sha256(perfil + pergunta normalizada), embedding BLOB, <code>doc_version</code>, <code>created_at</code>); camadas exato → semântico (cosseno ≥ <code>USIEDU_CACHE_SIMILARITY</code>, default 0.97); TTL <code>USIEDU_CACHE_TTL_DAYS</code> (default 30); invalidação por <code>doc_version</code> = sha256 do <code>manifest.json</code>; embedder lazy (mesmo modelo da ingestão); falhas nunca derrubam o chat</li>
+<li>[x] Política (documentada no módulo): só <strong>primeira mensagem da sessão</strong> (histórico vazio) + intent <strong>institucional</strong>; <code>academico</code>/<code>financeiro</code> podem conter dados pessoais de tools; erros e <code>fora_de_escopo</code> nunca cacheados; <code>message_id</code> novo por resposta servida</li>
+<li>[x] Integração em <code>chat.py</code> e <code>chat_stream.py</code> (hit no stream serve eventos sintéticos meta → token único → final) com flag <code>USIEDU_CACHE_ENABLED</code> (default true); <code>from_cache</code> adicionado a <code>ChatResponse</code></li>
+<li>[x] Observabilidade: log estruturado <code>cache_hit=true/false</code> + contadores <code>cache_hits</code>/<code>cache_misses</code> em <code>GET /health</code></li>
+<li>[x] Testes: 21 em <code>tests/unit/test_cache.py</code> (normalização/chaves, similaridade, doc_version, hit exato, hit semântico por paráfrase, miss por perfil, TTL, invalidação por versão, política, endpoints /chat e /chat/stream, /health) + fixture autouse que reseta contadores no <code>conftest.py</code></li>
+<li>[x] Teste manual: pergunta institucional repetida em sessão nova → <code>from_cache=true</code> instantâneo + <code>/health</code> com <code>cache_hits: 1</code></li>
+<li>[x] <strong>T9.3 — Guardrails contra prompt injection</strong></li>
+<li>[x] <code>src/security/guardrails.py</code>: <code>detect_injection</code> (heurísticas regex em constantes nomeadas: ignorar instruções, nova identidade, marcador system, delimitadores de prompt, revelar system prompt) + <code>validate_answer → GuardrailResult</code> (eco de prompt de sistema, eco de jailbreak, mudança de comportamento) — testável sem LLM; fragmentos de eco derivados dos prompts reais na importação</li>
+<li>[x] Camada ingestão: chunks sinalizados ganham <code>suspicious=true</code> e são excluídos do índice com log de auditoria (<code>guardrail_triggered</code>, <code>origem=ingest</code>); fixture <code>tests/fixtures/documento_malicioso.html</code></li>
+<li>[x] Camada entrada (<code>/chat</code> e <code>/chat/stream</code>): pergunta sinalizada não é bloqueada — <code>flagged=true</code> + <code>injection_patterns</code> nos metadados do trace + log estruturado</li>
+<li>[x] Camada saída: resposta insegura substituída por <code>RESPOSTA_SEGURA_PADRAO</code>; no stream o evento <code>final</code> carrega a resposta segura + <code>guardrail_triggered</code> (cliente reconcilia pelo campo <code>answer</code>); respostas bloqueadas nunca alimentam o cache (T9.2)</li>
+<li>[x] Registro <code>guardrail_triggered</code>: log JSON + LangSmith best-effort (<code>create_feedback</code> key <code>guardrail_triggered</code>)</li>
+<li>[x] Testes: 25 em <code>tests/unit/test_guardrails.py</code> (detecção parametrizada, validação de saída, separação de chunks, ingestão com auditoria, endpoints /chat e /chat/stream, LangSmith espião/falha) — incl. usuário staff, pois o intent institucional só aciona o agente documental para esse perfil</li>
+<li>[x] Política documentada em <code>docs/03-rag-e-infraestrutura.md</code> (seção 10)</li>
+<li>[x] Teste manual: pergunta com injeção → 200 com resposta cordial + log JSON <code>guardrail_triggered=true, origem=entrada, padroes=[ignorar_instrucoes, revelar_system_prompt]</code></li>
+</ul>
+<p><strong>DoD da sprint (parcial):</strong> sistema exposto publicamente sem surpresas de custo/abuso.</p>
 <hr />
 <h2 id="regras-de-execucao-para-qualquer-implementador">Regras de execução (para qualquer implementador)<a class="headerlink" href="#regras-de-execucao-para-qualquer-implementador" title="Permanent link">&para;</a></h2>
 <ol>

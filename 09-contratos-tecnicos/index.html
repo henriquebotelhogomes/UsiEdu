@@ -779,6 +779,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#221-eventos-sse-do-post-chatstream-t73" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.1 Eventos SSE do POST /chat/stream (T7.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#23-erros-padronizados" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1054,6 +1065,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#221-eventos-sse-do-post-chatstream-t73" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.1 Eventos SSE do POST /chat/stream (T7.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#23-erros-padronizados" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1228,13 +1250,19 @@ interfaces; o PRD prevalece para comportamento.</p>
 <td>POST</td>
 <td><code>/chat</code></td>
 <td>sim</td>
-<td>Envia mensagem e recebe resposta (streaming SSE opcional via <code>?stream=true</code>)</td>
+<td>Envia mensagem e recebe resposta (fallback obrigatório do streaming)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/chat/stream</code></td>
+<td>sim</td>
+<td>Streama a resposta via SSE (T7.3); body idêntico a <code>ChatRequest</code></td>
 </tr>
 <tr>
 <td>GET</td>
-<td><code>/sessions/{session_id}</code></td>
+<td><code>/chat/history?session_id={id}</code></td>
 <td>sim</td>
-<td>Retorna histórico da sessão</td>
+<td>Retorna histórico da sessão (T7.4): 404 se inexistente, 403 se pertence a outro usuário</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -1274,7 +1302,53 @@ interfaces; o PRD prevalece para comportamento.</p>
     <span class="n">sources</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Source</span><span class="p">]</span>
     <span class="n">intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;academico&quot;</span><span class="p">,</span> <span class="s2">&quot;financeiro&quot;</span><span class="p">,</span> <span class="s2">&quot;institucional&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;composta&quot;</span><span class="p">,</span> <span class="s2">&quot;fora_de_escopo&quot;</span><span class="p">]</span>
+
+<span class="c1"># histórico (T7.4)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ChatHistoryMessage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">role</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant&quot;</span><span class="p">]</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># o checkpointer não persiste timestamp</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ChatHistoryResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatHistoryMessage</span><span class="p">]</span>     <span class="c1"># agentes/fontes omitidos: só texto</span>
 </code></pre></div>
+<h3 id="221-eventos-sse-do-post-chatstream-t73">2.2.1 Eventos SSE do <code>POST /chat/stream</code> (T7.3)<a class="headerlink" href="#221-eventos-sse-do-post-chatstream-t73" title="Permanent link">&para;</a></h3>
+<p>Linhas <code>data: {json}\n\n</code> com o tipo no campo <code>event</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Evento</th>
+<th>Payload</th>
+<th>Quando</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>meta</code></td>
+<td><code>{session_id, message_id}</code></td>
+<td>início (<code>message_id</code> = <code>run_id</code> do LangSmith, usado no feedback)</td>
+</tr>
+<tr>
+<td><code>token</code></td>
+<td><code>{delta}</code></td>
+<td>cada chunk do LLM dos agentes finais (supervisor nunca é streamado)</td>
+</tr>
+<tr>
+<td><code>final</code></td>
+<td><code>{agents, sources, usage, answer}</code></td>
+<td>fim do grafo (<code>answer</code> é extra ao contrato do PRD: reconcilia o texto final)</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td><code>{detail}</code></td>
+<td>qualquer exceção (fecha o stream)</td>
+</tr>
+</tbody>
+</table>
+<p>O frontend usa <code>fetch</code> + <code>ReadableStream</code> (SSE sobre POST; <code>EventSource</code> é GET-only)
+e faz fallback automático para <code>POST /chat</code> em erro de rede/parse antes de receber tokens.
+Nginx exige <code>proxy_buffering off</code> no <code>location /chat/stream</code>.</p>
 <h3 id="23-erros-padronizados">2.3 Erros padronizados<a class="headerlink" href="#23-erros-padronizados" title="Permanent link">&para;</a></h3>
 <p><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;UNAUTHORIZED&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
@@ -1482,7 +1556,10 @@ tests/
 </tbody>
 </table>
 <p>Frontend: <code>react</code>, <code>react-dom</code>, <code>vite</code>, <code>typescript</code> (sem UI kit obrigatório;
-CSS puro ou Tailwind à escolha do implementador).</p>
+CSS puro ou Tailwind à escolha do implementador). Renderização Markdown das
+respostas (T7.1): <code>react-markdown</code>, <code>remark-gfm</code>, <code>remark-breaks</code>. Testes de
+componente: <code>vitest</code>, <code>@testing-library/react</code>, <code>@testing-library/jest-dom</code>,
+<code>jsdom</code> (dev).</p>
 <h2 id="9-definition-of-done-global">9. Definition of Done global<a class="headerlink" href="#9-definition-of-done-global" title="Permanent link">&para;</a></h2>
 <p>Uma funcionalidade está pronta quando:
 1. Requisito RF correspondente atendido;

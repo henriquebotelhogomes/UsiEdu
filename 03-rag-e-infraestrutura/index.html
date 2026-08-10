@@ -726,10 +726,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-decisoes-em-aberto-para-revisao" class="md-nav__link">
+  <a href="#10-guardrails-contra-prompt-injection-t93" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Decisões em aberto (para revisão)
+        10. Guardrails contra prompt injection (T9.3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-decisoes-em-aberto-para-revisao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Decisões em aberto (para revisão)
       
     </span>
   </a>
@@ -1415,10 +1426,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-decisoes-em-aberto-para-revisao" class="md-nav__link">
+  <a href="#10-guardrails-contra-prompt-injection-t93" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Decisões em aberto (para revisão)
+        10. Guardrails contra prompt injection (T9.3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-decisoes-em-aberto-para-revisao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Decisões em aberto (para revisão)
       
     </span>
   </a>
@@ -1903,7 +1925,45 @@ de embedding; esta seção 6 resolve medição de qualidade.</p>
 ├── docker-compose.yml           # API + frontend + Qdrant + Grafana
 └── README.md                    # quickstart + link para demo
 </code></pre></div>
-<h2 id="10-decisoes-em-aberto-para-revisao">10. Decisões em aberto <em>(para revisão)</em><a class="headerlink" href="#10-decisoes-em-aberto-para-revisao" title="Permanent link">&para;</a></h2>
+<h2 id="10-guardrails-contra-prompt-injection-t93">10. Guardrails contra prompt injection (T9.3)<a class="headerlink" href="#10-guardrails-contra-prompt-injection-t93" title="Permanent link">&para;</a></h2>
+<p>Defesa em três camadas, implementada em <code>src/security/guardrails.py</code> com
+heurísticas determinísticas (regex em constantes nomeadas) — <strong>testável sem LLM</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Camada</th>
+<th>Onde</th>
+<th>Comportamento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Ingestão</strong></td>
+<td><code>src/rag/ingest.py</code></td>
+<td>Cada chunk passa por <code>detect_injection</code>; chunks sinalizados ganham <code>suspicious=true</code> e são <strong>excluídos do índice</strong> com log de auditoria (<code>guardrail_triggered</code>, <code>origem=ingest</code>)</td>
+</tr>
+<tr>
+<td><strong>2. Entrada do usuário</strong></td>
+<td><code>POST /chat</code> e <code>/chat/stream</code></td>
+<td>O mesmo detector roda na pergunta; se sinalizada, o trace recebe <code>flagged=true</code> + <code>injection_patterns</code>. A pergunta <strong>não é bloqueada</strong> (risco de falso positivo), apenas observada</td>
+</tr>
+<tr>
+<td><strong>3. Saída</strong></td>
+<td>após o grafo, antes de responder</td>
+<td><code>validate_answer</code> detecta eco do prompt de sistema, eco de jailbreak ou tentativa de mudança de comportamento ("a partir de agora..."); resposta insegura é substituída por <code>RESPOSTA_SEGURA_PADRAO</code> e o evento <code>guardrail_triggered</code> é registrado no log JSON e no LangSmith (best-effort)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decisões de política:</strong>
+- Respostas bloqueadas pelo guardrail <strong>nunca alimentam o cache semântico</strong> (T9.2).
+- No streaming os tokens já emitidos não podem ser desfeitos: o evento <code>final</code>
+  carrega a resposta segura e o cliente reconcilia o texto pelo campo <code>answer</code>.
+- Fragmentos de detecção de eco são derivados dos prompts reais na importação
+  (sem dessincronização).
+- Fixture de teste: <code>tests/fixtures/documento_malicioso.html</code> (documento com
+  injeção embutida).</p>
+<hr />
+<h2 id="11-decisoes-em-aberto-para-revisao">11. Decisões em aberto <em>(para revisão)</em><a class="headerlink" href="#11-decisoes-em-aberto-para-revisao" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[ ] Reranker: manter local (<code>bge-reranker</code>) ou testar Vertex AI ranking na comparação final?</li>
 <li>[ ] Grafana/Prometheus entram no piloto ou só na Fase 2 (para reduzir complexidade)?</li>
