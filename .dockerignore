@@ -1,0 +1,31 @@
+# Estado e volumes locais nunca entram nas imagens de produção.
+qdrant_storage/
+qdrant_snapshots/
+*.db
+*.db-*
+
+# Segredos, ferramentas locais e metadados de desenvolvimento.
+.env
+.git/
+.venv/
+venv/
+env/
+.qoder/
+.agentbridge/
+.idea/
+.vscode/
+
+# Artefatos regeneráveis.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+site/
+frontend/node_modules/
+frontend/dist/
+screenshots/
+*.log
+.cache/

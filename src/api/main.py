@@ -33,6 +33,19 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
+def get_cors_origins() -> list[str]:
+    """Retorna as origens permitidas pelo CORS, configuráveis por ambiente.
+
+    Em produção o frontend e a API compartilham a mesma origem por meio do
+    proxy nginx; ainda assim, a lista explícita evita aceitar origens
+    arbitrárias junto a credenciais.
+    """
+    configured = os.getenv("USIEDU_CORS_ORIGINS")
+    if configured:
+        return [origin.strip() for origin in configured.split(",") if origin.strip()]
+    return ["http://localhost:5173", "http://localhost:5174"]
+
+
 def _build_retrievers():
     """Cria os retrievers RAG (acadêmico e institucional).
 
@@ -133,7 +146,7 @@ def create_app() -> FastAPI:
     # CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=get_cors_origins(),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

@@ -23,72 +23,10 @@ FROM nginx:alpine AS runtime
 # Copia o build do Vite para o nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Configuração do nginx com proxy reverso para a API
-COPY <<EOF /etc/nginx/conf.d/default.conf
-server {
-    listen 80;
-    server_name localhost;
-
-    # Frontend
-    location / {
-        root /usr/share/nginx/html;
-        index index.html;
-        try_files \$uri \$uri/ /index.html;
-    }
-
-    # Proxy reverso para a API
-    location /auth/ {
-        proxy_pass http://api:8000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-
-    # Streaming SSE (T7.3): buffering desligado é obrigatório,
-    # senão o nginx "segura" os eventos até o fim da resposta.
-    location /chat/stream {
-        proxy_pass http://api:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Connection '';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_buffering off;
-        proxy_cache off;
-        proxy_read_timeout 300s;
-        chunked_transfer_encoding on;
-    }
-
-    location /chat {
-        proxy_pass http://api:8000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        # Deep-link/reload (T7.4): GET /chat cai na API e retorna 405;
-        # nesse caso serve o SPA (index.html).
-        proxy_intercept_errors on;
-        error_page 405 = @spa;
-    }
-
-    location @spa {
-        root /usr/share/nginx/html;
-        try_files /index.html =404;
-    }
-
-    location /feedback {
-        proxy_pass http://api:8000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-
-    location /health {
-        proxy_pass http://api:8000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-    }
-}
-EOF
+# O entrypoint oficial do nginx processa o template com envsubst. No Docker
+# local usa http://api:8000; no Azure recebe http://<container-app-api>.
+ENV UPSTREAM_API_URL=http://api:8000
+COPY frontend/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 80
 

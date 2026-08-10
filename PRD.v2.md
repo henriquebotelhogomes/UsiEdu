@@ -300,11 +300,11 @@ _Decisões de política (doc 03 seção 10):_ camada de entrada observa sem bloq
 - Health checks: `/health` público; frontend apontando para a API via mesma origem (nginx já faz proxy).
 
 **Micro-atividades:**
-- [ ] Escolher plataforma com o usuário (Azure Container Apps recomendado) e provisionar.
-- [ ] Configurar variáveis/secrets; build & push das imagens (ou build no provedor).
-- [ ] Rodar ingestão na nuvem e validar `GET /health` + uma conversa ponta a ponta.
-- [ ] Ajustar CORS/origem única; validar login → chat → feedback → `/insights` no ambiente público.
-- [ ] Atualizar README (URL pública, seção Deploy) e rodar `scripts/capture_screenshots.py` apontando para a URL pública (parâmetro novo `--base-url`).
+- [~] Escolher plataforma com o usuário (Azure Container Apps recomendado) e provisionar. *(Azure Container Apps escolhido; Bicep/script preparados. Provisionamento aguarda Azure CLI autenticado e execução pelo proprietário da assinatura.)*
+- [x] Configurar variáveis/secrets; build & push das imagens (ou build no provedor). *(Template Bicep e `deploy.ps1` configuram secrets e constroem/publicam as imagens no ACR.)*
+- [~] Rodar ingestão na nuvem e validar `GET /health` + uma conversa ponta a ponta. *(Container Apps Job manual preparado; execução e evidência dependem do primeiro deploy público.)*
+- [~] Ajustar CORS/origem única; validar login → chat → feedback → `/insights` no ambiente público. *(CORS explícito + proxy de mesma origem implementados; validação HTTPS aguarda a URL pública.)*
+- [x] Atualizar README (URL pública, seção Deploy) e rodar `scripts/capture_screenshots.py` apontando para a URL pública (parâmetro novo `--base-url`). *(README registra a URL como pendente até o provisionamento; script recebeu `--base-url`.)*
 
 **Critérios de aceite:**
 - **Dado** um visitante anônimo, **Quando** abre a URL pública, **Então** consegue usar landing, login demo, chat e feedback sobre HTTPS.

@@ -106,6 +106,7 @@ mas as metas do doc 03 (seção 6.1) não foram atingidas no agregado. Plano de 
 - [~] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1). *(parcialmente validado 07/08/2026 — 30 perguntas avaliadas com Ragas+LLM; metas não atingidas no agregado: faithfulness 0,565, context precision/recall 0,645, answer relevancy 0,565 vs metas 0,90/0,80/0,80/0,85. Causas: artefato de medição nas 4 perguntas fora_de_escopo (comportamento correto RF-10 pontua 0), lacuna de corpus staff em q018–q022 e juiz LLM de baixo custo. `sem_resposta` = 1,000 em tudo. Leitura crítica e plano de melhoria: seção 3.1 e `src/evaluation/relatorio_ragas.md`)*
 - [x] `pytest` verde com cobertura ≥ 80% em orquestração/RAG; `ruff check` sem erros. *(validado 06/08/2026 — 206 testes, cobertura 96,7% em orchestration+rag; ruff limpo)*
 - [x] Site MkDocs publicado (GitHub Pages) com toda a documentação navegável. *(validado 07/08/2026 — https://henriquebotelhogomes.github.io/UsiEdu/, republicação automática via `.github/workflows/docs.yml`)*
+- [~] Visitante anônimo usa landing, login demo, chat, feedback e `/insights` por HTTPS. *(artefatos Azure Container Apps preparados em T9.4; validação aguarda primeiro provisionamento público.)*
 
 ## 6. Base de conhecimento do piloto (fontes abertas reais)
 

@@ -271,7 +271,34 @@ usiedu/
 └── README.md                    # quickstart + link para demo
 ```
 
-## 10. Guardrails contra prompt injection (T9.3)
+## 10. Deploy público — Azure Container Apps (T9.4)
+
+O deploy público usa três Container Apps no mesmo ambiente: **frontend**
+(externo, HTTPS), **API** (ingress interno) e **Qdrant** (ingress interno). O
+frontend nginx faz o proxy dos caminhos de API para `http://<nome-da-api>`;
+assim o navegador usa uma única origem e o backend não fica exposto à internet.
+
+O estado do Qdrant e os bancos SQLite de feedback, cache e checkpointer ficam
+em Azure Files separados. A ingestão é um Container Apps Job manual: ela usa a
+mesma imagem da API e executa `scripts/ingest_knowledge_base.py` apenas depois
+que o Qdrant estiver disponível.
+
+Os artefatos versionados ficam em `infra/azure/`:
+
+- `registry.bicep`: Azure Container Registry Basic para as imagens privadas.
+- `main.bicep`: ambiente Container Apps, Log Analytics, Azure Files, os três
+  serviços e o job de ingestão.
+- `deploy.ps1`: cria o resource group/registro, constrói e publica imagens,
+  provisiona os serviços e informa a URL pública.
+
+As variáveis obrigatórias em produção são configuradas como secrets ou env vars
+no template: `JWT_SECRET`, `OPENCODE_GO_API_KEY`, `OPENCODE_GO_BASE_URL`,
+`LANGSMITH_*`/`LANGCHAIN_*`, `QDRANT_URL`, `USIEDU_FEEDBACK_DB`,
+`USIEDU_CHECKPOINTER_DB`, `USIEDU_CACHE_*`, `USIEDU_RATE_*` e
+`USIEDU_CORS_ORIGINS`. Nunca reutilizar o segredo JWT local e nunca versionar
+valores reais em `.env` ou Bicep.
+
+## 11. Guardrails contra prompt injection (T9.3)
 
 Defesa em três camadas, implementada em `src/security/guardrails.py` com
 heurísticas determinísticas (regex em constantes nomeadas) — **testável sem LLM**.

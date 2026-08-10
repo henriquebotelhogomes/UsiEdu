@@ -45,7 +45,15 @@ async def login(request: Request, payload: LoginRequest, response: Response) -> 
 
 
 # Configuração JWT
-SECRET_KEY = os.getenv("USIEDU_JWT_SECRET", "chave-dev-piloto-nao-usar-em-producao")
+def get_secret_key() -> str:
+    """Lê o segredo JWT documentado, preservando o alias legado local."""
+    return os.getenv(
+        "JWT_SECRET",
+        os.getenv("USIEDU_JWT_SECRET", "chave-dev-piloto-nao-usar-em-producao"),
+    )
+
+
+SECRET_KEY = get_secret_key()
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

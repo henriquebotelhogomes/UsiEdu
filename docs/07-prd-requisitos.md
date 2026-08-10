@@ -149,3 +149,4 @@ com relatório Ragas dentro das metas do doc 03 (seção 6.1).
 - [x] `docker compose up` funcional do zero (api + frontend + qdrant)
 - [x] MkDocs publicado + README com quickstart (`mkdocs.yml` + build validado)
 - [~] Vídeo de demo cobrindo US-01 a US-05 — roteiro pronto (doc 10); gravação pendente de ambiente com LLM real
+- [~] Deploy Azure Container Apps validado por HTTPS (landing, login demo, chat e feedback). *(infraestrutura e guia T9.4 prontos; pendente execução na assinatura Azure.)*

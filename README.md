@@ -89,6 +89,55 @@ python -m src.rag.ingest
 uvicorn src.api.main:app --reload
 ```
 
+## Deploy público — Azure Container Apps
+
+O deploy do piloto está preparado para **Azure Container Apps**, usando a
+assinatura Azure for Students. A URL pública é criada pelo Azure durante o
+provisionamento e é exibida ao final do script; registre-a aqui após a primeira
+execução.
+
+> URL pública: **pendente de primeiro deploy**
+
+### Pré-requisitos
+
+- Azure CLI instalado e autenticado: `az login`.
+- Docker Desktop em execução.
+- Assinatura **Azure for Students** selecionada: `az account set --subscription "<nome-ou-id>"`.
+- Chaves do OpenCode Go e LangSmith disponíveis. Elas são solicitadas sem eco
+  pelo script e não são gravadas no repositório.
+
+No PowerShell, execute:
+
+```powershell
+.\infra\azure\deploy.ps1 `
+  -ResourceGroup rg-usiedu `
+  -Prefix usiedu `
+  -Location brazilsouth `
+  -ImageTag v1
+```
+
+O script cria um Azure Container Registry Basic, publica as imagens API e
+frontend, provisiona Container Apps + Azure Files e gera um `JWT_SECRET` novo
+se ele não for informado. Guarde esse segredo em um gerenciador de senhas; não
+reutilize a chave de desenvolvimento e não o inclua em `.env` versionado.
+
+Depois do deploy, execute a ingestão inicial e acompanhe o resultado:
+
+```powershell
+az containerapp job start --name usiedu-ingest --resource-group rg-usiedu
+az containerapp job execution list --name usiedu-ingest --resource-group rg-usiedu
+```
+
+Use a URL impressa pelo script para validar `https://<url>/health`, login com
+`ana@demo.usiedu` / `estudante123`, chat, feedback e `/insights`. O frontend é
+a única origem pública; API e Qdrant permanecem na rede interna do ambiente.
+
+O frontend e a API podem escalar a zero para economizar crédito. Por isso, após
+inatividade, a primeira abertura ou resposta pode levar **até 60 segundos**
+(cold start). O Qdrant permanece em uma réplica para preservar disponibilidade
+do RAG; acompanhe o consumo em **Cost Management** e crie um alerta de orçamento
+antes da exposição pública.
+
 ## Frontend e Landing Page
 
 O frontend (React + Vite + TypeScript, com `react-router-dom`) tem três rotas:
@@ -133,6 +182,8 @@ arquivos indexados de `knowledge_base/`, que é recriada por `python -m src.rag.
 
 Para regenerar os prints com o sistema rodando localmente: `python scripts/capture_screenshots.py`
 (requer `pip install playwright && python -m playwright install chromium`).
+Após o deploy, use a mesma rotina contra HTTPS:
+`python scripts/capture_screenshots.py --base-url https://<url-publica>`.
 
 ## API
 

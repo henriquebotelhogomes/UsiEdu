@@ -132,6 +132,10 @@ JWT_EXPIRES_MINUTES=60
 LANGSMITH_TRACING=true
 LANGSMITH_API_KEY=
 LANGSMITH_PROJECT=usiedu-pilot
+# Alias LangChain aceito pela biblioteca e configurado no Azure
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=
+LANGCHAIN_PROJECT=usiedu-pilot
 
 # Modelos locais
 EMBEDDING_MODEL=paraphrase-multilingual-MiniLM-L12-v2
@@ -140,6 +144,9 @@ RERANKER_MODEL=BAAI/bge-reranker-base
 # App
 USIEDU_ENV=dev                          # dev | test | prod
 LOG_LEVEL=INFO
+USIEDU_CORS_ORIGINS=http://localhost:5173,http://localhost:5174
+USIEDU_FEEDBACK_DB=usiedu_feedback.db
+USIEDU_CHECKPOINTER_DB=usiedu_checkpoints.db
 ```
 
 ## 4. Modelos de dados mockados (`src/tools/mock_data.py`)

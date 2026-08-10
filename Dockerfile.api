@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copia apenas os arquivos de dependências
 COPY pyproject.toml ./
 COPY README.md ./
+# Hatchling precisa do pacote fonte para gerar os metadados durante pip install.
+COPY src/ ./src/
 
 # Instala dependências
 RUN pip install --no-cache-dir --upgrade pip && \
@@ -30,6 +32,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copia o código
 COPY src/ ./src/
 COPY knowledge_base/ ./knowledge_base/
+COPY scripts/ ./scripts/
 
 # Porta da API
 EXPOSE 8000
