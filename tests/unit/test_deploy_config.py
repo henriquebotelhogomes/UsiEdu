@@ -83,10 +83,10 @@ def test_azure_ingest_job_has_memory_for_embedding_model() -> None:
 
 
 def test_azure_qdrant_urls_use_container_app_service_discovery() -> None:
-    """API e ingestao acessam Qdrant pelo nome curto do Container App."""
+    """Qdrant usa a porta HTTP do proxy interno, nao a porta do container."""
     content = Path("infra/azure/main.bicep").read_text(encoding="utf-8")
 
-    assert content.count("value: 'http://${qdrantApp.name}'") == 2
+    assert content.count("value: 'http://${qdrantApp.name}:80'") == 2
 
 
 def test_dockerignore_excludes_local_runtime_data_from_build_context() -> None:
