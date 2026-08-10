@@ -126,3 +126,12 @@ def test_api_image_declares_jwt_library_used_by_authentication() -> None:
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
 
     assert '"PyJWT>=' in pyproject
+
+
+def test_azure_deploy_declares_postgres_url_for_persistent_state() -> None:
+    """O piloto em nuvem usa PostgreSQL, não SQLite sobre Azure Files."""
+    content = Path("infra/azure/main.bicep").read_text(encoding="utf-8")
+
+    assert "resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers" in content
+    assert "name: 'USIEDU_DATABASE_URL'" in content
+    assert "name: 'USIEDU_CHECKPOINTER_DB'" not in content

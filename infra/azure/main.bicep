@@ -27,6 +27,13 @@ param opencodeApiKey string
 @secure()
 param langsmithApiKey string
 
+@secure()
+@description('Senha do administrador do PostgreSQL. O deploy gera um valor URL-safe quando omitido.')
+param postgresAdminPassword string
+
+@description('Login administrador do PostgreSQL gerenciado.')
+param postgresAdminLogin string = 'usieduadmin'
+
 @description('URL do endpoint OpenCode Go compatível com OpenAI.')
 param opencodeBaseUrl string = 'https://opencode.ai/zen/go/v1'
 
@@ -35,6 +42,9 @@ param agentModel string = 'kimi-k2.7-code'
 
 @description('Nome globalmente único da conta de armazenamento.')
 param storageAccountName string = toLower('usiedu${uniqueString(subscription().id, resourceGroup().id)}')
+
+@description('Nome globalmente único do PostgreSQL Flexible Server.')
+param postgresServerName string = toLower('${namePrefix}-pg-${uniqueString(subscription().id, resourceGroup().id)}')
 
 resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: '${namePrefix}-logs'
@@ -87,14 +97,6 @@ resource qdrantShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023
   }
 }
 
-resource applicationShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
-  parent: fileService
-  name: 'application'
-  properties: {
-    accessTier: 'TransactionOptimized'
-  }
-}
-
 resource qdrantStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
   parent: environment
   name: 'qdrant-data'
@@ -108,16 +110,50 @@ resource qdrantStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' =
   }
 }
 
-resource applicationStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
-  parent: environment
-  name: 'application-data'
+resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
+  name: postgresServerName
+  location: location
+  sku: {
+    name: 'Standard_B1ms'
+    tier: 'Burstable'
+  }
   properties: {
-    azureFile: {
-      accountKey: storageAccount.listKeys().keys[0].value
-      accountName: storageAccount.name
-      accessMode: 'ReadWrite'
-      shareName: applicationShare.name
+    administratorLogin: postgresAdminLogin
+    administratorLoginPassword: postgresAdminPassword
+    version: '16'
+    storage: {
+      storageSizeGB: 32
     }
+    backup: {
+      backupRetentionDays: 7
+      geoRedundantBackup: 'Disabled'
+    }
+    highAvailability: {
+      mode: 'Disabled'
+    }
+    network: {
+      publicNetworkAccess: 'Enabled'
+    }
+  }
+}
+
+resource postgresDatabase 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-08-01' = {
+  parent: postgresServer
+  name: 'usiedu'
+  properties: {
+    charset: 'UTF8'
+    collation: 'en_US.utf8'
+  }
+}
+
+// Container Apps não compartilha VNet neste piloto. Esta regra permite somente
+// recursos Azure; acesso administrativo adicional deve ser temporário e explícito.
+resource postgresAllowAzureServices 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = {
+  parent: postgresServer
+  name: 'allow-azure-services'
+  properties: {
+    startIpAddress: '0.0.0.0'
+    endIpAddress: '0.0.0.0'
   }
 }
 
@@ -196,6 +232,10 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
           name: 'langsmith-api-key'
           value: langsmithApiKey
         }
+        {
+          name: 'database-url'
+          value: 'postgresql://${postgresAdminLogin}:${postgresAdminPassword}@${postgresServer.properties.fullyQualifiedDomainName}:5432/${postgresDatabase.name}?sslmode=require'
+        }
       ]
       registries: [
         {
@@ -222,8 +262,8 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
           name: 'api'
           image: apiImage
           resources: {
-            cpu: json('0.5')
-            memory: '1Gi'
+            cpu: json('1.0')
+            memory: '2Gi'
           }
           env: [
             {
@@ -283,16 +323,8 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: 'http://${qdrantApp.name}:80'
             }
             {
-              name: 'USIEDU_FEEDBACK_DB'
-              value: '/app/data/feedback.db'
-            }
-            {
-              name: 'USIEDU_CACHE_DB'
-              value: '/app/data/cache.db'
-            }
-            {
-              name: 'USIEDU_CHECKPOINTER_DB'
-              value: '/app/data/checkpoints.db'
+              name: 'USIEDU_DATABASE_URL'
+              secretRef: 'database-url'
             }
             {
               name: 'USIEDU_CACHE_ENABLED'
@@ -323,25 +355,12 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: 'https://${namePrefix}-frontend.${environment.properties.defaultDomain}'
             }
           ]
-          volumeMounts: [
-            {
-              volumeName: 'application-data'
-              mountPath: '/app/data'
-            }
-          ]
         }
       ]
       scale: {
         minReplicas: 0
         maxReplicas: 1
       }
-      volumes: [
-        {
-          name: 'application-data'
-          storageType: 'AzureFile'
-          storageName: applicationStorage.name
-        }
-      ]
     }
   }
 }

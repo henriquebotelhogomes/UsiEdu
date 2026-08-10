@@ -20,7 +20,8 @@ param(
     [string]$ImageTag = 'v1',
     [string]$OpenCodeApiKey,
     [string]$LangSmithApiKey,
-    [string]$JwtSecret
+    [string]$JwtSecret,
+    [string]$PostgresAdminPassword
 )
 
 $ErrorActionPreference = 'Stop'
@@ -72,6 +73,10 @@ if (-not $JwtSecret) {
     $JwtSecret = python -c "import secrets; print(secrets.token_urlsafe(32))"
     Write-Host 'JWT_SECRET gerado para este deploy. Guarde-o em um gerenciador de segredos.' -ForegroundColor Yellow
 }
+if (-not $PostgresAdminPassword) {
+    $PostgresAdminPassword = python -c "import secrets; print(secrets.token_urlsafe(32))"
+    Write-Host 'Senha PostgreSQL gerada para este deploy. Guarde-a em um gerenciador de segredos.' -ForegroundColor Yellow
+}
 
 $deploymentJson = az deployment group create `
     --resource-group $ResourceGroup `
@@ -87,6 +92,7 @@ $deploymentJson = az deployment group create `
         jwtSecret=$JwtSecret `
         opencodeApiKey=$OpenCodeApiKey `
         langsmithApiKey=$LangSmithApiKey `
+        postgresAdminPassword=$PostgresAdminPassword `
     --query properties.outputs -o json
 if ($LASTEXITCODE -ne 0) {
     throw 'Deploy ARM falhou. Consulte as operacoes do deployment para obter detalhes.'
