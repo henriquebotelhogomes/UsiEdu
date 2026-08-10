@@ -9,6 +9,7 @@ import pytest
 from src.rag import ingest
 from src.rag.ingest import (
     compute_file_checksum,
+    documento_indexado_no_qdrant,
     ensure_collections,
     ingest_document,
     load_manifest,
@@ -197,8 +198,32 @@ class TestIngestDocument:
         entry = self._doc_entry()
         entry["checksum"] = compute_file_checksum(f)
         entry["indexed"] = True
-        resultado = ingest_document(entry, MagicMock(), MagicMock(), MagicMock(), RagSettings())
+        client = MagicMock()
+        client.count.return_value = SimpleNamespace(count=1)
+        resultado = ingest_document(entry, MagicMock(), MagicMock(), client, RagSettings())
         assert resultado == 0
+
+    def test_manifest_indexado_reingesta_quando_documento_nao_existe_no_qdrant(self, kb_dir):
+        """O manifest da imagem não pode ocultar uma coleção remota vazia."""
+        f = kb_dir / "doc.txt"
+        f.write_text("conteúdo")
+        entry = self._doc_entry()
+        entry["checksum"] = compute_file_checksum(f)
+        entry["indexed"] = True
+
+        chunker = MagicMock()
+        chunker.chunk_document.return_value = [
+            Chunk(id="0" * 32, text="calendário com feriados", metadata={})
+        ]
+        embedder = MagicMock()
+        embedder.embed.return_value = [[0.1, 0.2]]
+        client = MagicMock()
+        client.count.return_value = SimpleNamespace(count=0)
+
+        resultado = ingest_document(entry, chunker, embedder, client, RagSettings())
+
+        assert resultado == 1
+        client.upsert.assert_called_once()
 
     def test_fluxo_completo_indexa_e_atualiza_entry(self, kb_dir):
         f = kb_dir / "doc.txt"
@@ -233,6 +258,18 @@ class TestIngestDocument:
         chunker.chunk_document.return_value = []
         resultado = ingest_document(entry, chunker, MagicMock(), MagicMock(), RagSettings())
         assert resultado == 0
+
+
+class TestDocumentoIndexadoNoQdrant:
+    def test_documento_nao_indexado_quando_filtro_nao_encontra_pontos(self):
+        client = MagicMock()
+        client.count.return_value = SimpleNamespace(count=0)
+
+        indexed = documento_indexado_no_qdrant(
+            client, TestIngestDocument._doc_entry(), RagSettings()
+        )
+
+        assert indexed is False
 
 
 class FakeEmbedder:

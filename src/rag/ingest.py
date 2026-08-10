@@ -84,6 +84,33 @@ def pick_collection(publico_alvo: str, settings: RagSettings) -> str:
     return settings.qdrant_collection_academico
 
 
+def documento_indexado_no_qdrant(client, doc_entry: dict, settings: RagSettings) -> bool:
+    """Confirma que o documento do manifest realmente existe na coleção remota."""
+    from qdrant_client.models import FieldCondition, Filter, MatchValue
+
+    collection_name = pick_collection(doc_entry["publico_alvo"], settings)
+    try:
+        result = client.count(
+            collection_name=collection_name,
+            count_filter=Filter(
+                must=[
+                    FieldCondition(
+                        key="documento",
+                        match=MatchValue(value=doc_entry["name"]),
+                    )
+                ]
+            ),
+            exact=True,
+        )
+    except Exception:
+        logger.warning(
+            "Não foi possível confirmar o documento '%s' no Qdrant; reindexando.",
+            doc_entry["name"],
+        )
+        return False
+    return result.count > 0
+
+
 def upload_chunks(
     client,
     collection_name: str,
@@ -134,7 +161,11 @@ def ingest_document(
 
     # Verifica idempotência por checksum
     current_checksum = compute_file_checksum(file_path)
-    if doc_entry.get("checksum") == current_checksum and doc_entry.get("indexed"):
+    if (
+        doc_entry.get("checksum") == current_checksum
+        and doc_entry.get("indexed")
+        and documento_indexado_no_qdrant(client, doc_entry, settings)
+    ):
         logger.info("Documento '%s' já indexado (checksum igual). Pulando.", doc_entry["name"])
         return 0
 
