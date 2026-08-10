@@ -280,7 +280,7 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'QDRANT_URL'
-              value: 'http://${qdrantApp.name}:6333'
+              value: 'http://${qdrantApp.name}'
             }
             {
               name: 'USIEDU_FEEDBACK_DB'
@@ -446,7 +446,7 @@ resource ingestJob 'Microsoft.App/jobs@2024-03-01' = {
           env: [
             {
               name: 'QDRANT_URL'
-              value: 'http://${qdrantApp.name}:6333'
+              value: 'http://${qdrantApp.name}'
             }
           ]
         }
