@@ -226,30 +226,102 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             memory: '1Gi'
           }
           env: [
-            { name: 'USIEDU_ENV'; value: 'prod' }
-            { name: 'JWT_SECRET'; secretRef: 'jwt-secret' }
-            { name: 'OPENCODE_GO_API_KEY'; secretRef: 'opencode-api-key' }
-            { name: 'OPENCODE_GO_BASE_URL'; value: opencodeBaseUrl }
-            { name: 'USIEDU_LLM_PROVIDER'; value: 'opencode-go' }
-            { name: 'USIEDU_ROUTER_MODEL'; value: routerModel }
-            { name: 'USIEDU_AGENT_MODEL'; value: agentModel }
-            { name: 'LANGSMITH_TRACING'; value: 'true' }
-            { name: 'LANGSMITH_API_KEY'; secretRef: 'langsmith-api-key' }
-            { name: 'LANGSMITH_PROJECT'; value: '${namePrefix}-pilot' }
-            { name: 'LANGCHAIN_TRACING_V2'; value: 'true' }
-            { name: 'LANGCHAIN_API_KEY'; secretRef: 'langsmith-api-key' }
-            { name: 'LANGCHAIN_PROJECT'; value: '${namePrefix}-pilot' }
-            { name: 'QDRANT_URL'; value: 'http://${qdrantApp.name}' }
-            { name: 'USIEDU_FEEDBACK_DB'; value: '/app/data/feedback.db' }
-            { name: 'USIEDU_CACHE_DB'; value: '/app/data/cache.db' }
-            { name: 'USIEDU_CHECKPOINTER_DB'; value: '/app/data/checkpoints.db' }
-            { name: 'USIEDU_CACHE_ENABLED'; value: 'true' }
-            { name: 'USIEDU_CACHE_SIMILARITY'; value: '0.97' }
-            { name: 'USIEDU_CACHE_TTL_DAYS'; value: '30' }
-            { name: 'USIEDU_RATE_CHAT'; value: '10/minute' }
-            { name: 'USIEDU_RATE_LOGIN'; value: '5/minute' }
-            { name: 'USIEDU_RATE_FEEDBACK'; value: '30/minute' }
-            { name: 'USIEDU_CORS_ORIGINS'; value: 'https://${frontendApp.properties.configuration.ingress.fqdn}' }
+            {
+              name: 'USIEDU_ENV'
+              value: 'prod'
+            }
+            {
+              name: 'JWT_SECRET'
+              secretRef: 'jwt-secret'
+            }
+            {
+              name: 'OPENCODE_GO_API_KEY'
+              secretRef: 'opencode-api-key'
+            }
+            {
+              name: 'OPENCODE_GO_BASE_URL'
+              value: opencodeBaseUrl
+            }
+            {
+              name: 'USIEDU_LLM_PROVIDER'
+              value: 'opencode-go'
+            }
+            {
+              name: 'USIEDU_ROUTER_MODEL'
+              value: routerModel
+            }
+            {
+              name: 'USIEDU_AGENT_MODEL'
+              value: agentModel
+            }
+            {
+              name: 'LANGSMITH_TRACING'
+              value: 'true'
+            }
+            {
+              name: 'LANGSMITH_API_KEY'
+              secretRef: 'langsmith-api-key'
+            }
+            {
+              name: 'LANGSMITH_PROJECT'
+              value: '${namePrefix}-pilot'
+            }
+            {
+              name: 'LANGCHAIN_TRACING_V2'
+              value: 'true'
+            }
+            {
+              name: 'LANGCHAIN_API_KEY'
+              secretRef: 'langsmith-api-key'
+            }
+            {
+              name: 'LANGCHAIN_PROJECT'
+              value: '${namePrefix}-pilot'
+            }
+            {
+              name: 'QDRANT_URL'
+              value: 'http://${qdrantApp.name}'
+            }
+            {
+              name: 'USIEDU_FEEDBACK_DB'
+              value: '/app/data/feedback.db'
+            }
+            {
+              name: 'USIEDU_CACHE_DB'
+              value: '/app/data/cache.db'
+            }
+            {
+              name: 'USIEDU_CHECKPOINTER_DB'
+              value: '/app/data/checkpoints.db'
+            }
+            {
+              name: 'USIEDU_CACHE_ENABLED'
+              value: 'true'
+            }
+            {
+              name: 'USIEDU_CACHE_SIMILARITY'
+              value: '0.97'
+            }
+            {
+              name: 'USIEDU_CACHE_TTL_DAYS'
+              value: '30'
+            }
+            {
+              name: 'USIEDU_RATE_CHAT'
+              value: '10/minute'
+            }
+            {
+              name: 'USIEDU_RATE_LOGIN'
+              value: '5/minute'
+            }
+            {
+              name: 'USIEDU_RATE_FEEDBACK'
+              value: '30/minute'
+            }
+            {
+              name: 'USIEDU_CORS_ORIGINS'
+              value: 'https://${namePrefix}-frontend.${environment.properties.defaultDomain}'
+            }
           ]
           volumeMounts: [
             {
@@ -316,7 +388,10 @@ resource frontendApp 'Microsoft.App/containerApps@2024-03-01' = {
             memory: '0.5Gi'
           }
           env: [
-            { name: 'UPSTREAM_API_URL'; value: 'http://${apiApp.name}' }
+            {
+              name: 'UPSTREAM_API_URL'
+              value: 'http://${apiApp.name}'
+            }
           ]
         }
       ]
@@ -342,7 +417,10 @@ resource ingestJob 'Microsoft.App/jobs@2024-03-01' = {
         replicaCompletionCount: 1
       }
       secrets: [
-        { name: 'registry-password'; value: registryPassword }
+        {
+          name: 'registry-password'
+          value: registryPassword
+        }
       ]
       registries: [
         {
@@ -366,7 +444,10 @@ resource ingestJob 'Microsoft.App/jobs@2024-03-01' = {
             memory: '1Gi'
           }
           env: [
-            { name: 'QDRANT_URL'; value: 'http://${qdrantApp.name}' }
+            {
+              name: 'QDRANT_URL'
+              value: 'http://${qdrantApp.name}'
+            }
           ]
         }
       ]
