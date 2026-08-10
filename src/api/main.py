@@ -26,6 +26,7 @@ from src.llm.provider import get_chat_model
 from src.observability.logging import setup_logging
 from src.orchestration.graph import create_chat_graph
 from src.rag.cache import get_chat_cache
+from src.storage.database import database_url
 
 # Carrega variáveis do .env (se existir) antes de qualquer configuração
 load_dotenv()
@@ -112,9 +113,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Retrievers RAG (acadêmico e institucional)
     retriever, documental_retriever = _build_retrievers()
 
-    # Checkpointer SQLite
-    db_path = os.getenv("USIEDU_CHECKPOINTER_DB", "usiedu_checkpoints.db")
-    async with AsyncSqliteSaver.from_conn_string(db_path) as checkpointer:
+    # PostgreSQL no piloto publicado; SQLite permanece como fallback local.
+    db_url = database_url()
+    if db_url:
+        from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
+        checkpointer_context = AsyncPostgresSaver.from_conn_string(db_url)
+    else:
+        db_path = os.getenv("USIEDU_CHECKPOINTER_DB", "usiedu_checkpoints.db")
+        checkpointer_context = AsyncSqliteSaver.from_conn_string(db_path)
+
+    async with checkpointer_context as checkpointer:
+        if db_url:
+            await checkpointer.setup()
         # Cria o grafo
         graph = create_chat_graph(
             router_llm=router_llm,

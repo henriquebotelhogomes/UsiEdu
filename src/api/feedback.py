@@ -26,6 +26,7 @@ from src.api.schemas import (
     FeedbackResponse,
     FeedbackStats,
 )
+from src.storage.database import database_url, postgres_connection
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,19 @@ CREATE TABLE IF NOT EXISTS feedback (
     user_email TEXT NOT NULL,
     profile TEXT NOT NULL,
     created_at TEXT NOT NULL
+)
+"""
+
+_CREATE_POSTGRES_TABLE = """
+CREATE TABLE IF NOT EXISTS feedback (
+    id BIGSERIAL PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    message_id TEXT NOT NULL,
+    rating TEXT NOT NULL CHECK (rating IN ('up', 'down')),
+    comment TEXT,
+    user_email TEXT NOT NULL,
+    profile TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL
 )
 """
 
@@ -81,26 +95,48 @@ async def registrar_feedback(
     Requer autenticação JWT (401 sem token válido). Limitado por usuário
     (T9.1); o parâmetro `request` é o starlette Request exigido pelo slowapi.
     """
-    async with aiosqlite.connect(_db_path()) as db:
-        await db.execute(_CREATE_TABLE)
-        cursor = await db.execute(
-            """
-            INSERT INTO feedback
-                (session_id, message_id, rating, comment, user_email, profile, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                payload.session_id,
-                payload.message_id,
-                payload.rating,
-                payload.comment,
-                current_user["email"],
-                current_user["profile"],
-                datetime.now(UTC).isoformat(),
-            ),
-        )
-        await db.commit()
-        feedback_id = cursor.lastrowid
+    if database_url():
+        async with postgres_connection() as db:
+            await db.execute(_CREATE_POSTGRES_TABLE)
+            cursor = await db.execute(
+                """
+                INSERT INTO feedback
+                    (session_id, message_id, rating, comment, user_email, profile, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+                """,
+                (
+                    payload.session_id,
+                    payload.message_id,
+                    payload.rating,
+                    payload.comment,
+                    current_user["email"],
+                    current_user["profile"],
+                    datetime.now(UTC),
+                ),
+            )
+            feedback_id = (await cursor.fetchone())[0]
+    else:
+        async with aiosqlite.connect(_db_path()) as db:
+            await db.execute(_CREATE_TABLE)
+            cursor = await db.execute(
+                """
+                INSERT INTO feedback
+                    (session_id, message_id, rating, comment, user_email, profile, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    payload.session_id,
+                    payload.message_id,
+                    payload.rating,
+                    payload.comment,
+                    current_user["email"],
+                    current_user["profile"],
+                    datetime.now(UTC).isoformat(),
+                ),
+            )
+            await db.commit()
+            feedback_id = cursor.lastrowid
 
     _envia_feedback_langsmith(payload.message_id, payload.rating, payload.comment)
 
@@ -128,10 +164,18 @@ async def stats_feedback(
 
     Requer autenticação JWT (401 sem token válido).
     """
-    async with aiosqlite.connect(_db_path()) as db:
-        await db.execute(_CREATE_TABLE)
-        async with db.execute("SELECT rating, COUNT(*) FROM feedback GROUP BY rating") as cursor:
+    if database_url():
+        async with postgres_connection() as db:
+            await db.execute(_CREATE_POSTGRES_TABLE)
+            cursor = await db.execute("SELECT rating, COUNT(*) FROM feedback GROUP BY rating")
             counts = {row[0]: row[1] for row in await cursor.fetchall()}
+    else:
+        async with aiosqlite.connect(_db_path()) as db:
+            await db.execute(_CREATE_TABLE)
+            async with db.execute(
+                "SELECT rating, COUNT(*) FROM feedback GROUP BY rating"
+            ) as cursor:
+                counts = {row[0]: row[1] for row in await cursor.fetchall()}
 
     up = counts.get("up", 0)
     down = counts.get("down", 0)
@@ -159,18 +203,32 @@ async def recent_feedback(
     (sha256, 8 caracteres) para referência sem vazar UUIDs de run.
     Requer autenticação JWT (401 sem token válido).
     """
-    async with aiosqlite.connect(_db_path()) as db:
-        await db.execute(_CREATE_TABLE)
-        async with db.execute(
-            """
-            SELECT rating, comment, profile, created_at, message_id
-            FROM feedback
-            ORDER BY id DESC
-            LIMIT ?
-            """,
-            (limit,),
-        ) as cursor:
+    if database_url():
+        async with postgres_connection() as db:
+            await db.execute(_CREATE_POSTGRES_TABLE)
+            cursor = await db.execute(
+                """
+                SELECT rating, comment, profile, created_at, message_id
+                FROM feedback
+                ORDER BY id DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )
             rows = await cursor.fetchall()
+    else:
+        async with aiosqlite.connect(_db_path()) as db:
+            await db.execute(_CREATE_TABLE)
+            async with db.execute(
+                """
+                SELECT rating, comment, profile, created_at, message_id
+                FROM feedback
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ) as cursor:
+                rows = await cursor.fetchall()
 
     items = [
         FeedbackRecentItem(

@@ -35,6 +35,8 @@ from pathlib import Path
 import aiosqlite
 import numpy as np
 
+from src.storage.database import database_url, postgres_connection
+
 logger = logging.getLogger(__name__)
 
 _CREATE_TABLE = """
@@ -46,6 +48,18 @@ CREATE TABLE IF NOT EXISTS chat_cache (
     embedding BLOB,
     doc_version TEXT NOT NULL,
     created_at TEXT NOT NULL
+)
+"""
+
+_CREATE_POSTGRES_TABLE = """
+CREATE TABLE IF NOT EXISTS chat_cache (
+    key TEXT PRIMARY KEY,
+    profile TEXT NOT NULL,
+    question TEXT NOT NULL,
+    answer_json TEXT NOT NULL,
+    embedding BYTEA,
+    doc_version TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL
 )
 """
 
@@ -155,6 +169,13 @@ class ChatCache:
         limite = (datetime.now(UTC) - timedelta(days=_ttl_dias())).isoformat()
 
         try:
+            if database_url():
+                result = await self._lookup_postgres(profile, question, versao, chave, limite)
+                if result is not None:
+                    return result
+                self.misses += 1
+                logger.info("Cache miss", extra={"cache_hit": False})
+                return None
             async with aiosqlite.connect(_cache_db_path()) as db:
                 await db.execute(_CREATE_TABLE)
 
@@ -216,6 +237,69 @@ class ChatCache:
         logger.info("Cache miss", extra={"cache_hit": False})
         return None
 
+    async def _lookup_postgres(
+        self,
+        profile: str,
+        question: str,
+        version: str,
+        key: str,
+        limit: str,
+    ) -> dict | None:
+        """Busca no cache PostgreSQL do piloto publicado."""
+        async with postgres_connection() as db:
+            await db.execute(_CREATE_POSTGRES_TABLE)
+            cursor = await db.execute(
+                """
+                SELECT answer_json FROM chat_cache
+                WHERE key = %s AND profile = %s AND doc_version = %s AND created_at > %s
+                """,
+                (key, profile, version, limit),
+            )
+            row = await cursor.fetchone()
+            if row:
+                self.hits += 1
+                logger.info("Cache hit", extra={"cache_hit": True, "exact": True})
+                return {
+                    "answer": json.loads(row[0]),
+                    "from_cache": True,
+                    "exact": True,
+                    "similarity": 1.0,
+                }
+
+            cursor = await db.execute(
+                """
+                SELECT embedding, answer_json FROM chat_cache
+                WHERE profile = %s AND doc_version = %s AND created_at > %s
+                    AND embedding IS NOT NULL
+                """,
+                (profile, version, limit),
+            )
+            candidates = await cursor.fetchall()
+
+        if not candidates:
+            return None
+        query_vec = np.asarray(self.embedder.embed_query(question), dtype=np.float32)
+        best_similarity, best_answer = 0.0, None
+        for embedding, answer_json in candidates:
+            similarity = similaridade_cosseno(
+                query_vec, np.frombuffer(bytes(embedding), dtype=np.float32)
+            )
+            if similarity > best_similarity:
+                best_similarity, best_answer = similarity, answer_json
+        if best_answer is not None and best_similarity >= _limiar_similaridade():
+            self.hits += 1
+            logger.info(
+                "Cache hit",
+                extra={"cache_hit": True, "exact": False, "similarity": best_similarity},
+            )
+            return {
+                "answer": json.loads(best_answer),
+                "from_cache": True,
+                "exact": False,
+                "similarity": best_similarity,
+            }
+        return None
+
     async def store(
         self,
         profile: str,
@@ -236,6 +320,9 @@ class ChatCache:
 
         try:
             embedding = np.asarray(self.embedder.embed_query(question), dtype=np.float32)
+            if database_url():
+                await self._store_postgres(profile, question, answer, versao, chave, embedding)
+                return True
             async with aiosqlite.connect(_cache_db_path()) as db:
                 await db.execute(_CREATE_TABLE)
                 await db.execute(
@@ -270,6 +357,45 @@ class ChatCache:
         except Exception:  # noqa: BLE001 — cache é otimização; falha não derruba o chat
             logger.exception("Falha ao gravar no cache.")
             return False
+
+    async def _store_postgres(
+        self,
+        profile: str,
+        question: str,
+        answer: dict,
+        version: str,
+        key: str,
+        embedding: np.ndarray,
+    ) -> None:
+        """Grava e expira entradas no cache PostgreSQL."""
+        async with postgres_connection() as db:
+            await db.execute(_CREATE_POSTGRES_TABLE)
+            await db.execute(
+                """
+                INSERT INTO chat_cache
+                    (key, profile, question, answer_json, embedding, doc_version, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT(key) DO UPDATE SET
+                    question = excluded.question,
+                    answer_json = excluded.answer_json,
+                    embedding = excluded.embedding,
+                    doc_version = excluded.doc_version,
+                    created_at = excluded.created_at
+                """,
+                (
+                    key,
+                    profile,
+                    question,
+                    json.dumps(answer, ensure_ascii=False),
+                    embedding.tobytes(),
+                    version,
+                    datetime.now(UTC),
+                ),
+            )
+            await db.execute(
+                "DELETE FROM chat_cache WHERE created_at <= %s OR doc_version != %s",
+                (datetime.now(UTC) - timedelta(days=_ttl_dias()), version),
+            )
 
     def stats(self) -> dict:
         """Contadores para ``GET /health`` (T9.2)."""
