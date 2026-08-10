@@ -73,6 +73,15 @@ def test_azure_deploy_does_not_report_success_after_arm_failure() -> None:
     assert "if ($LASTEXITCODE -ne 0)" in script
 
 
+def test_azure_ingest_job_has_memory_for_embedding_model() -> None:
+    """O job de ingestao precisa suportar o carregamento do modelo de embeddings."""
+    content = Path("infra/azure/main.bicep").read_text(encoding="utf-8")
+    ingest_job = content.split("resource ingestJob", maxsplit=1)[1]
+
+    assert "cpu: json('1.0')" in ingest_job
+    assert "memory: '2Gi'" in ingest_job
+
+
 def test_dockerignore_excludes_local_runtime_data_from_build_context() -> None:
     """Imagens não enviam Qdrant, bancos ou segredos locais ao daemon Docker."""
     dockerignore = Path(".dockerignore")

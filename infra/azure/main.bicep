@@ -440,8 +440,8 @@ resource ingestJob 'Microsoft.App/jobs@2024-03-01' = {
             'scripts/ingest_knowledge_base.py'
           ]
           resources: {
-            cpu: json('0.5')
-            memory: '1Gi'
+            cpu: json('1.0')
+            memory: '2Gi'
           }
           env: [
             {
