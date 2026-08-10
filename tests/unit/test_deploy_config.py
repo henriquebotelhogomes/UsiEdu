@@ -57,6 +57,14 @@ def test_azure_bicep_declares_public_stack_and_ingest_job() -> None:
         assert f"resource {resource_name}" in content
 
 
+def test_azure_deploy_expands_acr_credentials_in_powershell() -> None:
+    """O script deve expandir as propriedades das credenciais antes do deploy."""
+    script = Path("infra/azure/deploy.ps1").read_text(encoding="utf-8")
+
+    assert "registryUsername=$($registryCredentials.username)" in script
+    assert "registryPassword=$($registryCredentials.password)" in script
+
+
 def test_dockerignore_excludes_local_runtime_data_from_build_context() -> None:
     """Imagens não enviam Qdrant, bancos ou segredos locais ao daemon Docker."""
     dockerignore = Path(".dockerignore")
