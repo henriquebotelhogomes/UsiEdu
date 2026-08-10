@@ -111,3 +111,11 @@ def test_hatchling_build_includes_src_package() -> None:
 
     assert "[tool.hatch.build.targets.wheel]" in pyproject
     assert 'packages = ["src"]' in pyproject
+
+
+def test_frontend_proxy_preserves_upstream_host_for_container_apps() -> None:
+    """O proxy usa o host interno da API para a descoberta de servico do ACA."""
+    config = Path("frontend/nginx/default.conf.template").read_text(encoding="utf-8")
+
+    assert "proxy_set_header Host $proxy_host;" in config
+    assert "proxy_set_header Host $host;" not in config
