@@ -4,12 +4,87 @@
 >
 > **Projeto piloto — candidatura Engenheiro(a) de IA | Cruzeiro do Sul Educacional**
 
-## Visão Geral
+[![CI](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/ci.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-A UsiEdu é uma plataforma unificada de agentes de IA que atende dois públicos:
+## Pitch
 
-- **Estudantes**: assistente de jornada acadêmica (dúvidas acadêmicas e financeiras resolvidas por agentes colaboradores).
-- **Funcionários/Docentes**: assistente de conhecimento institucional (normas, políticas, processos internos com citação de fonte).
+Um assistente de IA conversacional que atende estudantes e colaboradores em
+uma única plataforma: dúvidas acadêmicas, financeiras e de processos internos
+resolvidas por agentes especializados, orquestrados por um supervisor em
+LangGraph, com respostas sempre citando as fontes da base de conhecimento.
+
+Construído como projeto piloto de ponta a ponta — do RAG com reranker local à
+observabilidade com LangSmith, do guardrails contra prompt injection ao deploy
+em Azure com CI/CD — este repositório é uma demonstração prática de engenharia
+de IA em produção, não apenas de um protótipo de notebook.
+
+## Diferenciais
+
+- **Orquestração multi-agente (LangGraph)**: supervisor que roteia para agentes
+  especializados (Acadêmico, Financeiro, Documental) e coordena fluxos A2A.
+- **RAG com reranker local**: Qdrant + FastEmbed ONNX + bge-reranker-base,
+  rodando sem custo de API de embedding.
+- **Segurança em camadas**: guardrails anti-prompt injection em 3 níveis,
+  autenticação JWT por perfil (estudante/colaborador) e rate limiting.
+- **Human-on-the-loop**: feedback 👍/👎 persistido, anexado ao trace no
+  LangSmith e agregado em uma página de satisfação (`/insights`).
+- **Engenharia de qualidade**: cache semântico de respostas, avaliação Ragas,
+  testes automatizados, lint e CI/CD no GitHub Actions.
+- **Deploy real em Azure**: IaC com Bicep e Container Apps, escalando a zero.
+
+## Demonstração
+
+▶ **Teste ao vivo:** https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/
+
+Credenciais demo: `ana@demo.usiedu` / `estudante123` (visíveis na tela de login).
+
+> O ambiente escala a zero para economizar crédito; a primeira abertura ou
+> resposta pode levar até 60 segundos (cold start).
+
+## Sobre o autor
+
+Projeto desenvolvido por **Henrique Botelho Gomes** como piloto de candidatura
+para Engenheiro(a) de IA. O repositório reúne o ciclo completo de um produto de
+IA: levantamento de requisitos e PRD, arquitetura e decisões técnicas,
+implementação, avaliação, documentação e deploy.
+
+- [LinkedIn](https://www.linkedin.com/in/henriquebotelhogomes/)
+- [GitHub](https://github.com/henriquebotelhogomes)
+- [Documentação técnica (MkDocs)](https://henriquebotelhogomes.github.io/UsiEdu/)
+
+**Disponível para entrevistas — vamos agendar uma conversa!** 👋
+
+## Screenshots
+
+**Landing page** — apresentação institucional com funcionalidades, agentes, arquitetura, fontes e stack:
+
+![Landing page](screenshots/landing-page.png)
+
+**Chat como estudante** — pergunta sobre feriados respondida com citação das fontes (Agente Acadêmico):
+
+![Chat estudante](screenshots/chat-estudante.png)
+
+**Chat como funcionário** — licença capacitação respondida pelo Agente Documental com base no Guia do Servidor:
+
+![Chat funcionário](screenshots/chat-funcionario.png)
+
+**Documentação técnica** — MkDocs Material publicada no GitHub Pages:
+
+![Documentação MkDocs](screenshots/docs-mkdocs.png)
+
+Para regenerar os prints com o sistema rodando localmente: `python scripts/capture_screenshots.py`
+(requer `pip install playwright && python -m playwright install chromium`).
+
+## Funcionalidades
+
+- **Estudantes**: assistente de jornada acadêmica — dúvidas acadêmicas e
+  financeiras resolvidas por agentes colaboradores.
+- **Funcionários/Docentes**: assistente de conhecimento institucional — normas,
+  políticas e processos internos com citação de fonte.
+- **Chat com fontes citadas** e indicação do agente que respondeu.
+- **Feedback 👍/👎** em cada resposta, com taxa de satisfação em `/insights`.
 
 ## Arquitetura
 
@@ -35,7 +110,50 @@ A UsiEdu é uma plataforma unificada de agentes de IA que atende dois públicos:
 └──────────────────────────────────────┘
 ```
 
+**Decisões técnicas (por quê):**
+
+- **FastAPI + LangGraph**: API assíncrona com tipagem forte, e um grafo
+  explícito para orquestração multi-agente — roteamento, estado e fluxos A2A
+  viram código versionável e testável, não "prompt magic".
+- **Embeddings e reranker locais (ONNX)**: qualidade de RAG sem custo por
+  chamada de API de embedding — decisão crítica para escala e economia.
+- **Qdrant**: vector DB dedicado com filtros e alta disponibilidade, em vez de
+  embutir a busca na aplicação.
+
 Detalhes completos na documentação (`docs/`).
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Backend | Python 3.12+, FastAPI, LangGraph, LangChain |
+| LLM | OpenCode Go (DeepSeek V4 Flash + Kimi K2.7 Code) |
+| Vector DB | Qdrant (Docker) |
+| Embeddings | FastEmbed / sentence-transformers (local, ONNX) |
+| Reranker | bge-reranker-base (local) |
+| Observabilidade | LangSmith |
+| Frontend | React + Vite + TypeScript + react-router-dom |
+| Qualidade | Ruff, pytest, GitHub Actions |
+| Documentação | MkDocs Material |
+
+## Qualidade e avaliação
+
+- **CI no GitHub Actions**: lint (Ruff), formatação e testes a cada push/PR.
+- **Testes**: suíte pytest no backend e Vitest/Testing Library no frontend.
+- **Avaliação Ragas** (`src/evaluation/relatorio_ragas.md`): pipeline de
+  avaliação RAGAS+LLM com 26+ perguntas e leitura crítica honesta dos
+  resultados:
+
+| Métrica | Meta | Resultado | Leitura |
+|---|---|---|---|
+| faithfulness | ≥ 0.9 | 0.565 | Gap real de corpus: o Guia do Servidor indexado não cobre temas como Lei 8.112/90 — agente respondeu honestamente "não encontrei" |
+| context_precision | ≥ 0.8 | 0.645 | Penalizado por perguntas fora de escopo (redirecionamento correto previsto no RF-10) |
+| context_recall | ≥ 0.8 | 0.645 | Mesma causa: lacuna de base de conhecimento, não de pipeline |
+| answer_relevancy | ≥ 0.85 | 0.565 | Melhorado na prática excluindo perguntas fora de escopo (~0,65) |
+
+O relatório identifica a causa-raiz e o plano de melhoria em
+`docs/04-piloto-e-roadmap.md` — transparência sobre limitações e o caminho de
+evolução fazem parte do processo de engenharia.
 
 ## Quickstart
 
@@ -49,8 +167,8 @@ Detalhes completos na documentação (`docs/`).
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/<seu-usuario>/usiedu.git
-cd usiedu
+git clone https://github.com/henriquebotelhogomes/UsiEdu.git
+cd UsiEdu
 
 # 2. Crie o ambiente virtual
 python -m venv .venv
@@ -89,102 +207,6 @@ python -m src.rag.ingest
 uvicorn src.api.main:app --reload
 ```
 
-## Deploy público — Azure Container Apps
-
-O deploy do piloto está preparado para **Azure Container Apps**, usando a
-assinatura Azure for Students. A URL pública é criada pelo Azure durante o
-provisionamento e é exibida ao final do script; registre-a aqui após a primeira
-execução.
-
-> URL pública: **pendente de primeiro deploy**
-
-### Pré-requisitos
-
-- Azure CLI instalado e autenticado: `az login`.
-- Docker Desktop em execução.
-- Assinatura **Azure for Students** selecionada: `az account set --subscription "<nome-ou-id>"`.
-- Chaves do OpenCode Go e LangSmith disponíveis. Elas são solicitadas sem eco
-  pelo script e não são gravadas no repositório.
-
-No PowerShell, execute:
-
-```powershell
-.\infra\azure\deploy.ps1 `
-  -ResourceGroup rg-usiedu `
-  -Prefix usiedu `
-  -Location brazilsouth `
-  -ImageTag v1
-```
-
-O script cria um Azure Container Registry Basic, publica as imagens API e
-frontend, provisiona Container Apps + Azure Files e gera um `JWT_SECRET` novo
-se ele não for informado. Guarde esse segredo em um gerenciador de senhas; não
-reutilize a chave de desenvolvimento e não o inclua em `.env` versionado.
-
-Depois do deploy, execute a ingestão inicial e acompanhe o resultado:
-
-```powershell
-az containerapp job start --name usiedu-ingest --resource-group rg-usiedu
-az containerapp job execution list --name usiedu-ingest --resource-group rg-usiedu
-```
-
-Use a URL impressa pelo script para validar `https://<url>/health`, login com
-`ana@demo.usiedu` / `estudante123`, chat, feedback e `/insights`. O frontend é
-a única origem pública; API e Qdrant permanecem na rede interna do ambiente.
-
-O frontend e a API podem escalar a zero para economizar crédito. Por isso, após
-inatividade, a primeira abertura ou resposta pode levar **até 60 segundos**
-(cold start). O Qdrant permanece em uma réplica para preservar disponibilidade
-do RAG; acompanhe o consumo em **Cost Management** e crie um alerta de orçamento
-antes da exposição pública.
-
-## Frontend e Landing Page
-
-O frontend (React + Vite + TypeScript, com `react-router-dom`) tem três rotas:
-
-| Rota | Tela | Acesso |
-|---|---|---|
-| `/` | **Landing page institucional** | público |
-| `/login` | Login (usuários demo visíveis na tela) | público |
-| `/chat` | Chat com os agentes (fontes citadas, agente que respondeu) | autenticado |
-
-No chat, cada resposta traz botões **👍/👎 (human-on-the-loop)**: o feedback é
-persistido em SQLite, anexado ao trace correspondente no LangSmith e agregado
-em `GET /feedback/stats` (taxa de satisfação).
-
-A landing page apresenta o projeto para avaliadores/visitantes:
-
-- **Hero** com imagem de campus e chamadas para o login e o repositório.
-- **Menus de navegação** para as seções: Funcionalidades (estudante/funcionário), Agentes (Acadêmico, Financeiro, Documental + Tutor na Fase 2), Arquitetura (diagrama do grafo supervisor), Fontes e Stack.
-- **Fontes da base de conhecimento**: download dos PDFs usados no RAG (Regimento Geral e Calendário 2026.2 da UnB) e links oficiais dos documentos HTML (Guia do Servidor, LDB).
-- **Links externos** para a [documentação técnica](https://henriquebotelhogomes.github.io/UsiEdu/) (MkDocs) e para o repositório no GitHub.
-
-Os documentos da seção Fontes ficam em `frontend/public/documentos/` (cópias dos
-arquivos indexados de `knowledge_base/`, que é recriada por `python -m src.rag.download`).
-
-## Screenshots
-
-**Landing page** — apresentação institucional com funcionalidades, agentes, arquitetura, fontes e stack:
-
-![Landing page](screenshots/landing-page.png)
-
-**Chat como estudante** — pergunta sobre feriados respondida com citação das fontes (Agente Acadêmico):
-
-![Chat estudante](screenshots/chat-estudante.png)
-
-**Chat como funcionário** — licença capacitação respondida pelo Agente Documental com base no Guia do Servidor:
-
-![Chat funcionário](screenshots/chat-funcionario.png)
-
-**Documentação técnica** — MkDocs Material publicada no GitHub Pages:
-
-![Documentação MkDocs](screenshots/docs-mkdocs.png)
-
-Para regenerar os prints com o sistema rodando localmente: `python scripts/capture_screenshots.py`
-(requer `pip install playwright && python -m playwright install chromium`).
-Após o deploy, use a mesma rotina contra HTTPS:
-`python scripts/capture_screenshots.py --base-url https://<url-publica>`.
-
 ## API
 
 | Método | Rota | Auth | Descrição |
@@ -195,19 +217,14 @@ Após o deploy, use a mesma rotina contra HTTPS:
 | GET | `/feedback/stats` | sim | Métricas agregadas de satisfação |
 | GET | `/health` | não | Liveness check |
 
-## Stack
+## Deploy — Azure Container Apps
 
-| Camada | Tecnologia |
-|---|---|
-| Backend | Python 3.12+, FastAPI, LangGraph, LangChain |
-| LLM | OpenCode Go (DeepSeek V4 Flash + Kimi K2.7 Code) |
-| Vector DB | Qdrant (Docker) |
-| Embeddings | FastEmbed / sentence-transformers (local, ONNX) |
-| Reranker | bge-reranker-base (local) |
-| Observabilidade | LangSmith |
-| Frontend | React + Vite + TypeScript + react-router-dom |
-| Qualidade | Ruff, pytest, GitHub Actions |
-| Documentação | MkDocs Material |
+O piloto está publicado em **Azure Container Apps** (brazilsouth), com IaC em
+Bicep (`infra/azure/`): ACR, Container Apps, Azure Files e job de ingestão.
+O script de deploy (`infra/azure/deploy.ps1`) cria os recursos, publica as
+imagens e gera um `JWT_SECRET` novo a cada execução — segredos nunca são
+gravados no repositório. O frontend é a única origem pública; API e Qdrant
+permanecem na rede interna do ambiente.
 
 ## Documentação
 
