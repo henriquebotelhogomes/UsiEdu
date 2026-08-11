@@ -29,8 +29,9 @@ mas não constituiu um procedimento de rollback testado.
 Disponibilizar uma entrega rastreável do commit ao Azure: cada candidato deve
 ter imagens identificadas por commit imutável, testes de integração e E2E
 definidos, aprovação explícita antes do ambiente público e procedimento
-verificado de retorno à revisão anterior. Não há SLO, prazo ou plataforma de
-scan aprovados; serão definidos antes dos gates dependentes.
+verificado de retorno à revisão anterior. A política provisória usa OIDC
+federado, GitHub Environment `production` e Trivy; permanece pendente somente a
+execução que exige acesso Azure.
 
 ## 3. Escopo e não escopo
 
@@ -40,11 +41,14 @@ scan aprovados; serão definidos antes dos gates dependentes.
 - E2E login → chat → feedback → `/insights`.
 - Workflow GitHub Actions para build, teste, scan, publicação e deploy Azure.
 - Tags de imagem derivadas do commit, aprovação pública e rollback verificável.
+- Identidade federada OIDC de GitHub para Azure, limitada ao deploy aprovado.
 
 ### Não escopo
 
 - Implementar mudança de produto ou alterar contratos de chat.
-- Migrar de Azure Container Apps, introduzir Kubernetes ou alterar credenciais.
+- Migrar de Azure Container Apps, introduzir Kubernetes ou alterar segredos e
+  credenciais runtime existentes; a identidade federada OIDC deste escopo é a
+  exceção necessária para o deploy.
 - Publicar workflow, imagem ou infraestrutura como parte desta especificação.
 
 ## 4. Requisitos e critérios de aceite
@@ -54,9 +58,9 @@ scan aprovados; serão definidos antes dos gates dependentes.
 | RQ-DEL-01 | Limites entre frontend/nginx/API, PostgreSQL e Qdrant devem ter testes. | Dado o ambiente de teste, quando um limite ficar indisponível, então o teste distingue a falha e não mascara resposta indevida. |
 | RQ-DEL-02 | O fluxo público principal deve ter E2E automatizado ou evidência manual justificada. | Quando executado contra ambiente autorizado, então login, chat, feedback e `/insights` concluem com dados demo. |
 | RQ-DEL-03 | Toda imagem candidata deve ter identificador imutável rastreável ao commit. | Quando o workflow publicar uma imagem, então tag e digest constam do artefato de deploy. |
-| RQ-DEL-04 | Deploy público deve depender de aprovação explícita. | Sem aprovação do ambiente configurado, o job de produção não inicia. |
-| RQ-DEL-05 | O retorno deve ser testado sem reconstruir a imagem. | Dado falha pós-deploy, quando o runbook for executado, então tráfego retorna à revisão/digest anterior e smoke test passa. |
-| RQ-DEL-06 | Imagens candidatas devem passar por scan com política documentada. | Achado que viola severidade aprovada bloqueia promoção e gera evidência. |
+| RQ-DEL-04 | Deploy público deve usar OIDC federado, menor privilégio e GitHub Environment `production` com aprovação manual. | Sem aprovação, o job não inicia; nenhuma credencial Azure persistente é usada como secret. |
+| RQ-DEL-05 | O retorno deve ser testado sem reconstruir a imagem. | Dado falha pós-deploy, quando o runbook em modo Single for executado, então tráfego retorna ao digest/revisão anterior validada, preservada antes do experimento, e o smoke passa. |
+| RQ-DEL-06 | Imagens candidatas devem passar por Trivy. | CRITICAL e HIGH com correção disponível bloqueiam promoção; exceção versionada contém justificativa, dono e validade máxima de 30 dias. |
 
 ## 5. Decisões, dependências e riscos
 
@@ -64,26 +68,29 @@ scan aprovados; serão definidos antes dos gates dependentes.
 |---|---|---|---|
 | Decisão tomada | Azure Container Apps, ACR e Bicep são a base vigente. | `infra/azure/`. | Reutilizar sem alterar topologia nesta iniciativa. |
 | Decisão tomada | API e Qdrant permanecem internos; frontend é a origem pública. | `main.bicep` e P0. | E2E deve usar a origem pública, não expor API. |
-| Bloqueio arquitetural | Definir autenticação GitHub→Azure (OIDC ou credencial gerenciada), permissões mínimas e ambiente de aprovação. | Requer decisão de segurança. | Bloqueia T03.4, não testes locais. |
-| Bloqueio arquitetural | Definir scanner, severidade bloqueante e tratamento de exceções. | Não há ferramenta/política no repositório. | Bloqueia T03.3. |
-| Bloqueio arquitetural | Validar retenção e ativação de revisões anteriores sob `activeRevisionsMode: Single`. | Azure deve ser verificado no ambiente real. | Bloqueia T03.5 até runbook testado. |
+| Decisão provisória | GitHub→Azure usa OIDC federado, menor privilégio e Environment `production` com aprovação manual; credencial Azure persistente não pode ser secret. | Revisar quando a identidade federada, o escopo RBAC e os aprovadores forem criados e validados. | T03.4 pode desenhar YAML/runbook sem segredo; para aplicar, para no acesso Azure e na criação da identidade. |
+| Decisão provisória | Trivy é o scanner; CRITICAL e HIGH com correção disponível bloqueiam. Exceção é versionada, justificada, tem dono e vence em no máximo 30 dias. | Revisar após o primeiro relatório real e a política de exceção aplicada. | T03.3 pode preparar política e casos de teste; scan/publicação reais aguardam runner e imagem autorizados. |
+| Gate explícito de execução | `activeRevisionsMode: Single` é factual no Bicep, mas a reversão operacional só vale após experimento Azure. | Exige acesso Azure e uma revisão/digest anterior validada. | Antes de automatizar, escrever/executar runbook no modo Single, preservar digest e evidenciar retorno; T03.5 para nesse ponto sem acesso. |
 | Risco | Teste E2E consumir LLM, sofrer cold start ou rate limit. | API escala a zero e tem limites. | Usar ambiente/dados demo controlados e registrar custo/tempo. |
 | Risco | Tag mutável publicar código diferente do validado. | `v1` é default atual. | Promover somente digest produzido pelo candidato aprovado. |
 
 ## 6. Plano técnico
 
-Os testes devem partir dos contratos REST atuais: login, `/chat` ou
-`/chat/stream`, `/feedback`, `/feedback/stats`, `/feedback/recent` e
-`/insights`. O banco de teste não pode usar o PostgreSQL público nem dados
-reais; Qdrant deve ser isolado. O teste frontend/proxy deve verificar que
-SSE não recebe buffering, sem depender de LLM externo.
+Os testes devem partir dos contratos REST documentados: login, `/chat` ou
+`/chat/stream` e `/health`. Antes de automatizar feedback ou `/insights`,
+T03.1/T03.2 devem reconciliar seus contratos com `docs/09-contratos-tecnicos.md`
+ou registrar uma especificação complementar; não devem alegar que
+`/feedback`, `/feedback/stats` ou `/feedback/recent` já são contratos técnicos
+atuais. O banco de teste não pode usar o PostgreSQL público nem dados reais;
+Qdrant deve ser isolado. O teste frontend/proxy deve verificar que SSE não
+recebe buffering, sem depender de LLM externo.
 
 O workflow futuro deverá separar validação de build, scan, publicação e
-produção. O deploy recebe tag/digest imutável, nunca segredo no YAML ou log. A
-aprovação, identidade Azure, política do scanner e rollback precisam de decisão
-explícita antes da configuração. O runbook deve identificar revisão/digest
-anterior, mover tráfego conforme o modo de revisões validado, fazer smoke de
-`/health` e do fluxo autenticado e registrar resultado.
+produção. O deploy recebe tag/digest imutável, nunca segredo no YAML ou log,
+autentica por OIDC federado e usa Environment `production` com aprovação
+manual. O runbook no modo Single deve preservar e identificar a
+revisão/digest anterior validada, retornar a ela sem reconstrução, fazer smoke
+de `/health` e do fluxo autenticado e registrar resultado.
 
 ## 7. Tarefas e microtarefas
 
@@ -98,12 +105,12 @@ anterior, mover tráfego conforme o modo de revisões validado, fazer smoke de
   - [ ] Evidência: relatório E2E com URL/ambiente mascarados quando necessário.
   - [ ] Commit esperado: `test(entrega): adicionar fluxo e2e`.
 - [ ] **T03.3 — Definir política de imagem**
-  - [ ] Escolher scanner e política de severidade, preservando exceções auditáveis.
+  - [ ] Registrar Trivy, bloqueio CRITICAL/HIGH com correção disponível e exceção versionada, justificada, com dono e validade máxima de 30 dias.
   - [ ] Teste: imagem com achado de teste falha a política.
   - [ ] Evidência: decisão, relatório de scan e retenção de digest.
   - [ ] Commit esperado: `docs(entrega): definir politica de imagens`.
 - [ ] **T03.4 — Criar pipeline de promoção**
-  - [ ] Configurar identidade Azure aprovada, tags por commit/digest e aprovação de produção.
+  - [ ] Configurar, após acesso Azure, identidade OIDC federada de menor privilégio, tags por commit/digest e Environment `production` com aprovação manual.
   - [ ] Teste: dry-run/candidato bloqueado sem aprovação e deploy autorizado em ambiente definido.
   - [ ] Evidência: logs sem segredos, SHA/digest e revisão Azure.
   - [ ] Commit esperado: `ci(entrega): automatizar promocao azure`.
@@ -130,7 +137,7 @@ anterior, mover tráfego conforme o modo de revisões validado, fazer smoke de
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
 | G0 — Baseline | Concluído | Workflows, Bicep e P0 inventariados. |
-| G1 — Especificação | Concluído | Este documento define o escopo; as decisões T03.3–T03.5 bloqueiam somente os trabalhos dependentes. |
+| G1 — Especificação | Concluído | Este documento define Trivy, OIDC, aprovação e rollback; acesso Azure bloqueia apenas aplicação/experimento dependente. |
 | G2 — Implementação | Não iniciado | Commits T03.1–T03.5. |
 | G3 — Verificação | Não iniciado | Testes, scan e artefatos de pipeline verdes. |
 | G4 — Operação | Não iniciado | Deploy aprovado e rollback exercitado em Azure. |
@@ -143,7 +150,7 @@ ser necessárias, exigem plano próprio de compatibilidade e restauração.
 ### Definition of Done
 
 - [ ] Testes de integração e E2E aprovados no nível definido.
-- [ ] Imagens imutáveis, scan e aprovação pública operando sem expor segredos.
+- [ ] Imagens imutáveis, Trivy, exceções temporárias auditáveis e aprovação pública operando sem expor segredos ou credenciais Azure persistentes.
 - [ ] Deploy e rollback Azure reproduzidos com evidência de revisão/digest.
 - [ ] CI, runbook e documentação atualizados.
 - [ ] Checklists legados mudaram apenas no commit da evidência correspondente.

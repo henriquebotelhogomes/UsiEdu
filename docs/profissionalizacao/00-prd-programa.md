@@ -91,6 +91,17 @@ Essa decisão substitui, para este programa, a recomendação de modelos da regr
 8 de `docs/08-plano-execucao.md`; as demais regras desse documento continuam
 obrigatórias.
 
+### RQ-PRO-07 — Decisões provisórias do piloto
+
+As decisões operacionais conservadoras que destravam o planejamento das
+iniciativas 02–06 estão consolidadas em
+[07 — Decisões provisórias](07-decisoes-provisorias.md). Elas não encerram P1
+ou P2, não autorizam implementar código, infraestrutura ou workflows nesta
+etapa e devem ser revistas nas condições registradas naquele documento. Uma
+pendência factual bloqueia somente a execução que realmente dependa dela; a
+especificação, o protocolo, os testes locais e os artefatos sem acesso externo
+podem avançar até o respectivo ponto de parada.
+
 ## 4. Métricas e critérios globais
 
 | Área | Linha de base conhecida | Direção de sucesso |
@@ -99,8 +110,9 @@ obrigatórias.
 | RAG — faithfulness | 0,565 | >= 0,90 no recorte de perguntas RAG respondíveis. |
 | RAG — context precision / recall | 0,645 / 0,645 | >= 0,80 em cada métrica. |
 | RAG — answer relevancy | 0,565 | >= 0,85 no recorte de perguntas RAG respondíveis. |
-| Segurança | Segredos no deploy e observabilidade ativa | Segredos gerenciados, dados revisados e recuperação testada. |
-| Entrega | CI valida qualidade e testes; deploy é manual | Build, teste, deploy e rollback reproduzíveis. |
+| Segurança | Segredos no deploy e observabilidade ativa | Key Vault/Managed Identity, dados demo/sintéticos enquanto o gate LGPD vigora e recuperação testada. |
+| Entrega | CI valida qualidade e testes; deploy é manual | Build, teste, deploy e rollback reproduzíveis, com OIDC federado e aprovação de produção. |
+| Disponibilidade | P0: health aquecido 45–212 ms; cold login ~95 s | SLO mensal provisório de 99% no fluxo público, excluída manutenção documentada; cold login ≤180 s e health aquecido p95 ≤500 ms. |
 
 Os valores RAG vêm de `src/evaluation/relatorio_ragas.md`, de 06/08/2026, em
 modo Ragas+LLM. Perguntas `fora_de_escopo` e `sem_resposta` não podem ser

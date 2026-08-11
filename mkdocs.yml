@@ -55,6 +55,7 @@ nav:
     - Segurança Operacional: profissionalizacao/04-seguranca-operacional.md
     - Performance e Disponibilidade: profissionalizacao/05-performance-disponibilidade.md
     - Produto e Experiência: profissionalizacao/06-produto-experiencia.md
+    - Decisões Provisórias do Piloto: profissionalizacao/07-decisoes-provisorias.md
     - Template de Iniciativa: profissionalizacao/TEMPLATE_INICIATIVA.md
 
 markdown_extensions:

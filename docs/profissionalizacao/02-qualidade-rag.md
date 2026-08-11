@@ -38,9 +38,10 @@ qual as perguntas RAG respondíveis sejam reportadas separadamente e atinjam:
 | Context recall | 0,645 agregado | ≥ 0,80 |
 | Answer relevancy | 0,565 agregado | ≥ 0,85 no recorte RAG respondível |
 
-Não há prazo aprovado. A composição exata do recorte RAG respondível é uma
-decisão bloqueante; métricas de categorias excluídas continuam obrigatórias,
-não podendo ocultar regressões.
+Não há prazo aprovado. A composição provisória do recorte RAG respondível e os
+relatórios complementares são definidos em
+[07 — Decisões provisórias](07-decisoes-provisorias.md). Métricas fora do
+agregado continuam obrigatórias e não podem ocultar regressões.
 
 ## 3. Escopo e não escopo
 
@@ -67,20 +68,20 @@ não podendo ocultar regressões.
 | ID | Requisito | Critério de aceite verificável |
 |---|---|---|
 | RQ-RAG-01 | Dataset, categoria, versão do corpus e modo do juiz devem constar do relatório. | Dado um relatório, quando auditado, então cada score tem dataset/commit, manifest e configuração identificáveis. |
-| RQ-RAG-02 | `fora_de_escopo` e `sem_resposta` devem ser relatados fora do agregado RAG respondível. | Quando a avaliação rodar, então há agregados separados e nenhum item muda de categoria sem diff versionado. |
+| RQ-RAG-02 | `tool`, `fora_de_escopo` e `sem_resposta` ficam fora do agregado RAG respondível; `composta` entra nele somente nas subperguntas que exigem recuperação e também recebe sub-relatório. | Quando a avaliação rodar, então há agregado RAG por subpergunta recuperável, assertivas determinísticas de `tool`, sub-relatório de `composta` e relatórios separados para as demais categorias, sem mudança de categoria sem diff versionado. |
 | RQ-RAG-03 | Toda nota zero deve ter diagnóstico rastreável. | Para q001–q030, então a planilha/dataset de diagnóstico aponta uma das quatro causas e a evidência consultada. |
 | RQ-RAG-04 | Mudanças do pipeline devem passar por regressão. | Antes de merge de mudança em prompt/chunking/embedding/reranker, então o job compara baseline e candidato e falha conforme limiar aprovado. |
 | RQ-RAG-05 | A expansão de corpus deve ser autorizada e reproduzível. | Quando um documento entrar, então origem, checksum, público-alvo e resultado de ingestão constam do manifest e do relatório. |
-| RQ-RAG-06 | A escolha de juiz deve ser fundamentada. | A comparação usa o mesmo dataset e registra modelo/configuração, custo observável, repetição e divergências de score. |
+| RQ-RAG-06 | A escolha de juiz deve ser fundamentada. | A comparação usa o mesmo dataset/recorte, três repetições, temperatura 0 quando suportada, custo observado/estimado até US$ 5 e divergências de score. |
 
 ## 5. Decisões, dependências e riscos
 
 | Tipo | Item | Dono / condição | Mitigação ou próximo passo |
 |---|---|---|---|
 | Decisão tomada | Metas e baseline são os do relatório de 06/08/2026. | `00-prd-programa.md` § 4. | Não recalcular nem trocar baseline sem preservar o relatório original. |
-| Decisão tomada | `fora_de_escopo` e `sem_resposta` não compõem o agregado RAG respondível, mas terão relatório próprio. | Plano legado § 3.1 e PRD do programa § 4. | Versionar a regra antes de executar o gate. |
-| Bloqueio arquitetural | Definir se perguntas `tool` e `composta` entram no recorte RAG respondível e qual assertiva mede as categorias excluídas. | Dono do produto deve aprovar a taxonomia. | Bloqueia T02.3 e o limiar do gate, não a coleta de baseline. |
-| Bloqueio arquitetural | Escolher juiz mais forte, credencial, orçamento e número de repetições. | Não há decisão nem segredo no repositório. | Bloqueia T02.5; comparação local/determinística pode ser preparada. |
+| Decisão provisória | `tool` fica fora do agregado RAG e recebe assertiva determinística própria; `composta` entra no agregado quando ao menos uma subpergunta exige recuperação e sempre recebe sub-relatório; `fora_de_escopo` mede redirecionamento correto sem RAG/agentes; `sem_resposta` mede recusa honesta sem fonte inventada. | Revisar se a taxonomia, o contrato de roteamento ou o dataset versionado mudar. | T02.3 pode definir campos, agregadores e testes; só a alteração de comportamento espera implementação posterior. |
+| Decisão provisória | `kimi-k2.7-code`, configurado como modelo de agente no Bicep pelo provedor `opencode-go`, é o candidato provisório a juiz forte; DeepSeek V4 Flash é o comparador econômico. O repositório ainda não configura um juiz independente. | Revisar se o provedor/modelo deixar de ser suportado, não permitir configuração comparável ou a comparação mostrar inadequação. | T02.5 deve adicionar configuração/proveniência explícita do juiz, sem criar segredo novo, e comparar no mesmo dataset/recorte, três repetições, temperatura 0 quando suportada e teto de US$ 5. |
+| Gate explícito de execução | A corrida de T02.5 depende de uma credencial `OPENCODE_GO_API_KEY` autorizada, acesso ao provedor, configuração explícita do juiz e custo observável/estimável dentro do teto. | Não registrar, criar ou inferir credencial. | Preparar configuração, validação de paridade e relatório; parar antes da chamada externa se faltar acesso. Isso não bloqueia T02.1–T02.4 documental/local. |
 | Risco | Corpus novo pode introduzir conteúdo não autorizado ou piorar recuperação. | Fonte e público-alvo devem ser revisados. | Manifest, checksum, ingestão incremental e regressão antes/depois. |
 | Risco | Score do juiz variar mais que a mudança avaliada. | Avaliação LLM não é determinística. | Registrar repetições e divergência; não promover resultado sem análise. |
 
@@ -96,8 +97,21 @@ de restauração da coleção e do manifest.
 
 O gate será configurado somente após T02.3. Ele deve executar sem modificar o
 corpus de produção, comparar candidato e baseline versionados e publicar
-artefato no CI. Não há variável de ambiente, migração nem contrato HTTP novo
-especificado nesta etapa.
+artefato no CI. `tool` deve validar o resultado determinístico/autorização sem
+score RAG; `composta` deve publicar o sub-relatório além da contribuição RAG;
+`fora_de_escopo` deve comprovar redirecionamento e zero chamada de RAG/agente;
+`sem_resposta`, recusa honesta e ausência de fonte inventada. Não há variável
+de ambiente, migração nem contrato HTTP novo especificado nesta etapa.
+
+Para remover ambiguidade antes da implementação, T02.3 deve versionar em cada
+caso `composta` uma lista ordenada de subperguntas com `id`, `categoria`,
+`requires_retrieval` e expectativa. O agregado RAG calcula cada métrica como a
+média simples das subperguntas com `requires_retrieval=true`; uma pergunta
+`direct` é uma única subpergunta recuperável. q008 tem duas subperguntas
+`tool` e não entra no agregado; q023 entra somente pela norma de teletrabalho,
+mantendo o boleto no sub-relatório `tool`; q030 entra pelas duas subperguntas
+de recuperação. Esse schema é decisão documental para a futura versão do
+dataset, não altera o JSONL atual.
 
 ## 7. Tarefas e microtarefas
 
@@ -112,7 +126,7 @@ especificado nesta etapa.
   - [ ] Evidência: manifest, log de ingestão e resultados antes/depois.
   - [ ] Commit esperado: `feat(rag): adicionar corpus autorizado`.
 - [ ] **T02.3 — Definir recortes e critérios de categorias especiais**
-  - [ ] Obter decisão explícita sobre `tool`, `composta`, `fora_de_escopo` e `sem_resposta`.
+  - [ ] Registrar a decisão provisória sobre `tool`, `composta`, `fora_de_escopo` e `sem_resposta` e os campos por caso.
   - [ ] Teste: casos de categoria exercitam o agregador correto.
   - [ ] Evidência: decisão registrada e relatório com todos os recortes.
   - [ ] Commit esperado: `docs(rag): definir recortes de avaliacao`.
@@ -122,7 +136,7 @@ especificado nesta etapa.
   - [ ] Evidência: artefato de CI com dataset, manifest, scores e decisão.
   - [ ] Commit esperado: `test(rag): adicionar gate de regressao`.
 - [ ] **T02.5 — Comparar juízes**
-  - [ ] Rodar os juízes aprovados com mesmo dataset e registrar custo, repetição e variabilidade.
+  - [ ] Preparar e, com credencial autorizada, rodar DeepSeek V4 Flash versus Kimi K2.7 Code no mesmo dataset/recorte, três vezes, temperatura 0 quando suportada e até US$ 5 no total.
   - [ ] Teste: validação de configuração impede comparar datasets ou recortes distintos.
   - [ ] Evidência: tabela de comparação e decisão de manutenção/troca.
   - [ ] Commit esperado: `docs(rag): comparar juizes de avaliacao`.
@@ -142,8 +156,8 @@ especificado nesta etapa.
 
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
-| G0 — Baseline | Concluído | Relatório Ragas de 06/08/2026 e inventário T02.1. |
-| G1 — Especificação | Concluído | Este documento define o escopo; a decisão T02.3 bloqueia somente a implementação do recorte e do gate. |
+| G0 — Baseline | Concluído parcialmente | Relatório Ragas de 06/08/2026 existe; T02.1 ainda deve versionar inventário, commit, manifest e configuração exigidos por RQ-RAG-01. |
+| G1 — Especificação | Concluído | Este documento e a decisão provisória definem o recorte e o protocolo; o acesso autorizado ao provedor bloqueia apenas a execução externa de T02.5. |
 | G2 — Implementação | Não iniciado | Commits T02.1–T02.5 e testes correspondentes. |
 | G3 — Verificação | Não iniciado | Pytest/Ruff, relatório reproduzível e gate executado. |
 | G4 — Operação | Não iniciado | Ingestão Azure e avaliação pós-deploy, se corpus mudar. |
@@ -156,7 +170,7 @@ decidido e bloqueia somente a publicação de corpus.
 
 ### Definition of Done
 
-- [ ] Metas calculadas no recorte aprovado e categorias especiais publicadas separadamente.
+- [ ] Metas calculadas no recorte provisório revisável e categorias especiais publicadas separadamente.
 - [ ] Todo zero diagnosticado e toda fonte adicionada autorizada/rastreável.
 - [ ] Gate de regressão e testes relevantes verdes, com relatório reproduzível.
 - [ ] Validação local, CI e Azure (se aplicável) registrada sem segredos.

@@ -12,6 +12,12 @@ evidências e decisões de cada iniciativa ficam em
 implementar uma iniciativa, leia o PRD do programa, o documento da iniciativa
 e os documentos legados que ele referencia.
 
+As decisões provisórias conservadoras, seus gates de execução e pendências
+factuais estão em
+[`docs/profissionalizacao/07-decisoes-provisorias.md`](docs/profissionalizacao/07-decisoes-provisorias.md).
+Elas permitem avançar documentação, protocolo e testes locais sem declarar P1
+ou P2 concluídos.
+
 ## Avaliacao atual
 
 O UsiEdu está em nível profissional para **portfólio técnico** e **piloto
@@ -78,7 +84,9 @@ Diagnóstico já conhecido:
 - [ ] Criar um gate de regressão no CI para o dataset de avaliação antes de
   alterar prompt, chunking, embedding ou reranker.
 - [ ] Comparar o avaliador econômico com um LLM judge mais forte e registrar
-  custo, estabilidade e resultado.
+  custo, estabilidade e resultado. *(Protocolo: Kimi K2.7 Code via OpenCode Go,
+  três repetições, temperatura 0 quando suportada e teto de US$ 5; execução
+  externa requer credencial autorizada.)*
 
 ## Prioridade 1 — Integracao, entrega e rollback
 
@@ -88,32 +96,36 @@ limites entre serviços e tornar a entrega repetível.
 - [ ] Criar testes de integração para frontend → nginx → API.
 - [ ] Criar testes de integração para API → PostgreSQL e API → Qdrant.
 - [ ] Criar teste ponta a ponta para login → chat → feedback → `/insights`.
-- [ ] Automatizar build, testes e deploy com GitHub Actions.
+- [ ] Automatizar build, testes e deploy com GitHub Actions via OIDC federado,
+  menor privilégio e Environment `production` com aprovação manual.
 - [ ] Usar tags de imagem imutáveis derivadas do commit.
 - [ ] Definir rollback para a revisão anterior do Container App.
 - [ ] Adicionar aprovação explícita antes de deploy público.
-- [ ] Adicionar scan de vulnerabilidades das imagens Docker.
+- [ ] Adicionar Trivy, bloqueando CRITICAL/HIGH com correção disponível e
+  exceção versionada de até 30 dias.
 
 ## Prioridade 1 — Seguranca e continuidade operacional
 
-- [ ] Migrar segredos para Azure Key Vault e, quando possível, Managed Identity.
+- [ ] Migrar segredos para Azure Key Vault + Managed Identity e retirar ACR
+  admin somente após migração validada.
 - [ ] Impedir geração involuntária de um novo `JWT_SECRET` em cada deploy;
   documentar rotação de chaves e impacto em sessões.
 - [ ] Revisar dados pessoais enviados a logs e LangSmith, com política de
   retenção, minimização e anonimização.
-- [ ] Definir política de privacidade e requisitos LGPD para um piloto com
-  usuários externos.
+- [ ] Manter o piloto em conta demo/dados sintéticos até política, canal formal
+  e controlador LGPD reais permitirem usuários externos.
 - [ ] Configurar backup do PostgreSQL e testar restauração.
 - [ ] Documentar backup, recuperação e consistência do volume do Qdrant.
-- [ ] Criar alerta de orçamento e alertas operacionais para falha de API,
-  ingestão e banco.
+- [ ] Criar alertas de API, ingestão e banco por GitHub issue/Action e Azure
+  Monitor; usar orçamento Azure apenas quando factual.
 
 ## Prioridade 2 — Performance e disponibilidade
 
 - [ ] Medir consumo de memória e latência do embedder e reranker no Azure.
-- [ ] Ajustar startup, readiness e liveness probes à carga dos modelos locais.
-- [ ] Definir limites de timeout, retry e comportamento de falha para chamadas
-  ao LLM, Qdrant e PostgreSQL.
+- [ ] Ajustar startup, readiness rasa (processo/configuração/modelos) e
+  telemetria separada de dependências.
+- [ ] Definir timeout e no máximo um retry idempotente com backoff+jitter; não
+  repetir automaticamente após stream ou escrita não idempotente.
 - [ ] Avaliar se `minReplicas: 0` é adequado para a demonstração ou se uma
   réplica aquecida justifica o custo.
 - [ ] Reduzir tempo de cold start: imagem, cache de modelo, estratégia de
@@ -122,10 +134,11 @@ limites entre serviços e tornar a entrega repetível.
 ## Prioridade 2 — Produto e experiencia
 
 - [ ] Melhorar a mensagem do chat quando um stream falhar ou for interrompido.
-- [ ] Definir política explícita para perguntas genéricas: responder com
-  conhecimento geral seguro, usar ferramenta determinística ou redirecionar.
-- [ ] Executar revisão de acessibilidade, responsividade mobile e fluxos de
-  teclado.
+- [ ] Redirecionar pergunta genérica segura fora do domínio sem RAG/agentes;
+  usar `tool` somente para operação determinística aprovada, sem conhecimento
+  geral irrestrito.
+- [ ] Executar revisão WCAG 2.2 AA como referência, nos viewports 360, 768 e
+  1280 px, incluindo teclado, foco, nome acessível e contraste.
 - [ ] Adicionar página de contato e vídeo curto de demonstração ao portfólio.
 - [ ] Capturar e incluir screenshot da página `/insights`.
 

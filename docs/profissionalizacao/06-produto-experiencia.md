@@ -22,17 +22,18 @@ RNF2-06 exige `aria-label` para botões/links novos e manutenção de navegaçã
 por teclado. Links de fonte já recebem `aria-label`; a página `/insights`
 existe e não há screenshot dela no conjunto documentado no README. O roteiro
 de vídeo existe, enquanto o checklist legado ainda registra gravação pendente.
-Não há política aprovada para perguntas genéricas, padrão de acessibilidade,
-breakpoints de responsividade, destino de contato ou hospedagem do vídeo.
+Antes deste pacote, não havia política para perguntas genéricas, padrão de
+acessibilidade ou breakpoints; a decisão provisória agora os define. Destino de
+contato, hospedagem/roteiro final do vídeo e licença continuam sem fato aprovado.
 
 ## 2. Objetivo mensurável
 
 Garantir que falhas/interrupções do stream sejam compreensíveis e recuperáveis,
 evidenciar navegação por teclado e uso em viewport mobile, e completar os
 ativos públicos previstos (contato, vídeo e screenshot de `/insights`) após as
-decisões correspondentes. A métrica normativa disponível é conformidade com
-`aria-label` e teclado para elementos novos; não há nível WCAG, taxa de erro,
-viewport-alvo ou prazo aprovados.
+decisões correspondentes. Os fluxos principais usam como referência WCAG 2.2
+AA nos viewports 360, 768 e 1280 px; contato, host/roteiro final do vídeo e
+licença permanecem pendências factuais de publicação.
 
 ## 3. Escopo e não escopo
 
@@ -55,10 +56,10 @@ ferramenta determinística ou redirecionamento.
 | ID | Requisito | Critério de aceite verificável |
 |---|---|---|
 | RQ-UX-01 | Falha antes/durante stream deve ter mensagem compreensível e ação segura. | Dado erro simulado, quando o usuário estiver no chat, então entende se a resposta não foi enviada, foi parcial ou pode ser repetida sem duplicação. |
-| RQ-UX-02 | Perguntas genéricas devem seguir política aprovada. | Para exemplos aprovados, então o comportamento coincide com política e não aciona fonte/agente proibido. |
-| RQ-UX-03 | Elementos afetados devem funcionar por teclado e ter nome acessível. | Teste manual/automatizado percorre login, chat, fontes, feedback e insights sem foco perdido. |
-| RQ-UX-04 | Fluxos principais devem permanecer utilizáveis nos viewports definidos. | Evidência de viewport aprovada demonstra landing, login, chat e insights sem bloqueio funcional. |
-| RQ-UX-05 | Ativos públicos devem ser verificáveis e atuais. | Contato, vídeo e screenshot possuem destino acessível, texto alternativo quando aplicável e não expõem dado/segredo. |
+| RQ-UX-02 | Pergunta genérica segura fora do domínio é redirecionada para o escopo UsiEdu sem RAG/agentes; operação determinística aprovada usa `tool`. | Casos de fronteira não oferecem conhecimento geral irrestrito e comprovam zero chamada indevida de RAG/agentes. |
+| RQ-UX-03 | Elementos afetados devem funcionar por teclado e ter nome acessível, com WCAG 2.2 AA como referência dos fluxos principais. | Teste manual/automatizado percorre login, chat, fontes, feedback e insights sem foco perdido e verifica teclado, foco, nome acessível e contraste. |
+| RQ-UX-04 | Fluxos principais devem permanecer utilizáveis em 360, 768 e 1280 px. | Evidência demonstra landing, login, chat e insights sem bloqueio funcional nos três viewports. |
+| RQ-UX-05 | Ativos públicos devem ser verificáveis e atuais. | Conteúdo local pode ser preparado, mas contato, vídeo e mídia só são publicados após destino/host/roteiro/licença aprovados; não expõem dado/segredo. |
 
 ## 5. Decisões, dependências e riscos
 
@@ -66,9 +67,9 @@ ferramenta determinística ou redirecionamento.
 |---|---|---|---|
 | Decisão tomada | SSE conserva fallback `/chat` antes de tokens e evita duplicação após token parcial. | `PRD.v2.md` T7.3 e plano T7.3. | Preservar esse contrato ao melhorar mensagens. |
 | Decisão tomada | RF-10 redireciona fora de escopo sem chamar agentes. | `docs/07` RF-10. | Não confundir pergunta genérica com categoria fora de escopo sem política. |
-| Bloqueio de produto | Definir política de perguntas genéricas e exemplos de fronteira. | Dono do produto. | Bloqueia T06.2, não auditoria de UI. |
-| Bloqueio de produto | Definir canal de contato, host/roteiro final do vídeo e licença de mídia. | Dono do produto. | Bloqueia publicação dos ativos. |
-| Bloqueio de qualidade | Definir viewport-alvo e referência de acessibilidade além de RNF2-06. | Não há decisão normativa. | Bloqueia alegação de conformidade ampla. |
+| Decisão provisória | Pergunta genérica segura fora do domínio é redirecionada ao escopo UsiEdu sem RAG/agentes; operações determinísticas aprovadas usam `tool`; não há conhecimento geral irrestrito. | Revisar com requisito de produto aprovado e casos de fronteira testados. | T06.2 pode especificar/testar casos; mudança de comportamento continua trabalho P2. |
+| Decisão provisória | Viewports são 360, 768 e 1280 px; WCAG 2.2 AA referencia os fluxos principais, com teclado, foco, nome acessível e contraste. | Revisar se personas/dispositivos ou norma aplicável mudarem. | T06.3 pode auditar e registrar evidência sem alegar certificação. |
+| Gate explícito de publicação | Screenshot de `/insights` pode ser publicado após revisão de conteúdo em sessão segura. Contato exige destino aprovado; vídeo exige host, roteiro final e licença aprovados. | Exige o fato aplicável a cada ativo, aprovado pelo proprietário/responsável. | T06.4 pode preparar conteúdo local; não precisa reter screenshot revisado por pendências de contato/vídeo. |
 | Risco | Mensagem de retry pode duplicar pergunta/feedback ou ocultar resposta parcial. | Stream pode falhar após tokens. | Testar estados antes/depois do primeiro token. |
 | Risco | Screenshot/vídeo pode vazar conta demo, token, URL interna ou dado operacional. | Ativo público. | Capturar em sessão limpa e revisar antes de versionar/publicar. |
 
@@ -80,12 +81,15 @@ exige nova conversa. A interface não pode afirmar que uma resposta parcial foi
 concluída nem reenviar automaticamente depois de tokens. Testes de parser SSE e
 componentes existentes são o ponto de partida.
 
-A política de pergunta genérica deve ser decidida antes de código: cada opção
-tem implicações distintas para fontes, guardrails e custo. A revisão de
-acessibilidade inicia nos fluxos login/chat/feedback/fontes/insights e deve
-registrar ferramentas, browser, teclado e viewport usados. Ativos de portfólio
-devem derivar da URL pública validada ou de ambiente local claramente rotulado;
-nenhum screenshot ou vídeo altera o estado do produto.
+A política de pergunta genérica redireciona perguntas seguras fora do domínio
+ao escopo UsiEdu, sem RAG/agentes; uma operação determinística aprovada usa
+`tool`, e conhecimento geral irrestrito não é oferecido. A revisão de
+acessibilidade inicia nos fluxos login/chat/feedback/fontes/insights, usando
+WCAG 2.2 AA como referência e registrando browser, teclado, foco, nome
+acessível, contraste e os viewports 360/768/1280 px. Ativos de portfólio podem
+ser preparados localmente. Screenshot de `/insights` pode ser publicado após
+revisão de conteúdo seguro; contato exige destino aprovado e vídeo/mídia exigem
+host, roteiro final e licença aprovados.
 
 ## 7. Tarefas e microtarefas
 
@@ -95,17 +99,17 @@ nenhum screenshot ou vídeo altera o estado do produto.
   - [ ] Evidência: matriz de estados e capturas de teste.
   - [ ] Commit esperado: `docs(ux): definir falhas de streaming`.
 - [ ] **T06.2 — Decidir perguntas genéricas**
-  - [ ] Aprovar política e exemplos de conhecimento geral, ferramenta e redirecionamento.
+  - [ ] Registrar exemplos de redirecionamento sem RAG/agentes e de `tool` determinística aprovada; não oferecer conhecimento geral irrestrito.
   - [ ] Teste: casos de fronteira seguem a decisão e preservam RF-10/RF-14.
   - [ ] Evidência: decisão e testes de comportamento.
   - [ ] Commit esperado: `docs(produto): definir perguntas genericas`.
 - [ ] **T06.3 — Revisar acessibilidade e mobile**
-  - [ ] Definir viewports/referência e auditar fluxos por teclado, foco e nomes acessíveis.
+  - [ ] Auditar 360, 768 e 1280 px contra WCAG 2.2 AA como referência, incluindo teclado, foco, nome acessível e contraste.
   - [ ] Teste: componentes afetados exercitam teclado/`aria-label`; roteiro manual cobre mobile.
   - [ ] Evidência: checklist com browser, viewport, achados e correções.
   - [ ] Commit esperado: `test(ux): cobrir acessibilidade e mobile`.
 - [ ] **T06.4 — Preparar ativos públicos**
-  - [ ] Aprovar contato, roteiro/host de vídeo e capturar `/insights` em sessão segura.
+  - [ ] Preparar conteúdo local e capturar `/insights` em sessão segura; publicar contato, vídeo ou mídia apenas após aprovação de contato, host/roteiro e licença.
   - [ ] Teste: links/rotas e imagens carregam sem conteúdo sensível.
   - [ ] Evidência: URLs, arquivo revisado e checklist de publicação.
   - [ ] Commit esperado: `docs(portfolio): atualizar ativos publicos`.
@@ -126,7 +130,7 @@ nenhum screenshot ou vídeo altera o estado do produto.
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
 | G0 — Baseline | Concluído | PRD v2, P0 e UI existente inventariados. |
-| G1 — Especificação | Concluído | Este documento; T06.2 e referências de qualidade pendentes. |
+| G1 — Especificação | Concluído | Este documento define política de perguntas, viewports e referência; fatos de publicação bloqueiam somente a publicação dos ativos. |
 | G2 — Implementação | Não iniciado | Commits T06.1–T06.4. |
 | G3 — Verificação | Não iniciado | Testes de stream, acessibilidade e evidência manual. |
 | G4 — Operação | Não iniciado | Fluxo público e ativos verificados sem dado sensível. |
@@ -140,7 +144,7 @@ publicada como comportamento até ser aprovada e testada.
 ### Definition of Done
 
 - [ ] Falhas de stream têm comportamento testado e explicação clara.
-- [ ] Política de pergunta genérica, acessibilidade e viewport estão decididos onde necessário.
+- [ ] Política de pergunta genérica, WCAG 2.2 AA como referência e viewports estão decididos; publicação de ativos respeita o gate factual.
 - [ ] Auditoria de teclado/mobile e ativos públicos têm evidência revisada.
 - [ ] Fluxo P0 continua válido após mudanças de UX.
 - [ ] Checklists legados só foram atualizados com a implementação validada.

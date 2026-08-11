@@ -8,7 +8,8 @@ estado do ambiente.
 ## Ordem de leitura para um implementador
 
 1. Ler o [PRD do programa](00-prd-programa.md).
-2. Ler o documento da iniciativa que será executada.
+2. Ler as [decisões provisórias do piloto](07-decisoes-provisorias.md) e o
+   documento da iniciativa que será executada.
 3. Conferir os checklists de progresso em `docs/08-plano-execucao.md`, os
    critérios de aceite em `docs/04-piloto-e-roadmap.md` e o gate de entrega em
    `docs/07-prd-requisitos.md`.
@@ -27,6 +28,7 @@ estado do ambiente.
 | [04 — Segurança operacional](04-seguranca-operacional.md) | Especificado — não iniciado | Segredos, LGPD, backup e continuidade. |
 | [05 — Performance e disponibilidade](05-performance-disponibilidade.md) | Especificado — não iniciado | Startup, escala, probes, timeout e resiliência. |
 | [06 — Produto e experiência](06-produto-experiencia.md) | Especificado — não iniciado | Mensagens de erro, acessibilidade, mobile e portfólio. |
+| [07 — Decisões provisórias](07-decisoes-provisorias.md) | Ativo | Decisões conservadoras, gates explícitos e pendências factuais das iniciativas 02–06. |
 | [Template de iniciativa](TEMPLATE_INICIATIVA.md) | Ativo | Modelo obrigatório para as próximas iniciativas. |
 
 ## Convenções de estado
