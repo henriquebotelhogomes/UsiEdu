@@ -302,8 +302,8 @@ _Decisões de política (doc 03 seção 10):_ camada de entrada observa sem bloq
 **Micro-atividades:**
 - [x] Escolher plataforma e provisionar. *(Azure Container Apps provisionado em `rg-usiedu`/`brazilsouth`; baseline sem segredos registrado em 2026-08-11 em `docs/profissionalizacao/01-validacao-piloto.md`.)*
 - [x] Configurar variáveis/secrets; build & push das imagens (ou build no provedor). *(Template Bicep e `deploy.ps1` configuram secrets e constroem/publicam as imagens no ACR.)*
-- [~] Rodar ingestão na nuvem e validar `GET /health` + uma conversa ponta a ponta. *(job de ingestão teve execução bem-sucedida em 2026-08-11; validação funcional P0.2 aguarda o runbook normativo ausente.)*
-- [~] Ajustar CORS/origem única; validar login → chat → feedback → `/insights` no ambiente público. *(CORS explícito + proxy de mesma origem implementados; validação HTTPS P0.2 aguarda o runbook normativo ausente.)*
+- [~] Rodar ingestão na nuvem e validar `GET /health` + uma conversa ponta a ponta. *(job de ingestão teve execução bem-sucedida em 2026-08-11; P0.2 confirmou `GET /health` público, mas a conversa está bloqueada porque o login demo retorna `Erro de autenticação`.)*
+- [~] Ajustar CORS/origem única; validar login → chat → feedback → `/insights` no ambiente público. *(CORS explícito + proxy de mesma origem implementados; P0.2 confirmou a landing, mas login, chat, feedback e `/insights` não foram aceitos devido ao erro de autenticação.)*
 - [x] Atualizar README (URL pública, seção Deploy) e rodar `scripts/capture_screenshots.py` apontando para a URL pública (parâmetro novo `--base-url`). *(README registra a URL como pendente até o provisionamento; script recebeu `--base-url`.)*
 
 **Critérios de aceite:**

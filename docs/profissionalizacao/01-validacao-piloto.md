@@ -50,3 +50,19 @@ az containerapp job execution list --name usiedu-ingest --resource-group rg-usie
 az postgres flexible-server show --name usiedu-pg-j6p4znlvml25e --resource-group rg-usiedu `
   --query "{state:state,version:version,sku:sku.name,storageGb:storage.storageSizeGb}" -o json
 ```
+
+## T-P0.2 - Fluxo funcional publico
+
+**Status:** concluida com falha em 2026-08-11.
+
+| Etapa | Resultado | Evidencia |
+|---|---|---|
+| Landing HTTPS | aprovada | A pagina publica carregou em `https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/` e exibiu a navegacao e o CTA de acesso. |
+| Health pela origem publica | aprovada | `GET /health` retornou HTTP 200 e `status: ok` em 24,30 s durante o acionamento inicial. |
+| Login demo | falhou | A selecao da conta demo visivel na tela preencheu o formulario, mas o envio terminou em `Erro de autenticacao`. |
+| Chat RAG, feedback e `/insights` | nao executados | Dependem de uma sessao autenticada; bloqueados pela falha de login. |
+
+O navegador usado para a evidencia foi uma sessao isolada e a selecao da conta
+demo foi feita pela propria tela, sem registrar senha ou token. A falha atende
+ao gatilho de T-P0.4, mas a coleta de latencia e logs de T-P0.3 deve preceder
+o diagnostico e a correcao.

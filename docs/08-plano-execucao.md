@@ -269,7 +269,7 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Proxy nginx configurável por `UPSTREAM_API_URL`; CORS deixa de aceitar wildcard com credenciais.
   - [x] README com guia de deploy/cold start e `capture_screenshots.py --base-url`.
   - [x] T-P0.1: baseline Azure sem segredos registrado em `docs/profissionalizacao/01-validacao-piloto.md` (2026-08-11): Container Apps provisionados, PostgreSQL `Ready` e última ingestão bem-sucedida.
-  - [~] T-P0.2: validar `/health`, login → chat → feedback → `/insights` e registrar evidências HTTPS. *(aguarda o runbook normativo da P0, ausente deste checkout.)*
+  - [x] T-P0.2: validação HTTPS executada em 2026-08-11. Landing e `/health` responderam, mas o login pela conta demo visível retornou `Erro de autenticação`; chat, feedback e `/insights` ficaram bloqueados. Evidência em `docs/profissionalizacao/01-validacao-piloto.md`.
 
 **DoD da sprint (parcial):** sistema exposto publicamente sem surpresas de custo/abuso.
 
