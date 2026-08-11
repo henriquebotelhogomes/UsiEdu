@@ -8,17 +8,23 @@
 | Dataset Git blob | `7d643a666021218443598288c5c8f5acc5b7ef81` |
 | Manifest Git blob | `d49071f2c96a856f52cfc610adce7e02f9886d91` |
 | Relatorio Git blob | `6e9bcfccbcdc1e455ce193cb8bd704e80d416840` |
+| Snapshot dataset blob | `7d643a666021218443598288c5c8f5acc5b7ef81` |
+| Snapshot manifest blob | `6eafd08a1d1c27f99a41441955b41f33500ebc2e` |
+| Snapshot relatorio blob | `6e9bcfccbcdc1e455ce193cb8bd704e80d416840` |
 | Gerado em | `2026-08-06T14:50:48.482095+00:00` |
 | Modo declarado pelo relatorio | `Ragas+LLM` |
 
 Os identificadores sao SHA-1 de objetos Git (`blob`): o Git calcula o hash
-sobre `blob <tamanho>\0<bytes>`. Portanto, eles identificam os bytes
-versionados e nao variam com conversao CRLF do checkout. O teste deterministico
-executa `git rev-parse <commit>:<caminho>` para validar cada identificador.
+sobre `blob <tamanho>\0<bytes>`. Os tres primeiros sao referencias historicas
+recuperadas do commit; os tres `Snapshot` sao calculados sobre os snapshots
+versionados em `baseline_snapshots/2026-08-06/`, com bytes UTF-8 e LF
+canonicos (o teste normaliza `CRLF` para `LF` antes do hash). O teste calcula
+esses IDs em Python, sem `git show` ou `git rev-parse`, e por isso nao depende
+de historico completo no CI.
 
-O inventario em `baseline_diagnostico_2026-08-06.json` schema `2.0.0` usa
-exclusivamente esses tres blobs. Ele nao associa os scores ao dataset ou
-manifest atuais.
+O inventario em `baseline_diagnostico_2026-08-06.json` schema `2.0.0` usa os
+snapshots para validacao local e conserva os IDs historicos como referencia de
+origem. Ele nao associa os scores ao dataset ou manifest atuais.
 
 ## Modo declarado e mecanismo observado
 

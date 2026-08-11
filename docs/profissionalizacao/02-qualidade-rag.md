@@ -12,13 +12,13 @@
 
 ## 1. Contexto e evidências
 
-O relatório Ragas+LLM de 06/08/2026 avaliou 30 perguntas e registrou
-faithfulness 0,565, context precision 0,645, context recall 0,645 e answer
-relevancy 0,565, abaixo das metas de 0,90/0,80/0,80/0,85. Ele identifica quatro
-perguntas `fora_de_escopo` com redirecionamento correto do RF-10, quatro
-`sem_resposta` com 1,000 em todas as métricas e lacuna real de corpus staff em
-q018–q022. Excluindo `fora_de_escopo`, o próprio relatório estima cerca de 0,65
-para faithfulness/relevancy e 0,70 para precision/recall.
+O relatório de 06/08/2026 declara o modo `Ragas+LLM`, avaliou 30 perguntas e
+registrou faithfulness 0,565, context precision 0,645, context recall 0,645 e
+answer relevancy 0,565, abaixo das metas de 0,90/0,80/0,80/0,85. Ele contém
+quatro casos `fora_de_escopo`, quatro `sem_resposta` e cinco zeros em q018–q022.
+Como a execução histórica não preservou respostas, contextos ou erros por caso,
+esses scores não demonstram o comportamento do redirecionamento, a qualidade da
+recusa ou uma causa de corpus.
 
 O plano legado já determina separar `fora_de_escopo` e `sem_resposta`, mapear
 notas zero, ampliar somente corpus autorizado, criar gate de regressão e
@@ -116,7 +116,7 @@ dataset, não altera o JSONL atual.
 ## 7. Tarefas e microtarefas
 
 - [~] **T02.1 — Congelar baseline e diagnóstico**
-  - [x] Versionar a taxonomia e mapear q001–q030, começando por q018–q022 e as categorias especiais. *(Inventario: `src/evaluation/baseline_diagnostico_2026-08-06.json`, schema 1.0.0.)*
+  - [x] Versionar a taxonomia e mapear q001–q030, começando por q018–q022 e as categorias especiais. *(Inventario: `src/evaluation/baseline_diagnostico_2026-08-06.json`, schema 2.0.0.)*
   - [x] Teste: validar schema e unicidade de IDs do dataset/diagnóstico. *(`tests/unit/test_rag_baseline_diagnostico.py`.)*
   - [~] Evidência: relatório comparando o novo inventário com `relatorio_ragas.md`. *(`src/evaluation/evidencia_baseline_2026-08-06.md`; modelo/configuracao/parametros do juiz historico nao registrados.)*
   - [ ] Commit esperado: `docs(rag): registrar baseline e diagnostico`.
@@ -156,7 +156,7 @@ dataset, não altera o JSONL atual.
 
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
-| G0 — Baseline | Concluído parcialmente | Relatório Ragas de 06/08/2026 existe; T02.1 ainda deve versionar inventário, commit, manifest e configuração exigidos por RQ-RAG-01. |
+| G0 — Baseline | Concluído parcialmente | Inventário, commit, dataset, manifest e relatório históricos estão versionados; faltam modelo/configuração/parâmetros do juiz e saídas/erros brutos da execução. |
 | G1 — Especificação | Concluído | Este documento e a decisão provisória definem o recorte e o protocolo; o acesso autorizado ao provedor bloqueia apenas a execução externa de T02.5. |
 | G2 — Implementação | Não iniciado | Commits T02.1–T02.5 e testes correspondentes. |
 | G3 — Verificação | Não iniciado | Pytest/Ruff, relatório reproduzível e gate executado. |

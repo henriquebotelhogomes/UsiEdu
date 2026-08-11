@@ -1,17 +1,16 @@
-"""Testes determinísticos do baseline e diagnóstico RAG da T02.1."""
+"""Testes determinísticos e autocontidos do baseline RAG da T02.1."""
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
-import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent.parent
 DIAGNOSTICO_PATH = ROOT / "src" / "evaluation" / "baseline_diagnostico_2026-08-06.json"
 DOC_QUALIDADE_PATH = ROOT / "docs" / "profissionalizacao" / "02-qualidade-rag.md"
-BASELINE_COMMIT = "9f7c9bc73c1def78dd2efc489a022a6541d8ff74"
-Q022_REVISION_COMMIT = "80d27c306bcf8c14eb732d13d48d09d0714db2e6"
+SNAPSHOT_DIR = ROOT / "src" / "evaluation" / "baseline_snapshots" / "2026-08-06"
 
 CATEGORIAS = {
     "direct",
@@ -27,15 +26,11 @@ def _carregar_diagnostico() -> dict:
         return json.load(arquivo)
 
 
-def _git(*args: str) -> str:
-    return subprocess.run(
-        ["git", *args],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        encoding="utf-8",
-        text=True,
-    ).stdout.strip()
+def _blob_git(path: Path) -> str:
+    """Calcula ID Git com bytes UTF-8 e LF canônicos, independente do checkout."""
+    conteudo = path.read_bytes().replace(b"\r\n", b"\n")
+    cabecalho = f"blob {len(conteudo)}\0".encode()
+    return hashlib.sha1(cabecalho + conteudo, usedforsecurity=False).hexdigest()
 
 
 def _linhas_relatorio(conteudo: str) -> dict[str, dict[str, str | float]]:
@@ -54,32 +49,31 @@ def _linhas_relatorio(conteudo: str) -> dict[str, dict[str, str | float]]:
     }
 
 
-def test_diagnostico_tem_schema_taxonomia_e_proveniencia_historica() -> None:
-    """O diagnóstico aponta somente para os blobs da execução histórica."""
+def test_diagnostico_tem_schema_taxonomia_e_snapshots_historicos() -> None:
+    """O diagnóstico registra blobs canônicos calculados dos snapshots versionados."""
     diagnostico = _carregar_diagnostico()
-    baseline = diagnostico["baseline"]
+    origem = diagnostico["baseline"]["source_revision"]
 
     assert diagnostico["schema_version"] == "2.0.0"
     assert set(diagnostico["taxonomy"]) == CATEGORIAS
-    assert baseline["source_revision"]["commit"] == BASELINE_COMMIT
-    assert baseline["source_revision"]["hash_algorithm"] == "git-blob-sha1"
-    assert baseline["source_revision"]["dataset_blob"] == _git(
-        "rev-parse", f"{BASELINE_COMMIT}:src/evaluation/dataset.jsonl"
-    )
-    assert baseline["source_revision"]["manifest_blob"] == _git(
-        "rev-parse", f"{BASELINE_COMMIT}:knowledge_base/manifest.json"
-    )
-    assert baseline["source_revision"]["report_blob"] == _git(
-        "rev-parse", f"{BASELINE_COMMIT}:src/evaluation/relatorio_ragas.md"
-    )
+    assert origem["hash_algorithm"] == "git-blob-sha1"
+    for artefato, nome in {
+        "dataset": "dataset.jsonl",
+        "manifest": "manifest.json",
+        "report": "relatorio_ragas.md",
+    }.items():
+        assert origem[f"{artefato}_snapshot_path"] == (
+            f"src/evaluation/baseline_snapshots/2026-08-06/{nome}"
+        )
+        assert origem[f"{artefato}_snapshot_blob"] == _blob_git(SNAPSHOT_DIR / nome)
 
 
-def test_inventario_tem_ids_unicos_e_corresponde_ao_dataset_historico() -> None:
-    """Cada caso q001-q030 vem do dataset que originou o relatório, não do atual."""
+def test_inventario_tem_ids_unicos_e_corresponde_ao_dataset_snapshot() -> None:
+    """Cada q001-q030 vem do dataset que produziu o relatório histórico."""
     inventario = _carregar_diagnostico()["inventory"]
     dataset_historico = {
         pergunta["id"]: pergunta
-        for linha in _git("show", f"{BASELINE_COMMIT}:src/evaluation/dataset.jsonl").splitlines()
+        for linha in (SNAPSHOT_DIR / "dataset.jsonl").read_text(encoding="utf-8").splitlines()
         if linha
         for pergunta in [json.loads(linha)]
     }
@@ -91,7 +85,6 @@ def test_inventario_tem_ids_unicos_e_corresponde_ao_dataset_historico() -> None:
         == set(dataset_historico)
         == {f"q{numero:03d}" for numero in range(1, 31)}
     )
-
     for caso in inventario:
         pergunta = dataset_historico[caso["id"]]
         assert caso["profile"] == pergunta["profile"]
@@ -100,11 +93,9 @@ def test_inventario_tem_ids_unicos_e_corresponde_ao_dataset_historico() -> None:
         assert set(caso["reported_scores"]) == {"faithfulness", "answer_relevancy"}
 
 
-def test_inventario_preserva_scores_do_relatorio_historico() -> None:
-    """Scores congelados reproduzem o relatório no mesmo commit de execução."""
-    relatorio = _linhas_relatorio(
-        _git("show", f"{BASELINE_COMMIT}:src/evaluation/relatorio_ragas.md")
-    )
+def test_inventario_preserva_scores_do_relatorio_snapshot() -> None:
+    """Scores congelados reproduzem o relatório versionado no repositório."""
+    relatorio = _linhas_relatorio((SNAPSHOT_DIR / "relatorio_ragas.md").read_text(encoding="utf-8"))
     inventario = _carregar_diagnostico()["inventory"]
 
     assert set(relatorio) == {caso["id"] for caso in inventario}
@@ -141,33 +132,35 @@ def test_q022_posterior_fica_separada_do_snapshot_historico() -> None:
     """A reclassificação posterior de q022 não altera o inventário da execução."""
     diagnostico = _carregar_diagnostico()
     revisao = diagnostico["post_baseline_revisions"]["q022"]
-    dataset_historico = {
+    historico = {
         pergunta["id"]: pergunta
-        for linha in _git("show", f"{BASELINE_COMMIT}:src/evaluation/dataset.jsonl").splitlines()
+        for linha in (SNAPSHOT_DIR / "dataset.jsonl").read_text(encoding="utf-8").splitlines()
         if linha
         for pergunta in [json.loads(linha)]
     }
-    dataset_posterior = {
+    posterior_path = SNAPSHOT_DIR / "dataset_q022_reclassificado.jsonl"
+    posterior = {
         pergunta["id"]: pergunta
-        for linha in _git(
-            "show", f"{Q022_REVISION_COMMIT}:src/evaluation/dataset.jsonl"
-        ).splitlines()
+        for linha in posterior_path.read_text(encoding="utf-8").splitlines()
         if linha
         for pergunta in [json.loads(linha)]
     }
 
-    assert revisao["commit"] == Q022_REVISION_COMMIT
-    assert revisao["dataset_blob"] == _git(
-        "rev-parse", f"{Q022_REVISION_COMMIT}:src/evaluation/dataset.jsonl"
+    assert revisao["dataset_blob_snapshot"] == (
+        "src/evaluation/baseline_snapshots/2026-08-06/dataset_q022_reclassificado.jsonl"
     )
-    assert dataset_historico["q022"]["category"] == "direct"
-    assert dataset_posterior["q022"]["category"] == "sem_resposta"
+    assert revisao["snapshot_blob"] == _blob_git(posterior_path)
+    assert historico["q022"]["category"] == "direct"
+    assert posterior["q022"]["category"] == "sem_resposta"
 
 
-def test_t02_1_permanece_parcial_sem_configuracao_factual_do_juiz() -> None:
-    """O checklist não conclui T02.1 enquanto faltam parâmetros da execução histórica."""
+def test_t02_1_permanece_parcial_sem_metadados_factualmente_ausentes() -> None:
+    """O checklist não conclui T02.1 enquanto faltam artefatos de execução históricos."""
     conteudo = DOC_QUALIDADE_PATH.read_text(encoding="utf-8")
 
     assert "| Estado | Em andamento — T02.1 parcial;" in conteudo
     assert "- [~] **T02.1 — Congelar baseline e diagnóstico**" in conteudo
     assert "modelo/configuracao/parametros do juiz historico nao registrados" in conteudo
+    contexto = conteudo.split("## 2. Objetivo mensurável", maxsplit=1)[0]
+    assert "lacuna real de corpus" not in contexto
+    assert "redirecionamento correto" not in contexto

@@ -6,9 +6,15 @@
     "source_revision": {
       "commit": "9f7c9bc73c1def78dd2efc489a022a6541d8ff74",
       "hash_algorithm": "git-blob-sha1",
-      "dataset_blob": "7d643a666021218443598288c5c8f5acc5b7ef81",
-      "manifest_blob": "d49071f2c96a856f52cfc610adce7e02f9886d91",
-      "report_blob": "6e9bcfccbcdc1e455ce193cb8bd704e80d416840"
+      "historical_dataset_blob": "7d643a666021218443598288c5c8f5acc5b7ef81",
+      "historical_manifest_blob": "d49071f2c96a856f52cfc610adce7e02f9886d91",
+      "historical_report_blob": "6e9bcfccbcdc1e455ce193cb8bd704e80d416840",
+      "dataset_snapshot_path": "src/evaluation/baseline_snapshots/2026-08-06/dataset.jsonl",
+      "dataset_snapshot_blob": "7d643a666021218443598288c5c8f5acc5b7ef81",
+      "manifest_snapshot_path": "src/evaluation/baseline_snapshots/2026-08-06/manifest.json",
+      "manifest_snapshot_blob": "6eafd08a1d1c27f99a41441955b41f33500ebc2e",
+      "report_snapshot_path": "src/evaluation/baseline_snapshots/2026-08-06/relatorio_ragas.md",
+      "report_snapshot_blob": "6e9bcfccbcdc1e455ce193cb8bd704e80d416840"
     },
     "execution": {
       "declared_mode": "Ragas+LLM",
@@ -28,7 +34,9 @@
   "post_baseline_revisions": {
     "q022": {
       "commit": "80d27c306bcf8c14eb732d13d48d09d0714db2e6",
-      "dataset_blob": "67933038582591b4009f9b2aba1286bf85a4ada3",
+      "historical_dataset_blob": "67933038582591b4009f9b2aba1286bf85a4ada3",
+      "dataset_blob_snapshot": "src/evaluation/baseline_snapshots/2026-08-06/dataset_q022_reclassificado.jsonl",
+      "snapshot_blob": "808ac51aee250822f9baed3f79db164f10e5bcba",
       "change": "q022 category changed from direct to sem_resposta after the baseline report."
     }
   },
