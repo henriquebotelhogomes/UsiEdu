@@ -9,7 +9,7 @@
 | Manifest Git blob | `d49071f2c96a856f52cfc610adce7e02f9886d91` |
 | Relatorio Git blob | `6e9bcfccbcdc1e455ce193cb8bd704e80d416840` |
 | Snapshot dataset blob | `7d643a666021218443598288c5c8f5acc5b7ef81` |
-| Snapshot manifest blob | `6eafd08a1d1c27f99a41441955b41f33500ebc2e` |
+| Snapshot manifest blob | `d49071f2c96a856f52cfc610adce7e02f9886d91` |
 | Snapshot relatorio blob | `6e9bcfccbcdc1e455ce193cb8bd704e80d416840` |
 | Gerado em | `2026-08-06T14:50:48.482095+00:00` |
 | Modo declarado pelo relatorio | `Ragas+LLM` |

@@ -12,7 +12,7 @@
       "dataset_snapshot_path": "src/evaluation/baseline_snapshots/2026-08-06/dataset.jsonl",
       "dataset_snapshot_blob": "7d643a666021218443598288c5c8f5acc5b7ef81",
       "manifest_snapshot_path": "src/evaluation/baseline_snapshots/2026-08-06/manifest.json",
-      "manifest_snapshot_blob": "6eafd08a1d1c27f99a41441955b41f33500ebc2e",
+      "manifest_snapshot_blob": "d49071f2c96a856f52cfc610adce7e02f9886d91",
       "report_snapshot_path": "src/evaluation/baseline_snapshots/2026-08-06/relatorio_ragas.md",
       "report_snapshot_blob": "6e9bcfccbcdc1e455ce193cb8bd704e80d416840"
     },
