@@ -1046,6 +1046,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#rq-pro-07-decisoes-provisorias-do-piloto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RQ-PRO-07 — Decisões provisórias do piloto
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1119,6 +1130,174 @@
     
   
     Validação do Piloto Público
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-qualidade-rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Qualidade RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-integracao-entrega-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integração, Entrega e Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-seguranca-operacional/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Segurança Operacional
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-performance-disponibilidade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance e Disponibilidade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-produto-experiencia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Produto e Experiência
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-decisoes-provisorias/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisões Provisórias do Piloto
   
 
     
@@ -1304,6 +1483,17 @@
     <span class="md-ellipsis">
       
         RQ-PRO-06 — Política de modelo implementador
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rq-pro-07-decisoes-provisorias-do-piloto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RQ-PRO-07 — Decisões provisórias do piloto
       
     </span>
   </a>
@@ -1509,6 +1699,15 @@ para o backlog, nunca entrar de forma incidental no mesmo commit.</p>
 Essa decisão substitui, para este programa, a recomendação de modelos da regra
 8 de <code>docs/08-plano-execucao.md</code>; as demais regras desse documento continuam
 obrigatórias.</p>
+<h3 id="rq-pro-07-decisoes-provisorias-do-piloto">RQ-PRO-07 — Decisões provisórias do piloto<a class="headerlink" href="#rq-pro-07-decisoes-provisorias-do-piloto" title="Permanent link">&para;</a></h3>
+<p>As decisões operacionais conservadoras que destravam o planejamento das
+iniciativas 02–06 estão consolidadas em
+<a href="../07-decisoes-provisorias/">07 — Decisões provisórias</a>. Elas não encerram P1
+ou P2, não autorizam implementar código, infraestrutura ou workflows nesta
+etapa e devem ser revistas nas condições registradas naquele documento. Uma
+pendência factual bloqueia somente a execução que realmente dependa dela; a
+especificação, o protocolo, os testes locais e os artefatos sem acesso externo
+podem avançar até o respectivo ponto de parada.</p>
 <h2 id="4-metricas-e-criterios-globais">4. Métricas e critérios globais<a class="headerlink" href="#4-metricas-e-criterios-globais" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1542,12 +1741,17 @@ obrigatórias.</p>
 <tr>
 <td>Segurança</td>
 <td>Segredos no deploy e observabilidade ativa</td>
-<td>Segredos gerenciados, dados revisados e recuperação testada.</td>
+<td>Key Vault/Managed Identity, dados demo/sintéticos enquanto o gate LGPD vigora e recuperação testada.</td>
 </tr>
 <tr>
 <td>Entrega</td>
 <td>CI valida qualidade e testes; deploy é manual</td>
-<td>Build, teste, deploy e rollback reproduzíveis.</td>
+<td>Build, teste, deploy e rollback reproduzíveis, com OIDC federado e aprovação de produção.</td>
+</tr>
+<tr>
+<td>Disponibilidade</td>
+<td>P0: health aquecido 45–212 ms; cold login ~95 s</td>
+<td>SLO mensal provisório de 99% no fluxo público, excluída manutenção documentada; cold login ≤180 s e health aquecido p95 ≤500 ms.</td>
 </tr>
 </tbody>
 </table>
