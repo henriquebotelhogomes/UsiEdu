@@ -285,6 +285,11 @@ Apps Job manual: ela usa a mesma imagem da API e executa
 `scripts/ingest_knowledge_base.py` apenas depois que o Qdrant estiver
 disponível.
 
+A API recebe **2 vCPUs e 4 GiB** no manifesto. Os modelos locais de embeddings
+e reranking são inicializados no startup; 2 GiB podem causar encerramento do
+contêiner com código 137 e interromper o streaming. O job de ingestão continua
+em 2 GiB, pois não carrega o reranker.
+
 Os artefatos versionados ficam em `infra/azure/`:
 
 - `registry.bicep`: Azure Container Registry Basic para as imagens privadas.
