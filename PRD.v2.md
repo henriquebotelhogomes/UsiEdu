@@ -300,10 +300,10 @@ _Decisões de política (doc 03 seção 10):_ camada de entrada observa sem bloq
 - Health checks: `/health` público; frontend apontando para a API via mesma origem (nginx já faz proxy).
 
 **Micro-atividades:**
-- [~] Escolher plataforma com o usuário (Azure Container Apps recomendado) e provisionar. *(Azure Container Apps escolhido; Bicep/script preparados. Provisionamento aguarda Azure CLI autenticado e execução pelo proprietário da assinatura.)*
+- [x] Escolher plataforma e provisionar. *(Azure Container Apps provisionado em `rg-usiedu`/`brazilsouth`; baseline sem segredos registrado em 2026-08-11 em `docs/profissionalizacao/01-validacao-piloto.md`.)*
 - [x] Configurar variáveis/secrets; build & push das imagens (ou build no provedor). *(Template Bicep e `deploy.ps1` configuram secrets e constroem/publicam as imagens no ACR.)*
-- [~] Rodar ingestão na nuvem e validar `GET /health` + uma conversa ponta a ponta. *(Container Apps Job manual preparado; execução e evidência dependem do primeiro deploy público.)*
-- [~] Ajustar CORS/origem única; validar login → chat → feedback → `/insights` no ambiente público. *(CORS explícito + proxy de mesma origem implementados; validação HTTPS aguarda a URL pública.)*
+- [x] Rodar ingestão na nuvem e validar `GET /health` + uma conversa ponta a ponta. *(job de ingestão bem-sucedido; P0 final em 11/08/2026 validou health, login frio em ~95 s, chat RAG composto, feedback e `/insights` nas revisões públicas atuais.)*
+- [x] Ajustar CORS/origem única; validar login → chat → feedback → `/insights` no ambiente público. *(CORS e proxy de mesma origem validados. Frontend com `proxy_read_timeout 180s`; API atual sem exit 137 e `/feedback/recent` compatível com TIMESTAMPTZ PostgreSQL.)*
 - [x] Atualizar README (URL pública, seção Deploy) e rodar `scripts/capture_screenshots.py` apontando para a URL pública (parâmetro novo `--base-url`). *(README registra a URL como pendente até o provisionamento; script recebeu `--base-url`.)*
 
 **Critérios de aceite:**

@@ -46,6 +46,11 @@ nav:
     - Contratos Técnicos: 09-contratos-tecnicos.md
   - Avaliação:
     - Roteiro de Vídeo Demo: 10-roteiro-video-demo.md
+  - Operação:
+    - Programa de Profissionalização: profissionalizacao/README.md
+    - PRD do Programa: profissionalizacao/00-prd-programa.md
+    - Validação do Piloto Público: profissionalizacao/01-validacao-piloto.md
+    - Template de Iniciativa: profissionalizacao/TEMPLATE_INICIATIVA.md
 
 markdown_extensions:
   - admonition

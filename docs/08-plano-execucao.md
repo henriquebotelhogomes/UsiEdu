@@ -262,13 +262,17 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Testes: 25 em `tests/unit/test_guardrails.py` (detecção parametrizada, validação de saída, separação de chunks, ingestão com auditoria, endpoints /chat e /chat/stream, LangSmith espião/falha) — incl. usuário staff, pois o intent institucional só aciona o agente documental para esse perfil
   - [x] Política documentada em `docs/03-rag-e-infraestrutura.md` (seção 10)
   - [x] Teste manual: pergunta com injeção → 200 com resposta cordial + log JSON `guardrail_triggered=true, origem=entrada, padroes=[ignorar_instrucoes, revelar_system_prompt]`
-- [~] **T9.4 — Deploy público em nuvem** *(artefatos concluídos; provisionamento e aceite HTTPS aguardam execução na assinatura Azure do proprietário)*
+- [~] **T9.4 — Deploy público em nuvem** *(P0 de validação em andamento; o baseline confirmou o provisionamento atual, mas o aceite HTTPS ainda não foi executado nesta rodada.)*
   - [x] `infra/azure/registry.bicep`, `main.bicep` e `deploy.ps1`: ACR Basic, ambiente Container Apps, frontend externo, API/Qdrant internos, Azure Files para Qdrant, PostgreSQL gerenciado para estado transacional e job manual de ingestão.
   - [x] Secrets/env vars de produção documentados e declarados: `JWT_SECRET`, `OPENCODE_*`, `LANGSMITH_*`/`LANGCHAIN_*`, `QDRANT_URL`, SQLite, cache, rate limit e CORS.
   - [x] `scripts/ingest_knowledge_base.py` para o job de seed; imagem da API passa a incluir `scripts/`.
   - [x] Proxy nginx configurável por `UPSTREAM_API_URL`; CORS deixa de aceitar wildcard com credenciais.
   - [x] README com guia de deploy/cold start e `capture_screenshots.py --base-url`.
-  - [~] Executar o job, validar `/health`, login → chat → feedback → `/insights` e registrar a URL pública HTTPS. *(bloqueado até `az login` do proprietário.)*
+  - [x] T-P0.1: baseline Azure sem segredos registrado em `docs/profissionalizacao/01-validacao-piloto.md` (2026-08-11): Container Apps provisionados, PostgreSQL `Ready` e última ingestão bem-sucedida.
+  - [x] T-P0.2: validação HTTPS executada em 2026-08-11. Landing e `/health` responderam, mas o login pela conta demo visível retornou `Erro de autenticação`; chat, feedback e `/insights` ficaram bloqueados. Evidência em `docs/profissionalizacao/01-validacao-piloto.md`.
+  - [x] T-P0.3: medição executada em 2026-08-11. Resposta aquecida em 51-164 ms, mas cold start retornou HTTP 504 em 81,72 s; logs da API contêm 13 eventos de exit 137 (sistema) e 1 no console. T-P0.4 obrigatório.
+  - [x] T-P0.4: correções publicadas e revalidadas em 2026-08-11: frontend `usiedu-frontend--0000008` usa `proxy_read_timeout 180s`; API `usiedu-api--0000013` normaliza TIMESTAMPTZ em `/feedback/recent`. Login frio, chat, feedback e `/insights` aprovados; exit 137 = 0 na revisão atual.
+  - [x] T-P0.5: README e checklists reconciliados após evidência HTTPS final; cold start documentado como até 180 s (observado em ~95 s).
 
 **DoD da sprint (parcial):** sistema exposto publicamente sem surpresas de custo/abuso.
 

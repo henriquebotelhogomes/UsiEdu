@@ -41,7 +41,8 @@ de IA em produção, não apenas de um protótipo de notebook.
 Credenciais demo: `ana@demo.usiedu` / `estudante123` (visíveis na tela de login).
 
 > O ambiente escala a zero para economizar crédito; a primeira abertura ou
-> resposta pode levar até 60 segundos (cold start).
+> resposta pode levar até 180 segundos (cold start). Na validação pública de
+> 11/08/2026, o login após escala a zero concluiu em aproximadamente 95 segundos.
 
 ## Sobre o autor
 
@@ -225,6 +226,11 @@ O script de deploy (`infra/azure/deploy.ps1`) cria os recursos, publica as
 imagens e gera um `JWT_SECRET` novo a cada execução — segredos nunca são
 gravados no repositório. O frontend é a única origem pública; API e Qdrant
 permanecem na rede interna do ambiente.
+
+Validação pública em 11/08/2026: landing HTTPS, login demo, chat RAG composto,
+feedback e `/insights` foram verificados na URL pública. A documentação
+operacional e as medições de cold start estão em
+`docs/profissionalizacao/01-validacao-piloto.md`.
 
 ## Documentação
 

@@ -63,6 +63,11 @@ def _db_path() -> str:
     return os.getenv("USIEDU_FEEDBACK_DB", "usiedu_feedback.db")
 
 
+def _serializar_created_at(value: str | datetime) -> str:
+    """Normaliza TIMESTAMPTZ do PostgreSQL ao contrato ISO 8601 da API."""
+    return value.isoformat() if isinstance(value, datetime) else value
+
+
 def _envia_feedback_langsmith(message_id: str, rating: str, comment: str | None) -> None:
     """Anexa o feedback ao trace no LangSmith (melhor esforço)."""
     try:
@@ -235,7 +240,7 @@ async def recent_feedback(
             rating=row[0],
             comment=row[1],
             profile=row[2],
-            created_at=row[3],
+            created_at=_serializar_created_at(row[3]),
             message_ref=hashlib.sha256(row[4].encode("utf-8")).hexdigest()[:8],
         )
         for row in rows
