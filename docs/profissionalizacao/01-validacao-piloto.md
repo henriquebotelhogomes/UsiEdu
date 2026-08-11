@@ -98,7 +98,7 @@ diagnostico, teste de regressao e a menor correcao possivel.
 
 ## T-P0.4 - Diagnostico e correcao minima
 
-**Status:** bloqueada apos a correcao local em 2026-08-11.
+**Status:** concluida em 2026-08-11.
 
 ### Diagnostico
 
@@ -109,29 +109,44 @@ diagnostico, teste de regressao e a menor correcao possivel.
 - O timeout ativo e independente da autenticacao: o nginx retornou 504 para
   `POST /auth/login` antes de receber o header da API, enquanto a API registrou
   HTTP 200 para a mesma solicitacao apos terminar o bootstrap.
-- O `proxy_read_timeout` padrao de 60 s e menor que o cold start observado de
-  81,72 s. A menor correcao e declarar 120 s no bloco `server` do nginx, sem
-  alterar a API, a autenticacao ou a topologia Azure.
+- O `proxy_read_timeout` padrao de 60 s e menor que o cold start observado. A
+  primeira correcao para 120 s ainda foi insuficiente para a nova ativacao da
+  API; o limite final de 180 s cobre a ativacao observada sem alterar a API,
+  autenticacao ou topologia Azure.
 
 ### Correcao e teste de regressao
 
 - `tests/unit/test_deploy_config.py::test_frontend_proxy_allows_api_cold_start`
   foi criado antes da implementacao, falhou sem a diretiva e passou depois dela.
-- `frontend/nginx/default.conf.template` agora declara
-  `proxy_read_timeout 120s;`; o streaming conserva o timeout especifico de
+  A segunda iteracao exigiu 180 s, tambem falhou antes da mudanca e passou apos
+  a implementacao.
+- `frontend/nginx/default.conf.template` declara
+  `proxy_read_timeout 180s;`; o streaming conserva o timeout especifico de
   300 s.
-- O commit local da correcao e `0b3e284` (`fix(deploy): ampliar timeout do proxy`).
+- A normalizacao de `TIMESTAMPTZ` do PostgreSQL em `/feedback/recent` tambem
+  recebeu teste de regressao antes da implementacao; isso corrigiu o 500 de
+  `/insights` que SQLite nao reproduzia.
+- Commits de correcao: `0b3e284`, `d562c21` e `f361433`.
 
-### Bloqueio de publicacao
+### Publicacao e revalidacao
 
-A imagem corrigida nao pode ser publicada nesta sessao:
+As imagens foram publicadas depois que Docker Desktop foi iniciado:
 
-1. O Docker Desktop local nao esta em execucao, impedindo `docker build` e
-   `docker push`.
-2. A alternativa `az acr build` foi recusada pelo Azure com
-   `TasksOperationsNotAllowed` para o ACR da assinatura.
+| Componente | Revisao publicada | Imagem |
+|---|---|---|
+| Frontend | `usiedu-frontend--0000008` | `usiedu-frontend:p0-proxy-timeout-180` |
+| API | `usiedu-api--0000013` | `usiedu-api:p0-feedback-timestamp` |
 
-Sem uma nova imagem no ACR, a revisao publica continua usando a configuracao
-anterior e nao e possivel repetir P0.2/P0.3 com a correcao. P0.5 permanece
-fora de execucao: README e checklists nao podem declarar o aceite HTTPS ou a
-URL corrigida sem essa evidencia.
+Com API e frontend escalados a zero, o login demo retornou HTTP 200 em
+aproximadamente 95 s. O fluxo landing HTTPS -> login demo -> chat RAG composto
+com fontes/agentes -> feedback -> `/insights` foi aprovado na URL publica. As
+respostas aquecidas de `GET /health` foram 212 ms, 45 ms e 45 ms. A consulta
+de logs da revisao `usiedu-api--0000013` retornou zero eventos exit 137.
+
+## T-P0.5 - Reconciliacao documental
+
+**Status:** concluida em 2026-08-11.
+
+README, PRD e checklists legados foram atualizados somente apos a revalidacao
+da revisao publicada. T9.4 permanece rastreavel pelos criterios de aceite, sem
+ocultar o cold start configurado de ate 180 s.
