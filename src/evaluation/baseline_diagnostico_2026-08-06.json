@@ -1,0 +1,284 @@
+{
+  "schema_version": "1.0.0",
+  "baseline": {
+    "snapshot_version": "2026-08-06.1",
+    "generated_at": "2026-08-06T14:50:48.482095+00:00",
+    "mode": "Ragas+LLM",
+    "source_report": "src/evaluation/relatorio_ragas.md",
+    "source_report_sha256": "cc83f65c018dd897bff2ee4cf7d9604d97cee120e0cb04c144d8f1dfc9efd180",
+    "dataset": "src/evaluation/dataset.jsonl",
+    "dataset_sha256": "7cf2998f2f9f416a2e8a11f181fca7ca7dc743df7a6923c0380d8b439c966a20",
+    "corpus_manifest": "knowledge_base/manifest.json",
+    "corpus_manifest_sha256": "9ad6307e701d7a7fb252e86d8a69faa85e2ca2de611f29397b89e60f06742a43",
+    "aggregate_scores": {
+      "faithfulness": 0.565,
+      "context_precision": 0.645,
+      "context_recall": 0.645,
+      "answer_relevancy": 0.565
+    }
+  },
+  "taxonomy": {
+    "direct": {
+      "category": "direct",
+      "report": "Question with an institutional answer expected from retrieval; one report row per dataset question."
+    },
+    "tool": {
+      "category": "tool",
+      "report": "Outside the RAG aggregate. Validate deterministic value, authorization, and absence of retrieval with deterministic assertions."
+    },
+    "composta": {
+      "category": "composta",
+      "report": "Keep the historical row. A future aggregate includes only retrieval-required subquestions and publishes a subreport for every subquestion."
+    },
+    "fora_de_escopo": {
+      "category": "fora_de_escopo",
+      "report": "Outside the RAG aggregate. Measure correct UsiEdu redirection and zero RAG or agent calls."
+    },
+    "sem_resposta": {
+      "category": "sem_resposta",
+      "report": "Outside the RAG aggregate. Measure honest refusal and absence of invented sources."
+    }
+  },
+  "inventory": [
+    {
+      "id": "q001",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.762, "answer_relevancy": 0.762},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q001."
+    },
+    {
+      "id": "q002",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.717, "answer_relevancy": 0.717},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q002."
+    },
+    {
+      "id": "q003",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.717, "answer_relevancy": 0.717},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q003."
+    },
+    {
+      "id": "q004",
+      "profile": "student",
+      "category": "tool",
+      "reported_scores": {"faithfulness": 0.744, "answer_relevancy": 0.744},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q004."
+    },
+    {
+      "id": "q005",
+      "profile": "student",
+      "category": "tool",
+      "reported_scores": {"faithfulness": 0.685, "answer_relevancy": 0.685},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q005."
+    },
+    {
+      "id": "q006",
+      "profile": "student",
+      "category": "tool",
+      "reported_scores": {"faithfulness": 0.845, "answer_relevancy": 0.845},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q006."
+    },
+    {
+      "id": "q007",
+      "profile": "student",
+      "category": "tool",
+      "reported_scores": {"faithfulness": 0.362, "answer_relevancy": 0.362},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q007."
+    },
+    {
+      "id": "q008",
+      "profile": "student",
+      "category": "composta",
+      "reported_scores": {"faithfulness": 0.8, "answer_relevancy": 0.8},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q008."
+    },
+    {
+      "id": "q009",
+      "profile": "student",
+      "category": "fora_de_escopo",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "inadequacao_metrica",
+      "evidence": "relatorio_ragas.md, Leitura critica, item 1: RF-10 correto sem contexto recebe zero de faithfulness e relevancy."
+    },
+    {
+      "id": "q010",
+      "profile": "student",
+      "category": "fora_de_escopo",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "inadequacao_metrica",
+      "evidence": "relatorio_ragas.md, Leitura critica, item 1: RF-10 correto sem contexto recebe zero de faithfulness e relevancy."
+    },
+    {
+      "id": "q011",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q011."
+    },
+    {
+      "id": "q012",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.845, "answer_relevancy": 0.845},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q012."
+    },
+    {
+      "id": "q013",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.925, "answer_relevancy": 0.925},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q013."
+    },
+    {
+      "id": "q014",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.717, "answer_relevancy": 0.717},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q014."
+    },
+    {
+      "id": "q015",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.9, "answer_relevancy": 0.9},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q015."
+    },
+    {
+      "id": "q016",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.8, "answer_relevancy": 0.8},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q016."
+    },
+    {
+      "id": "q017",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.55, "answer_relevancy": 0.55},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q017."
+    },
+    {
+      "id": "q018",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "fonte_ausente",
+      "evidence": "relatorio_ragas.md, Leitura critica, item 2: q018-q022 zeraram porque o Guia do Servidor indexado nao contem as respostas."
+    },
+    {
+      "id": "q019",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "fonte_ausente",
+      "evidence": "relatorio_ragas.md, Leitura critica, item 2: q018-q022 zeraram porque o Guia do Servidor indexado nao contem as respostas."
+    },
+    {
+      "id": "q020",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "fonte_ausente",
+      "evidence": "relatorio_ragas.md, Leitura critica, item 2: Lei 8.112/90 esta entre as lacunas; manifest.json nao a lista como documento indexado."
+    },
+    {
+      "id": "q021",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "fonte_ausente",
+      "evidence": "relatorio_ragas.md, Leitura critica, item 2: q018-q022 zeraram porque o Guia do Servidor indexado nao contem as respostas."
+    },
+    {
+      "id": "q022",
+      "profile": "staff",
+      "category": "sem_resposta",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "fonte_ausente",
+      "evidence": "relatorio_ragas.md, Leitura critica, item 2; evidencia_baseline_2026-08-06.md registra que o relatorio historico o rotulou direct, enquanto dataset.jsonl o define sem_resposta."
+    },
+    {
+      "id": "q023",
+      "profile": "staff",
+      "category": "composta",
+      "reported_scores": {"faithfulness": 0.863, "answer_relevancy": 0.863},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q023."
+    },
+    {
+      "id": "q024",
+      "profile": "staff",
+      "category": "fora_de_escopo",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "inadequacao_metrica",
+      "evidence": "relatorio_ragas.md, Leitura critica, item 1: RF-10 correto sem contexto recebe zero de faithfulness e relevancy."
+    },
+    {
+      "id": "q025",
+      "profile": "staff",
+      "category": "fora_de_escopo",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "inadequacao_metrica",
+      "evidence": "relatorio_ragas.md, Leitura critica, item 1: RF-10 correto sem contexto recebe zero de faithfulness e relevancy."
+    },
+    {
+      "id": "q026",
+      "profile": "staff",
+      "category": "sem_resposta",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q026."
+    },
+    {
+      "id": "q027",
+      "profile": "staff",
+      "category": "sem_resposta",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q027."
+    },
+    {
+      "id": "q028",
+      "profile": "staff",
+      "category": "sem_resposta",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q028."
+    },
+    {
+      "id": "q029",
+      "profile": "staff",
+      "category": "sem_resposta",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q029."
+    },
+    {
+      "id": "q030",
+      "profile": "staff",
+      "category": "composta",
+      "reported_scores": {"faithfulness": 0.729, "answer_relevancy": 0.729},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q030."
+    }
+  ]
+}
