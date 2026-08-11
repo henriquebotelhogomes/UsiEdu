@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import os
 import subprocess
 import time
 from datetime import datetime, timezone
@@ -274,6 +275,8 @@ def _initial_state(case: dict[str, Any]) -> dict[str, Any]:
 async def execute_auditable_baseline(config_path: Path) -> Path:
     """Executa os casos, persistindo resposta, fontes, erro, uso e custo por linha."""
     config = _load_json(config_path)
+    if not config["observability"]["external_tracing"]:
+        os.environ["LANGCHAIN_TRACING_V2"] = "false"
     root = Path.cwd()
     dataset_path = root / config["inputs"]["dataset_path"]
     manifest_path = root / config["inputs"]["manifest_path"]

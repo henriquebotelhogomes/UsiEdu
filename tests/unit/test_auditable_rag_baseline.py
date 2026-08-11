@@ -20,6 +20,7 @@ from src.evaluation.auditable_baseline import (
 ROOT = Path(__file__).parent.parent.parent
 DATASET_PATH = ROOT / "src" / "evaluation" / "dataset.jsonl"
 MANIFEST_PATH = ROOT / "knowledge_base" / "manifest.json"
+CONFIG_PATH = ROOT / "src" / "evaluation" / "baseline_runs" / "2026-08-11" / "config.json"
 
 
 def _record(**overrides: object) -> dict:
@@ -181,3 +182,31 @@ def test_hash_git_canonico_independe_de_crlf(tmp_path: Path) -> None:
 def test_dataset_e_manifest_atuais_tem_hash_canonico() -> None:
     assert canonical_git_blob_sha1(DATASET_PATH)
     assert canonical_git_blob_sha1(MANIFEST_PATH)
+
+
+def test_configuracao_fixa_modelos_orcamento_e_sem_tracing_externo() -> None:
+    config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+
+    assert config["schema_version"] == "1.0.0"
+    assert config["run_id"] == "baseline-2026-08-11"
+    assert config["models"] == {
+        "router": {
+            "provider": "opencode-go",
+            "name": "deepseek-v4-flash",
+            "temperature": 1.0,
+            "max_output_tokens": 2048,
+        },
+        "agent": {
+            "provider": "opencode-go",
+            "name": "deepseek-v4-pro",
+            "temperature": 1.0,
+            "max_output_tokens": 2048,
+        },
+    }
+    assert config["budget"] == {
+        "total_usd": 5.0,
+        "per_case_reserve_usd": 0.25,
+        "cost_kind": "token_equivalent_estimate",
+    }
+    assert config["scoring"]["ragas_invocation"] is False
+    assert config["observability"]["external_tracing"] is False

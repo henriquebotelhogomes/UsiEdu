@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "baseline-2026-08-11",
+  "inputs": {
+    "dataset_path": "src/evaluation/dataset.jsonl",
+    "manifest_path": "knowledge_base/manifest.json"
+  },
+  "models": {
+    "router": {
+      "provider": "opencode-go",
+      "name": "deepseek-v4-flash",
+      "temperature": 1.0,
+      "max_output_tokens": 2048
+    },
+    "agent": {
+      "provider": "opencode-go",
+      "name": "deepseek-v4-pro",
+      "temperature": 1.0,
+      "max_output_tokens": 2048
+    }
+  },
+  "retrieval": {
+    "qdrant_url": "http://localhost:6333",
+    "strategy": "hybrid-vector-bm25",
+    "candidate_limit": 20,
+    "result_limit": 5,
+    "reranker": null
+  },
+  "scoring": {
+    "mechanism": "legacy_keyword_heuristic",
+    "implementation": "src.evaluation.run_ragas._avaliar_resposta",
+    "ragas_invocation": false
+  },
+  "pricing": {
+    "source": "https://models.dev/api.json",
+    "retrieved_at": "2026-08-11",
+    "unit": "USD per 1M tokens",
+    "models": {
+      "deepseek-v4-flash": {
+        "input_per_million_usd": 0.07,
+        "output_per_million_usd": 0.14
+      },
+      "deepseek-v4-pro": {
+        "input_per_million_usd": 0.435,
+        "output_per_million_usd": 0.87
+      }
+    }
+  },
+  "budget": {
+    "total_usd": 5.0,
+    "per_case_reserve_usd": 0.25,
+    "cost_kind": "token_equivalent_estimate"
+  },
+  "observability": {
+    "external_tracing": false
+  },
+  "output": {
+    "directory": "src/evaluation/baseline_runs/2026-08-11",
+    "records_file": "records.jsonl",
+    "provenance_file": "provenance.json",
+    "report_file": "report.md"
+  }
+}
