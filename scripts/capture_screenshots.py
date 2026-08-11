@@ -10,8 +10,6 @@ import sys
 import urllib.request
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
-
 DOCS_URL = "https://henriquebotelhogomes.github.io/UsiEdu/"
 OUT = Path(__file__).resolve().parent.parent / "screenshots"
 
@@ -74,6 +72,8 @@ def rate_answer(page, rating: str = "up") -> None:
 
 def main(argv: list[str] | None = None) -> None:
     """Captura os screenshots contra a origem selecionada."""
+    from playwright.sync_api import sync_playwright
+
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     args = parse_args(argv)

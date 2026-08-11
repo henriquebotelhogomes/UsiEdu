@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 import importlib.util
 from pathlib import Path
 
@@ -34,8 +35,16 @@ def test_auth_uses_documented_jwt_secret(monkeypatch) -> None:
     assert get_secret_key() == "segredo-do-deploy"
 
 
-def test_capture_screenshots_accepts_public_base_url() -> None:
-    """As capturas podem apontar para o frontend HTTPS já publicado."""
+def test_capture_screenshots_accepts_public_base_url_without_playwright(monkeypatch) -> None:
+    """O parser do script não exige a dependência opcional Playwright."""
+    original_import = builtins.__import__
+
+    def block_playwright_import(name: str, *args, **kwargs):
+        if name == "playwright" or name.startswith("playwright."):
+            raise ModuleNotFoundError("No module named 'playwright'")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", block_playwright_import)
     script_path = Path("scripts/capture_screenshots.py")
     spec = importlib.util.spec_from_file_location("capture_screenshots", script_path)
     assert spec is not None and spec.loader is not None
