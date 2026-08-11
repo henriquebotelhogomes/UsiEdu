@@ -104,14 +104,14 @@ de qualquer alteração de infraestrutura ou código.
     uma seção de evidências desta iniciativa.
   - [x] Teste: os comandos Azure retornam o grupo e recursos esperados.
 
-- [ ] **T-P0.2 — Validar fluxo público completo**
-  - [ ] Abrir a landing em janela anônima e registrar a URL HTTPS.
-  - [ ] Fazer login como Ana; confirmar que a tela de chat abre.
+- [~] **T-P0.2 — Validar fluxo público completo** *(bloqueado em 11/08/2026, 09:28 BRT: login demo permanece em `Entrando...` por mais de 25 s)*
+  - [x] Abrir a landing em janela anônima e registrar a URL HTTPS.
+  - [~] Fazer login como Ana; confirmar que a tela de chat abre. *(A tela não abriu: o botão permaneceu desabilitado como `Entrando...`.)*
   - [ ] Em nova sessão, perguntar `quais feriados teremos em 2026?` e aguardar
     o evento final do stream.
   - [ ] Enviar feedback e abrir `/insights` na mesma sessão autenticada.
-  - [ ] Teste: validar RQ-P0-01 a RQ-P0-04 no navegador, com screenshot sem
-    dados sensíveis se for necessário para evidência.
+  - [~] Teste: validar RQ-P0-01 a RQ-P0-04 no navegador, com screenshot sem
+    dados sensíveis se for necessário para evidência. *(RQ-P0-01 passou; RQ-P0-02 falhou e bloqueia RQ-P0-03/RQ-P0-04.)*
 
 - [ ] **T-P0.3 — Medir latência e verificar saúde**
   - [ ] Após escala a zero ou período de inatividade conhecido, medir tempo de
@@ -203,7 +203,7 @@ senhas, JWTs, chaves de LLM ou connection strings.
 
 | Data/hora BRT | Revisão API | Job mais recente | Fluxo público | Cold / aquecido | Logs | Responsável |
 |---|---|---|---|---|---|---|
-| 11/08/2026 09:27 | `usiedu-api--0000012`; `Succeeded`; 2 vCPUs / 4 GiB; `minReplicas=0`, `maxReplicas=1` | `usiedu-ingest-n8wsoms`; `Succeeded` em 11/08/2026 00:34 UTC | Ainda não validado (T-P0.2) | Ainda não medido (T-P0.3) | Consulta dos 200 logs mais recentes, filtrada por startup/erro/OOM/exit 137, sem ocorrências correspondentes | Henrique |
+| 11/08/2026 09:27 | `usiedu-api--0000012`; `Succeeded`; 2 vCPUs / 4 GiB; `minReplicas=0`, `maxReplicas=1` | `usiedu-ingest-n8wsoms`; `Succeeded` em 11/08/2026 00:34 UTC | Parcial: landing HTTPS abriu; login demo ficou em `Entrando...` por mais de 25 s e bloqueou chat, feedback e `/insights` | Ainda não medido (T-P0.3) | Consulta dos 200 logs mais recentes, filtrada por startup/erro/OOM/exit 137, sem ocorrências correspondentes | Henrique |
 
 ### Baseline T-P0.1 — 11/08/2026 09:27 BRT
 
@@ -218,6 +218,17 @@ senhas, JWTs, chaves de LLM ou connection strings.
   com `Application startup complete`, `ERROR`, `CRITICAL`, `OOM` ou `exit 137`.
   A ausência de `exit 137` após o fluxo público será verificada novamente em
   T-P0.3.
+
+### Validação pública parcial T-P0.2 — 11/08/2026 09:28 BRT
+
+- Landing HTTPS aberta em sessão anônima:
+  `https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/`.
+- O formulário de login exibiu a conta demo da Ana e preencheu os campos ao
+  selecioná-la, mas, após submeter, o botão permaneceu em `Entrando...` por mais
+  de 25 segundos; a rota de chat não foi aberta.
+- RQ-P0-01 foi validado. RQ-P0-02 falhou e bloqueia temporariamente
+  RQ-P0-03 e RQ-P0-04. A causa será classificada em T-P0.4 antes de qualquer
+  mudança de código ou infraestrutura.
 
 - [ ] RQ-P0-01 a RQ-P0-06 validados com evidências na tabela.
 - [ ] `README.md`, `PRD.v2.md`, `docs/08-plano-execucao.md`,
