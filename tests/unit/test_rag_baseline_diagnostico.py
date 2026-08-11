@@ -122,6 +122,25 @@ def test_proveniencia_e_blobs_historicos_sao_estruturais_e_imutaveis() -> None:
         assert _blob_git(SNAPSHOT_DIR / nome) == HISTORICAL_BLOBS[artefato]
 
 
+def test_taxonomia_tem_schema_completo_e_coerente_com_inventario() -> None:
+    """A taxonomia define cada categoria referenciada e não admite causa fora do schema."""
+    diagnostico = _carregar_diagnostico()
+    taxonomy = diagnostico["taxonomy"]
+    inventory = diagnostico["inventory"]
+
+    assert set(taxonomy) == CATEGORIAS
+    for categoria, regra in taxonomy.items():
+        assert set(regra) == {"category", "report"}
+        assert isinstance(regra["category"], str)
+        assert regra["category"] == categoria
+        assert regra["category"] in CATEGORIAS
+        assert isinstance(regra["report"], str)
+        assert regra["report"]
+
+    assert {caso["category"] for caso in inventory} <= set(taxonomy)
+    assert {caso["zero_score_cause"] for caso in inventory} <= {None, "indeterminada"}
+
+
 def test_inventario_tem_schema_completo_ids_unicos_e_relacoes_validas() -> None:
     """O inventário exige campos, tipos, enums e relações antes de usar IDs como chave."""
     inventario = _carregar_diagnostico()["inventory"]
@@ -143,7 +162,7 @@ def test_inventario_tem_schema_completo_ids_unicos_e_relacoes_validas() -> None:
         assert caso["category"] in CATEGORIAS
         assert set(caso["reported_scores"]) == {"faithfulness", "answer_relevancy"}
         assert all(
-            isinstance(score, (int, float)) and 0.0 <= score <= 1.0
+            not isinstance(score, bool) and isinstance(score, (int, float)) and 0.0 <= score <= 1.0
             for score in caso["reported_scores"].values()
         )
         assert caso["zero_score_cause"] in {None, "indeterminada"}
@@ -160,6 +179,11 @@ def test_scores_individuais_e_agregados_reproduzem_relatorio_historico() -> None
     inventario = diagnostico["inventory"]
 
     assert diagnostico["baseline"]["aggregate_scores"] == HISTORICAL_AGGREGATES
+    assert set(diagnostico["baseline"]["aggregate_scores"]) == set(HISTORICAL_AGGREGATES)
+    assert all(
+        not isinstance(score, bool) and isinstance(score, (int, float)) and 0.0 <= score <= 1.0
+        for score in diagnostico["baseline"]["aggregate_scores"].values()
+    )
     assert _metricas_agregadas_relatorio(conteudo) == HISTORICAL_AGGREGATES
     assert set(relatorio) == {caso["id"] for caso in inventario}
     assert Counter(linha["category"] for linha in relatorio.values()) == Counter(
