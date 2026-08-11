@@ -270,6 +270,7 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] README com guia de deploy/cold start e `capture_screenshots.py --base-url`.
   - [x] T-P0.1: baseline Azure sem segredos registrado em `docs/profissionalizacao/01-validacao-piloto.md` (2026-08-11): Container Apps provisionados, PostgreSQL `Ready` e última ingestão bem-sucedida.
   - [x] T-P0.2: validação HTTPS executada em 2026-08-11. Landing e `/health` responderam, mas o login pela conta demo visível retornou `Erro de autenticação`; chat, feedback e `/insights` ficaram bloqueados. Evidência em `docs/profissionalizacao/01-validacao-piloto.md`.
+  - [x] T-P0.3: medição executada em 2026-08-11. Resposta aquecida em 51-164 ms, mas cold start retornou HTTP 504 em 81,72 s; logs da API contêm 13 eventos de exit 137 (sistema) e 1 no console. T-P0.4 obrigatório.
 
 **DoD da sprint (parcial):** sistema exposto publicamente sem surpresas de custo/abuso.
 

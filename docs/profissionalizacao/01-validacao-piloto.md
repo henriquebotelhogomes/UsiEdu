@@ -66,3 +66,32 @@ O navegador usado para a evidencia foi uma sessao isolada e a selecao da conta
 demo foi feita pela propria tela, sem registrar senha ou token. A falha atende
 ao gatilho de T-P0.4, mas a coleta de latencia e logs de T-P0.3 deve preceder
 o diagnostico e a correcao.
+
+## T-P0.3 - Latencia e observabilidade
+
+**Status:** concluida com falha em 2026-08-11.
+
+| Verificacao | Resultado | Evidencia |
+|---|---|---|
+| Resposta aquecida | aprovada isoladamente | Tres chamadas consecutivas a `GET /health` retornaram HTTP 200 em 164 ms, 51 ms e 58 ms; apos a recuperacao do cold start, outra chamada retornou 200 em 250 ms. |
+| Cold start | falhou | A primeira chamada apos periodo superior ao cooldown de 300 s retornou HTTP 504 em 81,72 s. O frontend registrou timeout do upstream; novas replicas de frontend e API foram criadas durante a tentativa e a API ficou pronta somente no fim do timeout. |
+| Reinicio da replica atual | aprovado isoladamente | A replica recuperada da API estava `Running`, `ready: true` e com `restartCount: 0`. |
+| Exit 137 e OOM | falhou | Consulta agregada dos ultimos tres dias encontrou 13 eventos com `137` nos logs de sistema da API e 1 no console; nao houve ocorrencia textual de `OOM`. |
+
+Comandos de evidencia sem segredos:
+
+```powershell
+az containerapp show --name usiedu-api --resource-group rg-usiedu `
+  --query "{scale:properties.template.scale,revision:properties.latestRevisionName}" -o json
+
+az containerapp logs show --name usiedu-api --resource-group rg-usiedu `
+  --type system --tail 200
+
+$workspaceId = az monitor log-analytics workspace show --resource-group rg-usiedu `
+  --workspace-name usiedu-logs --query customerId -o tsv
+az monitor log-analytics query --workspace $workspaceId --analytics-query `
+  "ContainerAppSystemLogs_CL | where TimeGenerated > ago(3d) | where ContainerAppName_s == 'usiedu-api' | summarize total=count(), exit137=countif(Log_s has '137'), oom=countif(Log_s has 'OOM')" -o json
+```
+
+O 504 em cold start e os eventos 137 impedem o aceite T9.4 e exigem T-P0.4:
+diagnostico, teste de regressao e a menor correcao possivel.
