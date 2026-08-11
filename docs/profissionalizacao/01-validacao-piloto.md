@@ -29,12 +29,10 @@
 - O historico do job de ingestao contem cinco execucoes antigas com falha antes da
   ultima sequencia bem-sucedida. P0.3 deve verificar logs e procurar explicitamente
   encerramentos com codigo 137.
-- Os artefatos `PLANO_PROFISSIONALIZACAO.md`,
-  `docs/profissionalizacao/README.md` e
-  `docs/profissionalizacao/00-prd-programa.md`, citados como fontes normativas
-  da P0, nao existem neste checkout nem em `origin/main`. A validacao funcional
-  dependente do runbook ausente permanece bloqueada ate que sua fonte seja
-  restaurada ou fornecida.
+- Os documentos normativos foram criados em uma sequencia local de `main` que
+  ficou tres commits a frente de `origin/main`; a worktree P0 nasceu do remoto
+  anterior. Os arquivos foram recuperados dos objetos Git em 11/08/2026 e
+  restaurados neste branch, sem alterar a evidencia da validacao.
 
 ### Reproducao sem segredos
 
