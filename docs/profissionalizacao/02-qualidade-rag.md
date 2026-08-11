@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T02.1 concluida; T02.2–T02.5 nao iniciadas |
+| Estado | Em andamento — T02.1 parcial; T02.2–T02.5 nao iniciadas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `src/evaluation/relatorio_ragas.md`, `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
@@ -115,10 +115,10 @@ dataset, não altera o JSONL atual.
 
 ## 7. Tarefas e microtarefas
 
-- [x] **T02.1 — Congelar baseline e diagnóstico**
+- [~] **T02.1 — Congelar baseline e diagnóstico**
   - [x] Versionar a taxonomia e mapear q001–q030, começando por q018–q022 e as categorias especiais. *(Inventario: `src/evaluation/baseline_diagnostico_2026-08-06.json`, schema 1.0.0.)*
   - [x] Teste: validar schema e unicidade de IDs do dataset/diagnóstico. *(`tests/unit/test_rag_baseline_diagnostico.py`.)*
-  - [x] Evidência: relatório comparando o novo inventário com `relatorio_ragas.md`. *(`src/evaluation/evidencia_baseline_2026-08-06.md`.)*
+  - [~] Evidência: relatório comparando o novo inventário com `relatorio_ragas.md`. *(`src/evaluation/evidencia_baseline_2026-08-06.md`; modelo/configuracao/parametros do juiz historico nao registrados.)*
   - [ ] Commit esperado: `docs(rag): registrar baseline e diagnostico`.
 - [ ] **T02.2 — Cobrir lacunas autorizadas do corpus**
   - [ ] Para cada fonte aprovada, registrar origem, checksum, público e perguntas cobertas antes da ingestão.

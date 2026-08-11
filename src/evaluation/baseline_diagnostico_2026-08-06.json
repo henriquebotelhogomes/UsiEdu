@@ -1,20 +1,35 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "baseline": {
     "snapshot_version": "2026-08-06.1",
     "generated_at": "2026-08-06T14:50:48.482095+00:00",
-    "mode": "Ragas+LLM",
-    "source_report": "src/evaluation/relatorio_ragas.md",
-    "source_report_sha256": "cc83f65c018dd897bff2ee4cf7d9604d97cee120e0cb04c144d8f1dfc9efd180",
-    "dataset": "src/evaluation/dataset.jsonl",
-    "dataset_sha256": "7cf2998f2f9f416a2e8a11f181fca7ca7dc743df7a6923c0380d8b439c966a20",
-    "corpus_manifest": "knowledge_base/manifest.json",
-    "corpus_manifest_sha256": "9ad6307e701d7a7fb252e86d8a69faa85e2ca2de611f29397b89e60f06742a43",
+    "source_revision": {
+      "commit": "9f7c9bc73c1def78dd2efc489a022a6541d8ff74",
+      "hash_algorithm": "git-blob-sha1",
+      "dataset_blob": "7d643a666021218443598288c5c8f5acc5b7ef81",
+      "manifest_blob": "d49071f2c96a856f52cfc610adce7e02f9886d91",
+      "report_blob": "6e9bcfccbcdc1e455ce193cb8bd704e80d416840"
+    },
+    "execution": {
+      "declared_mode": "Ragas+LLM",
+      "observed_mechanism": "heuristic_scoring",
+      "ragas_invocation_observed": false,
+      "raw_answers_recorded": false,
+      "raw_errors_recorded": false,
+      "exception_policy": "zero_metrics"
+    },
     "aggregate_scores": {
       "faithfulness": 0.565,
       "context_precision": 0.645,
       "context_recall": 0.645,
       "answer_relevancy": 0.565
+    }
+  },
+  "post_baseline_revisions": {
+    "q022": {
+      "commit": "80d27c306bcf8c14eb732d13d48d09d0714db2e6",
+      "dataset_blob": "67933038582591b4009f9b2aba1286bf85a4ada3",
+      "change": "q022 category changed from direct to sem_resposta after the baseline report."
     }
   },
   "taxonomy": {
@@ -109,16 +124,16 @@
       "profile": "student",
       "category": "fora_de_escopo",
       "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
-      "zero_score_cause": "inadequacao_metrica",
-      "evidence": "relatorio_ragas.md, Leitura critica, item 1: RF-10 correto sem contexto recebe zero de faithfulness e relevancy."
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
     },
     {
       "id": "q010",
       "profile": "student",
       "category": "fora_de_escopo",
       "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
-      "zero_score_cause": "inadequacao_metrica",
-      "evidence": "relatorio_ragas.md, Leitura critica, item 1: RF-10 correto sem contexto recebe zero de faithfulness e relevancy."
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
     },
     {
       "id": "q011",
@@ -181,40 +196,40 @@
       "profile": "staff",
       "category": "direct",
       "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
-      "zero_score_cause": "fonte_ausente",
-      "evidence": "relatorio_ragas.md, Leitura critica, item 2: q018-q022 zeraram porque o Guia do Servidor indexado nao contem as respostas."
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
     },
     {
       "id": "q019",
       "profile": "staff",
       "category": "direct",
       "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
-      "zero_score_cause": "fonte_ausente",
-      "evidence": "relatorio_ragas.md, Leitura critica, item 2: q018-q022 zeraram porque o Guia do Servidor indexado nao contem as respostas."
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
     },
     {
       "id": "q020",
       "profile": "staff",
       "category": "direct",
       "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
-      "zero_score_cause": "fonte_ausente",
-      "evidence": "relatorio_ragas.md, Leitura critica, item 2: Lei 8.112/90 esta entre as lacunas; manifest.json nao a lista como documento indexado."
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
     },
     {
       "id": "q021",
       "profile": "staff",
       "category": "direct",
       "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
-      "zero_score_cause": "fonte_ausente",
-      "evidence": "relatorio_ragas.md, Leitura critica, item 2: q018-q022 zeraram porque o Guia do Servidor indexado nao contem as respostas."
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
     },
     {
       "id": "q022",
       "profile": "staff",
-      "category": "sem_resposta",
+      "category": "direct",
       "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
-      "zero_score_cause": "fonte_ausente",
-      "evidence": "relatorio_ragas.md, Leitura critica, item 2; evidencia_baseline_2026-08-06.md registra que o relatorio historico o rotulou direct, enquanto dataset.jsonl o define sem_resposta."
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
     },
     {
       "id": "q023",
@@ -229,16 +244,16 @@
       "profile": "staff",
       "category": "fora_de_escopo",
       "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
-      "zero_score_cause": "inadequacao_metrica",
-      "evidence": "relatorio_ragas.md, Leitura critica, item 1: RF-10 correto sem contexto recebe zero de faithfulness e relevancy."
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
     },
     {
       "id": "q025",
       "profile": "staff",
       "category": "fora_de_escopo",
       "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
-      "zero_score_cause": "inadequacao_metrica",
-      "evidence": "relatorio_ragas.md, Leitura critica, item 1: RF-10 correto sem contexto recebe zero de faithfulness e relevancy."
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
     },
     {
       "id": "q026",

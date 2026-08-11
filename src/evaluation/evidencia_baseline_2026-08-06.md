@@ -1,51 +1,71 @@
 # Evidencia do baseline RAG de 2026-08-06
 
-## Escopo congelado
+## Proveniencia congelada
 
 | Item | Valor |
 |---|---|
-| Relatorio | `src/evaluation/relatorio_ragas.md` |
+| Commit da execucao | `9f7c9bc73c1def78dd2efc489a022a6541d8ff74` |
+| Dataset Git blob | `7d643a666021218443598288c5c8f5acc5b7ef81` |
+| Manifest Git blob | `d49071f2c96a856f52cfc610adce7e02f9886d91` |
+| Relatorio Git blob | `6e9bcfccbcdc1e455ce193cb8bd704e80d416840` |
 | Gerado em | `2026-08-06T14:50:48.482095+00:00` |
-| Modo | `Ragas+LLM` |
-| Dataset | `src/evaluation/dataset.jsonl` |
-| Dataset SHA-256 | `7cf2998f2f9f416a2e8a11f181fca7ca7dc743df7a6923c0380d8b439c966a20` |
-| Relatorio SHA-256 | `cc83f65c018dd897bff2ee4cf7d9604d97cee120e0cb04c144d8f1dfc9efd180` |
-| Manifest SHA-256 | `9ad6307e701d7a7fb252e86d8a69faa85e2ca2de611f29397b89e60f06742a43` |
+| Modo declarado pelo relatorio | `Ragas+LLM` |
 
-O inventario versionado esta em
-`src/evaluation/baseline_diagnostico_2026-08-06.json` (schema `1.0.0`).
-Ele preserva as metricas historicas sem reexecutar Ragas, alterar corpus ou
-alterar runtime.
+Os identificadores sao SHA-1 de objetos Git (`blob`): o Git calcula o hash
+sobre `blob <tamanho>\0<bytes>`. Portanto, eles identificam os bytes
+versionados e nao variam com conversao CRLF do checkout. O teste deterministico
+executa `git rev-parse <commit>:<caminho>` para validar cada identificador.
 
-## Comparacao do inventario com o relatorio historico
+O inventario em `baseline_diagnostico_2026-08-06.json` schema `2.0.0` usa
+exclusivamente esses tres blobs. Ele nao associa os scores ao dataset ou
+manifest atuais.
 
-| Verificacao | Inventario | Relatorio | Resultado |
+## Modo declarado e mecanismo observado
+
+O cabecalho do relatorio no commit historico declara `Ragas+LLM`. O
+`src/evaluation/run_ragas.py` daquele mesmo commit, contudo, calcula scores
+por `_avaliar_resposta`, descrita no codigo como heuristica, e nao importa nem
+invoca a biblioteca Ragas. A chave de ambiente apenas seleciona o rotulo
+`Ragas+LLM` e o grafo a executar; ela nao altera o calculo de scores.
+
+O loop tambem converte qualquer `Exception` em quatro metricas `0.0`. O
+relatorio nao preserva respostas produzidas, contextos, excecoes nem logs por
+pergunta. Assim, o mecanismo observado e `heuristic_scoring`; o modelo, a
+configuracao, os parametros do juiz e a ocorrencia de excecao por caso nao
+foram registrados. Esta evidencia nao afirma que houve chamada Ragas real.
+
+## Comparacao do inventario com os artefatos da execucao
+
+| Verificacao | Dataset/relatorio do commit `9f7c9bc` | Inventario | Resultado |
 |---|---:|---:|---|
 | IDs unicos q001-q030 | 30 | 30 | Confere |
 | `tool` | 4 | 4 | Confere |
 | `composta` | 3 | 3 | Confere |
 | `fora_de_escopo` | 4 | 4 | Confere |
-| `direct` | 14 | 15 | Divergencia historica em q022 |
-| `sem_resposta` | 5 | 4 | Divergencia historica em q022 |
+| `direct` | 15 | 15 | Confere |
+| `sem_resposta` | 4 | 4 | Confere |
+| Pares faithfulness/relevancy | 30 | 30 | Confere |
 | Notas zero | 9 | 9 | Confere |
 
-As 30 duplas de `faithfulness` e `answer_relevancy` do inventario reproduzem
-a tabela "Detalhe por pergunta" do relatorio. A divergencia de categoria e
-intencionalmente preservada, sem reescrever a evidencia historica: o
-`dataset.jsonl` atual classifica q022 como `sem_resposta`, enquanto o relatorio
-de 06/08/2026 a publicou como `direct`.
+## Revisao posterior de q022
+
+O commit posterior `80d27c306bcf8c14eb732d13d48d09d0714db2e6` usa o dataset
+blob `67933038582591b4009f9b2aba1286bf85a4ada3` e reclassifica q022 de
+`direct` para `sem_resposta`, mudando tambem sua referencia e documentos.
+Essa revisao e registrada separadamente no inventario. Ela nao altera o
+snapshot nem a comparacao historica acima.
 
 ## Diagnostico de notas zero
 
-| IDs | Causa versionada | Evidencia rastreavel |
+| IDs | Diagnostico | Evidencia disponivel |
 |---|---|---|
-| q009, q010, q024, q025 | `inadequacao_metrica` | "Leitura critica", item 1 do relatorio: o redirecionamento RF-10 esta correto, mas sem contexto recebe zero de faithfulness/relevancy. |
-| q018, q019, q020, q021, q022 | `fonte_ausente` | "Leitura critica", item 2 do relatorio: q018-q022 zeraram porque o Guia do Servidor indexado nao contem as respostas; para q020, a Lei 8.112/90 tambem nao aparece no `manifest.json` congelado. |
+| q009, q010, q018-q022, q024, q025 | `indeterminada` | O relatorio registra apenas os scores. Respostas e erros brutos nao foram preservados, e o codigo poderia transformar excecao em quatro zeros. |
 
-Nenhuma causa de recuperacao inadequada ou resposta insuficiente foi atribuida:
-o relatorio nao fornece evidencia para essas causas nos casos zero. O
-diagnostico nao infere falha de pipeline quando a propria leitura critica
-registra lacuna de corpus.
+Nao e possivel provar para uma nota zero se a causa foi fonte ausente,
+recuperacao inadequada, resposta insuficiente ou inadequacao de metrica. A
+leitura critica adicionada posteriormente nao substitui os artefatos brutos da
+execucao historica. Tambem nao se afirma recusa honesta nem ausencia de fonte
+inventada sem resposta e fontes efetivamente registradas.
 
 ## Taxonomia congelada
 
@@ -57,6 +77,12 @@ registra lacuna de corpus.
 | `fora_de_escopo` | Fora do agregado; medir redirecionamento correto ao escopo UsiEdu e zero chamada de RAG/agentes. |
 | `sem_resposta` | Fora do agregado; medir recusa honesta e ausencia de fonte inventada. |
 
-Essas regras classificam e protegem a leitura do baseline. Elas nao
-implementam agregador, roteamento, subperguntas ou mudanca de comportamento;
-esses itens permanecem exclusivos de T02.3 e das microtarefas posteriores.
+As regras sao requisitos para avaliacao futura, nao evidencia de que esses
+comportamentos foram observados nesta execucao historica.
+
+## Pendencia real de T02.1
+
+T02.1 permanece parcial. A proveniencia de commit, dataset, manifest,
+relatorio e mecanismo de score foi recuperada, mas o modelo,
+configuracao/parametros do juiz e saidas/erros por caso nao sao recuperaveis a
+partir dos artefatos versionados. Nenhum valor foi inferido.
