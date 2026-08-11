@@ -1,0 +1,62 @@
+{
+  "cases": [
+    {
+      "case_id": "q009",
+      "cause": "inadequacao_de_metrica",
+      "evidence": {
+        "answer_contains": "fora do meu escopo",
+        "delegations_count": 1,
+        "heuristic_missing_phrase": "fora do meu escopo",
+        "sources_count": 0
+      },
+      "zero_metrics": [
+        "faithfulness",
+        "answer_relevancy"
+      ]
+    },
+    {
+      "case_id": "q010",
+      "cause": "inadequacao_de_metrica",
+      "evidence": {
+        "answer_contains": "fora do meu escopo",
+        "delegations_count": 1,
+        "heuristic_missing_phrase": "fora do meu escopo",
+        "sources_count": 0
+      },
+      "zero_metrics": [
+        "faithfulness",
+        "answer_relevancy"
+      ]
+    },
+    {
+      "case_id": "q024",
+      "cause": "inadequacao_de_metrica",
+      "evidence": {
+        "answer_contains": "fora do meu escopo",
+        "delegations_count": 1,
+        "heuristic_missing_phrase": "fora do meu escopo",
+        "sources_count": 0
+      },
+      "zero_metrics": [
+        "faithfulness",
+        "answer_relevancy"
+      ]
+    },
+    {
+      "case_id": "q025",
+      "cause": "inadequacao_de_metrica",
+      "evidence": {
+        "answer_contains": "fora do meu escopo",
+        "delegations_count": 1,
+        "heuristic_missing_phrase": "fora do meu escopo",
+        "sources_count": 0
+      },
+      "zero_metrics": [
+        "faithfulness",
+        "answer_relevancy"
+      ]
+    }
+  ],
+  "run_id": "baseline-2026-08-11",
+  "schema_version": "1.0.0"
+}

@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T02.1 parcial; T02.2–T02.5 nao iniciadas |
+| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2–T02.5 não iniciadas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `src/evaluation/relatorio_ragas.md`, `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
@@ -115,11 +115,16 @@ dataset, não altera o JSONL atual.
 
 ## 7. Tarefas e microtarefas
 
-- [~] **T02.1 — Congelar baseline e diagnóstico**
+- [x] **T02.1 — Congelar baseline e diagnóstico**
   - [x] Versionar a taxonomia e mapear q001–q030, começando por q018–q022 e as categorias especiais. *(Inventario: `src/evaluation/baseline_diagnostico_2026-08-06.json`, schema 2.0.0.)*
   - [x] Teste: validar schema e unicidade de IDs do dataset/diagnóstico. *(`tests/unit/test_rag_baseline_diagnostico.py`.)*
-  - [~] Evidência: relatório comparando o novo inventário com `relatorio_ragas.md`. *(`src/evaluation/evidencia_baseline_2026-08-06.md`; modelo/configuracao/parametros do juiz historico nao registrados.)*
-  - [ ] Commit esperado: `docs(rag): registrar baseline e diagnostico`.
+  - [x] Evidência: relatório comparando o novo inventário com `relatorio_ragas.md`. *(`src/evaluation/evidencia_baseline_2026-08-06.md`; a lacuna histórica permanece explicitamente registrada, sem reconstrução fictícia.)*
+  - [x] Commits: `e011601`, `f90200a`, `6b0ef79`, `5c595d5` e `1622aca`.
+- [x] **T02.1b — Gerar novo baseline auditável**
+  - [x] Fixar commit, dataset, manifest, modelos, parâmetros, mecanismo de score e orçamento antes da execução.
+  - [x] Teste: validar schema por caso, IDs, hashes, agregados, custo e diagnóstico dos zeros.
+  - [x] Evidência: `src/evaluation/baseline_runs/2026-08-11/`, com respostas, fontes, erros, duração, tokens, custo, relatório e proveniência.
+  - [x] Commit esperado: `docs(rag): publicar baseline auditavel`.
 - [ ] **T02.2 — Cobrir lacunas autorizadas do corpus**
   - [ ] Para cada fonte aprovada, registrar origem, checksum, público e perguntas cobertas antes da ingestão.
   - [ ] Teste: ingestão idempotente e consultas de recuperação para as perguntas mapeadas.
@@ -156,7 +161,7 @@ dataset, não altera o JSONL atual.
 
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
-| G0 — Baseline | Concluído parcialmente | Inventário, commit, dataset, manifest e relatório históricos estão versionados; faltam modelo/configuração/parâmetros do juiz e saídas/erros brutos da execução. |
+| G0 — Baseline | Concluído | O histórico permanece como legado incompleto e imutável; o baseline auditável de 11/08/2026 é a nova referência, com commit, dataset, manifest, configuração, respostas, fontes, erros, duração, tokens, custo e hashes versionados. |
 | G1 — Especificação | Concluído | Este documento e a decisão provisória definem o recorte e o protocolo; o acesso autorizado ao provedor bloqueia apenas a execução externa de T02.5. |
 | G2 — Implementação | Não iniciado | Commits T02.1–T02.5 e testes correspondentes. |
 | G3 — Verificação | Não iniciado | Pytest/Ruff, relatório reproduzível e gate executado. |

@@ -11,6 +11,7 @@ from src.evaluation.auditable_baseline import (
     METRIC_NAMES,
     BudgetExceededError,
     canonical_git_blob_sha1,
+    canonical_sha256,
     compute_aggregate_scores,
     estimate_cost_usd,
     load_run_records,
@@ -21,6 +22,12 @@ ROOT = Path(__file__).parent.parent.parent
 DATASET_PATH = ROOT / "src" / "evaluation" / "dataset.jsonl"
 MANIFEST_PATH = ROOT / "knowledge_base" / "manifest.json"
 CONFIG_PATH = ROOT / "src" / "evaluation" / "baseline_runs" / "2026-08-11" / "config.json"
+RUN_DIR = CONFIG_PATH.parent
+RECORDS_PATH = RUN_DIR / "records.jsonl"
+PROVENANCE_PATH = RUN_DIR / "provenance.json"
+REPORT_PATH = RUN_DIR / "report.md"
+DIAGNOSTICS_PATH = RUN_DIR / "zero_diagnostics.json"
+SOURCE_COMMIT = "f90907e619ca62c12d07308910449bc6ffd39e66"
 
 
 def _record(**overrides: object) -> dict:
@@ -210,3 +217,67 @@ def test_configuracao_fixa_modelos_orcamento_e_sem_tracing_externo() -> None:
     }
     assert config["scoring"]["ragas_invocation"] is False
     assert config["observability"]["external_tracing"] is False
+
+
+def test_execucao_real_tem_30_casos_e_proveniencia_recalculavel() -> None:
+    records = load_run_records(RECORDS_PATH)
+    provenance = json.loads(PROVENANCE_PATH.read_text(encoding="utf-8"))
+
+    assert [record["case_id"] for record in records] == [
+        f"q{number:03d}" for number in range(1, 31)
+    ]
+    assert {record["run_id"] for record in records} == {"baseline-2026-08-11"}
+    assert provenance["source_commit"] == SOURCE_COMMIT
+    assert provenance["record_count"] == 30
+    assert provenance["success_count"] == 30
+    assert provenance["error_count"] == 0
+    assert provenance["aggregate_scores"] == compute_aggregate_scores(records)
+    assert provenance["estimated_cost_usd"] == pytest.approx(
+        sum(record["estimated_cost_usd"] for record in records)
+    )
+    assert provenance["estimated_cost_usd"] <= provenance["budget_usd"] == 5.0
+    assert provenance["usage"] == {
+        "input_tokens": sum(record["usage"]["input_tokens"] for record in records),
+        "output_tokens": sum(record["usage"]["output_tokens"] for record in records),
+        "total_tokens": sum(record["usage"]["total_tokens"] for record in records),
+    }
+    assert provenance["config_git_blob_sha1"] == canonical_git_blob_sha1(CONFIG_PATH)
+    assert provenance["dataset_git_blob_sha1"] == canonical_git_blob_sha1(DATASET_PATH)
+    assert provenance["manifest_git_blob_sha1"] == canonical_git_blob_sha1(MANIFEST_PATH)
+    assert provenance["records_sha256"] == canonical_sha256(RECORDS_PATH)
+    assert provenance["report_sha256"] == canonical_sha256(REPORT_PATH)
+    assert provenance["zero_diagnostics_sha256"] == canonical_sha256(DIAGNOSTICS_PATH)
+
+
+def test_relatorio_declara_mecanismo_e_limitacoes_sem_rotulo_ragas_falso() -> None:
+    report = REPORT_PATH.read_text(encoding="utf-8")
+
+    assert "Mecanismo de score: `legacy_keyword_heuristic`" in report
+    assert "não executa métricas Ragas" in report
+    assert "Custo equivalente estimado" in report
+    assert "Comparação descritiva com 06/08/2026" in report
+    assert "q001" in report
+    assert "q030" in report
+    assert "Ragas+LLM" not in report
+
+
+def test_zeros_tem_diagnostico_rastreavel_sem_inventar_causa() -> None:
+    diagnostics = json.loads(DIAGNOSTICS_PATH.read_text(encoding="utf-8"))
+
+    assert diagnostics["schema_version"] == "1.0.0"
+    assert diagnostics["run_id"] == "baseline-2026-08-11"
+    assert [case["case_id"] for case in diagnostics["cases"]] == [
+        "q009",
+        "q010",
+        "q024",
+        "q025",
+    ]
+    for case in diagnostics["cases"]:
+        assert case["zero_metrics"] == ["faithfulness", "answer_relevancy"]
+        assert case["cause"] == "inadequacao_de_metrica"
+        assert case["evidence"] == {
+            "answer_contains": "fora do meu escopo",
+            "sources_count": 0,
+            "delegations_count": 1,
+            "heuristic_missing_phrase": "fora do meu escopo",
+        }

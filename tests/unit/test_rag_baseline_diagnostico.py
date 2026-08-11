@@ -243,13 +243,15 @@ def test_q022_historica_e_revisao_posterior_sao_independentes_e_exatas() -> None
     assert {chave: posterior["q022"][chave] for chave in Q022_POSTERIOR} == Q022_POSTERIOR
 
 
-def test_t02_1_permanece_parcial_sem_metadados_factualmente_ausentes() -> None:
-    """O checklist não conclui T02.1 enquanto faltam artefatos de execução históricos."""
+def test_t02_1_encerra_legado_incompleto_com_nova_referencia_auditavel() -> None:
+    """O checklist preserva a lacuna histórica e aponta a nova referência auditável."""
     conteudo = DOC_QUALIDADE_PATH.read_text(encoding="utf-8")
     contexto = conteudo.split("## 2. Objetivo mensurável", maxsplit=1)[0]
 
-    assert "| Estado | Em andamento — T02.1 parcial;" in conteudo
-    assert "- [~] **T02.1 — Congelar baseline e diagnóstico**" in conteudo
-    assert "modelo/configuracao/parametros do juiz historico nao registrados" in conteudo
+    assert "| Estado | Em andamento — T02.1/T02.1b concluídas;" in conteudo
+    assert "- [x] **T02.1 — Congelar baseline e diagnóstico**" in conteudo
+    assert "- [x] **T02.1b — Gerar novo baseline auditável**" in conteudo
+    assert "a lacuna histórica permanece explicitamente registrada" in conteudo
+    assert "baseline auditável de 11/08/2026 é a nova referência" in conteudo
     assert "lacuna real de corpus" not in contexto
     assert "redirecionamento correto" not in contexto

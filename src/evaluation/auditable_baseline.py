@@ -272,6 +272,193 @@ def _initial_state(case: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _generate_report(
+    records: list[dict[str, Any]],
+    *,
+    config: dict[str, Any],
+    diagnostics: dict[str, Any],
+    source_commit: str,
+    dataset_blob: str,
+    manifest_blob: str,
+    total_cost: float,
+) -> str:
+    aggregates = compute_aggregate_scores(records)
+    by_category: dict[str, list[dict[str, Any]]] = {}
+    for record in records:
+        by_category.setdefault(record["category"], []).append(record)
+
+    lines = [
+        "# Baseline auditável RAG — 2026-08-11",
+        "",
+        f"- Run ID: `{config['run_id']}`",
+        f"- Commit da implementação/configuração: `{source_commit}`",
+        f"- Dataset Git blob: `{dataset_blob}`",
+        f"- Manifest Git blob: `{manifest_blob}`",
+        (
+            "- Modelos: router `deepseek-v4-flash`; agentes "
+            "`deepseek-v4-pro`; temperatura `1.0`; máximo de saída `2048` tokens"
+        ),
+        f"- Mecanismo de score: `{config['scoring']['mechanism']}`",
+        (
+            f"- Custo equivalente estimado: **US$ {total_cost:.6f}** "
+            f"(teto: US$ {config['budget']['total_usd']:.2f})"
+        ),
+        "",
+        "> Este baseline preserva respostas, fontes, erros, duração e uso por caso. "
+        "O mecanismo de score é a heurística legada e não executa métricas Ragas. "
+        "Os valores abaixo não devem ser rotulados como avaliação Ragas real.",
+        "",
+        "## Resultado agregado legado",
+        "",
+        "| Métrica | Score |",
+        "|---|---:|",
+    ]
+    for metric in METRIC_NAMES:
+        lines.append(f"| {metric} | {aggregates[metric]:.6f} |")
+
+    historical = {
+        "faithfulness": 0.565,
+        "context_precision": 0.645,
+        "context_recall": 0.645,
+        "answer_relevancy": 0.565,
+    }
+    lines += [
+        "",
+        "O agregado acima inclui todas as categorias apenas para comparação com o "
+        "mecanismo legado. Ele não representa o futuro recorte RAG respondível.",
+        "",
+        "## Comparação descritiva com 06/08/2026",
+        "",
+        "| Métrica | Histórico | Novo auditável | Diferença |",
+        "|---|---:|---:|---:|",
+    ]
+    for metric in METRIC_NAMES:
+        lines.append(
+            f"| {metric} | {historical[metric]:.6f} | {aggregates[metric]:.6f} | "
+            f"{aggregates[metric] - historical[metric]:+.6f} |"
+        )
+
+    lines += [
+        "",
+        "A comparação é somente descritiva: o histórico não preservou saídas brutas e "
+        "usou o dataset anterior à reclassificação de q022. A diferença não demonstra "
+        "melhora ou regressão causal.",
+        "",
+        "## Sub-relatório por categoria",
+        "",
+        "| Categoria | Casos | Sucessos | Fontes | Faithfulness | Context precision | "
+        "Context recall | Answer relevancy |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for category in sorted(by_category):
+        category_records = by_category[category]
+        category_scores = compute_aggregate_scores(category_records)
+        lines.append(
+            f"| {category} | {len(category_records)} | "
+            f"{sum(record['status'] == 'success' for record in category_records)} | "
+            f"{sum(len(record['sources']) for record in category_records)} | "
+            f"{category_scores['faithfulness']:.6f} | "
+            f"{category_scores['context_precision']:.6f} | "
+            f"{category_scores['context_recall']:.6f} | "
+            f"{category_scores['answer_relevancy']:.6f} |"
+        )
+
+    lines += [
+        "",
+        "## Casos",
+        "",
+        "| ID | Categoria | Status | Fontes | Duração (ms) | Tokens | Custo estimado (US$) "
+        "| Faithfulness | Answer relevancy |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|",
+    ]
+    for record in records:
+        faithfulness = record["scores"]["faithfulness"]
+        relevancy = record["scores"]["answer_relevancy"]
+        lines.append(
+            f"| {record['case_id']} | {record['category']} | {record['status']} | "
+            f"{len(record['sources'])} | {record['duration_ms']} | "
+            f"{record['usage']['total_tokens']} | {record['estimated_cost_usd']:.8f} | "
+            f"{'—' if faithfulness is None else f'{faithfulness:.6f}'} | "
+            f"{'—' if relevancy is None else f'{relevancy:.6f}'} |"
+        )
+
+    lines += [
+        "",
+        "## Diagnóstico dos scores zero",
+        "",
+        "| ID | Métricas | Causa | Evidência |",
+        "|---|---|---|---|",
+    ]
+    for case in diagnostics["cases"]:
+        evidence = case["evidence"]
+        lines.append(
+            f"| {case['case_id']} | {', '.join(case['zero_metrics'])} | "
+            f"{case['cause']} | resposta contém `{evidence['answer_contains']}`; "
+            f"fontes={evidence['sources_count']}; "
+            f"delegações={evidence['delegations_count']} |"
+        )
+
+    lines += [
+        "",
+        "## Evidência bruta e limitações",
+        "",
+        "- `records.jsonl` contém a pergunta, resposta integral, fontes/contextos, "
+        "delegações, erro, duração, tokens, custo estimado e scores por caso.",
+        "- `provenance.json` contém hashes recalculáveis, commit, agregados e totais.",
+        "- O custo é uma estimativa equivalente por tokens baseada na tabela versionada "
+        "em `config.json`; não é uma fatura emitida pelo provedor.",
+        "- Uma lista vazia de fontes demonstra apenas que nenhuma fonte chegou ao estado "
+        "final do grafo; não identifica, sozinha, a causa da ausência.",
+        "- As decisões de recorte para categorias especiais continuam fora desta "
+        "microtarefa e não são inferidas a partir do score heurístico.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def _diagnose_zero_scores(
+    records: list[dict[str, Any]],
+    *,
+    run_id: str,
+) -> dict[str, Any]:
+    cases = []
+    for record in records:
+        zero_metrics = [metric for metric in METRIC_NAMES if record["scores"].get(metric) == 0]
+        if not zero_metrics:
+            continue
+        answer = (record["answer"] or "").lower()
+        if (
+            record["category"] == "fora_de_escopo"
+            and "fora do meu escopo" in answer
+            and not record["sources"]
+            and record["delegations"] == ["fora_de_escopo"]
+        ):
+            cause = "inadequacao_de_metrica"
+            evidence = {
+                "answer_contains": "fora do meu escopo",
+                "sources_count": 0,
+                "delegations_count": 1,
+                "heuristic_missing_phrase": "fora do meu escopo",
+            }
+        else:
+            cause = "indeterminada"
+            evidence = {
+                "answer_contains": "",
+                "sources_count": len(record["sources"]),
+                "delegations_count": len(record["delegations"]),
+                "heuristic_missing_phrase": "",
+            }
+        cases.append(
+            {
+                "case_id": record["case_id"],
+                "zero_metrics": zero_metrics,
+                "cause": cause,
+                "evidence": evidence,
+            }
+        )
+    return {"schema_version": "1.0.0", "run_id": run_id, "cases": cases}
+
+
 async def execute_auditable_baseline(config_path: Path) -> Path:
     """Executa os casos, persistindo resposta, fontes, erro, uso e custo por linha."""
     config = _load_json(config_path)
@@ -373,17 +560,42 @@ async def execute_auditable_baseline(config_path: Path) -> Path:
         records.append(record)
         spent += case_cost
 
+    source_commit = _git_head()
+    dataset_blob = canonical_git_blob_sha1(dataset_path)
+    manifest_blob = canonical_git_blob_sha1(manifest_path)
+    diagnostics = _diagnose_zero_scores(records, run_id=config["run_id"])
+    diagnostics_path = output_dir / "zero_diagnostics.json"
+    diagnostics_path.write_text(
+        json.dumps(diagnostics, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    report_path = output_dir / config["output"]["report_file"]
+    report_path.write_text(
+        _generate_report(
+            records,
+            config=config,
+            diagnostics=diagnostics,
+            source_commit=source_commit,
+            dataset_blob=dataset_blob,
+            manifest_blob=manifest_blob,
+            total_cost=spent,
+        ),
+        encoding="utf-8",
+        newline="\n",
+    )
+
     provenance = {
         "schema_version": "1.0.0",
         "run_id": config["run_id"],
-        "source_commit": _git_head(),
-        "config_path": config_path.relative_to(root).as_posix(),
+        "source_commit": source_commit,
+        "config_path": config_path.resolve().relative_to(root.resolve()).as_posix(),
         "config_git_blob_sha1": canonical_git_blob_sha1(config_path),
         "dataset_path": config["inputs"]["dataset_path"],
-        "dataset_git_blob_sha1": canonical_git_blob_sha1(dataset_path),
+        "dataset_git_blob_sha1": dataset_blob,
         "dataset_sha256": canonical_sha256(dataset_path),
         "manifest_path": config["inputs"]["manifest_path"],
-        "manifest_git_blob_sha1": canonical_git_blob_sha1(manifest_path),
+        "manifest_git_blob_sha1": manifest_blob,
         "manifest_sha256": canonical_sha256(manifest_path),
         "record_count": len(records),
         "success_count": sum(record["status"] == "success" for record in records),
@@ -398,6 +610,10 @@ async def execute_auditable_baseline(config_path: Path) -> Path:
         "budget_usd": budget,
         "records_file": config["output"]["records_file"],
         "records_sha256": canonical_sha256(records_path),
+        "report_file": config["output"]["report_file"],
+        "report_sha256": canonical_sha256(report_path),
+        "zero_diagnostics_file": diagnostics_path.name,
+        "zero_diagnostics_sha256": canonical_sha256(diagnostics_path),
     }
     provenance_path = output_dir / config["output"]["provenance_file"]
     provenance_path.write_text(
