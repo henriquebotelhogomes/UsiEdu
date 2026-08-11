@@ -134,7 +134,7 @@ def test_frontend_proxy_allows_api_cold_start() -> None:
     """Rotas comuns aguardam o bootstrap da API antes de retornar 504."""
     config = Path("frontend/nginx/default.conf.template").read_text(encoding="utf-8")
 
-    assert "proxy_read_timeout 120s;" in config
+    assert "proxy_read_timeout 180s;" in config
 
 
 def test_api_image_declares_jwt_library_used_by_authentication() -> None:
