@@ -1377,6 +1377,10 @@ Códigos: <code>UNAUTHORIZED</code> (401), <code>FORBIDDEN</code> (403), <code>V
 <span class="na">LANGSMITH_TRACING</span><span class="o">=</span><span class="s">true</span>
 <span class="na">LANGSMITH_API_KEY</span><span class="o">=</span>
 <span class="na">LANGSMITH_PROJECT</span><span class="o">=</span><span class="s">usiedu-pilot</span>
+<span class="c1"># Alias LangChain aceito pela biblioteca e configurado no Azure</span>
+<span class="na">LANGCHAIN_TRACING_V2</span><span class="o">=</span><span class="s">true</span>
+<span class="na">LANGCHAIN_API_KEY</span><span class="o">=</span>
+<span class="na">LANGCHAIN_PROJECT</span><span class="o">=</span><span class="s">usiedu-pilot</span>
 
 <span class="c1"># Modelos locais</span>
 <span class="na">EMBEDDING_MODEL</span><span class="o">=</span><span class="s">paraphrase-multilingual-MiniLM-L12-v2</span>
@@ -1385,6 +1389,11 @@ Códigos: <code>UNAUTHORIZED</code> (401), <code>FORBIDDEN</code> (403), <code>V
 <span class="c1"># App</span>
 <span class="na">USIEDU_ENV</span><span class="o">=</span><span class="s">dev</span><span class="w">                          </span><span class="c1"># dev | test | prod</span>
 <span class="na">LOG_LEVEL</span><span class="o">=</span><span class="s">INFO</span>
+<span class="na">USIEDU_CORS_ORIGINS</span><span class="o">=</span><span class="s">http://localhost:5173,http://localhost:5174</span>
+<span class="c1"># Produção: URL PostgreSQL com sslmode=require. Ausente = fallback SQLite local.</span>
+<span class="na">USIEDU_DATABASE_URL</span><span class="o">=</span>
+<span class="na">USIEDU_FEEDBACK_DB</span><span class="o">=</span><span class="s">usiedu_feedback.db</span>
+<span class="na">USIEDU_CHECKPOINTER_DB</span><span class="o">=</span><span class="s">usiedu_checkpoints.db</span>
 </code></pre></div>
 <h2 id="4-modelos-de-dados-mockados-srctoolsmock_datapy">4. Modelos de dados mockados (<code>src/tools/mock_data.py</code>)<a class="headerlink" href="#4-modelos-de-dados-mockados-srctoolsmock_datapy" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">STUDENTS</span> <span class="o">=</span> <span class="p">{</span>

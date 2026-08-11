@@ -726,10 +726,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-guardrails-contra-prompt-injection-t93" class="md-nav__link">
+  <a href="#10-deploy-publico-azure-container-apps-t94" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Guardrails contra prompt injection (T9.3)
+        10. Deploy público — Azure Container Apps (T9.4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-guardrails-contra-prompt-injection-t93" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Guardrails contra prompt injection (T9.3)
       
     </span>
   </a>
@@ -1426,10 +1437,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-guardrails-contra-prompt-injection-t93" class="md-nav__link">
+  <a href="#10-deploy-publico-azure-container-apps-t94" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Guardrails contra prompt injection (T9.3)
+        10. Deploy público — Azure Container Apps (T9.4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-guardrails-contra-prompt-injection-t93" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Guardrails contra prompt injection (T9.3)
       
     </span>
   </a>
@@ -1925,7 +1947,36 @@ de embedding; esta seção 6 resolve medição de qualidade.</p>
 ├── docker-compose.yml           # API + frontend + Qdrant + Grafana
 └── README.md                    # quickstart + link para demo
 </code></pre></div>
-<h2 id="10-guardrails-contra-prompt-injection-t93">10. Guardrails contra prompt injection (T9.3)<a class="headerlink" href="#10-guardrails-contra-prompt-injection-t93" title="Permanent link">&para;</a></h2>
+<h2 id="10-deploy-publico-azure-container-apps-t94">10. Deploy público — Azure Container Apps (T9.4)<a class="headerlink" href="#10-deploy-publico-azure-container-apps-t94" title="Permanent link">&para;</a></h2>
+<p>O deploy público usa três Container Apps no mesmo ambiente: <strong>frontend</strong>
+(externo, HTTPS), <strong>API</strong> (ingress interno) e <strong>Qdrant</strong> (ingress interno). O
+frontend nginx faz o proxy dos caminhos de API para <code>http://&lt;nome-da-api&gt;</code>;
+assim o navegador usa uma única origem e o backend não fica exposto à internet.</p>
+<p>O estado do Qdrant fica em Azure Files. Sessões do LangGraph, feedback e cache
+semântico ficam em PostgreSQL Flexible Server gerenciado: SQLite/WAL sobre
+Azure Files pode bloquear operações concorrentes. A ingestão é um Container
+Apps Job manual: ela usa a mesma imagem da API e executa
+<code>scripts/ingest_knowledge_base.py</code> apenas depois que o Qdrant estiver
+disponível.</p>
+<p>A API recebe <strong>2 vCPUs e 4 GiB</strong> no manifesto. Os modelos locais de embeddings
+e reranking são inicializados no startup; 2 GiB podem causar encerramento do
+contêiner com código 137 e interromper o streaming. O job de ingestão continua
+em 2 GiB, pois não carrega o reranker.</p>
+<p>Os artefatos versionados ficam em <code>infra/azure/</code>:</p>
+<ul>
+<li><code>registry.bicep</code>: Azure Container Registry Basic para as imagens privadas.</li>
+<li><code>main.bicep</code>: ambiente Container Apps, Log Analytics, Azure Files, os três
+  serviços e o job de ingestão.</li>
+<li><code>deploy.ps1</code>: cria o resource group/registro, constrói e publica imagens,
+  provisiona os serviços e informa a URL pública.</li>
+</ul>
+<p>As variáveis obrigatórias em produção são configuradas como secrets ou env vars
+no template: <code>JWT_SECRET</code>, <code>OPENCODE_GO_API_KEY</code>, <code>OPENCODE_GO_BASE_URL</code>,
+<code>LANGSMITH_*</code>/<code>LANGCHAIN_*</code>, <code>QDRANT_URL</code>, <code>USIEDU_DATABASE_URL</code>,
+<code>USIEDU_CACHE_*</code>, <code>USIEDU_RATE_*</code> e
+<code>USIEDU_CORS_ORIGINS</code>. Nunca reutilizar o segredo JWT local e nunca versionar
+valores reais em <code>.env</code> ou Bicep.</p>
+<h2 id="11-guardrails-contra-prompt-injection-t93">11. Guardrails contra prompt injection (T9.3)<a class="headerlink" href="#11-guardrails-contra-prompt-injection-t93" title="Permanent link">&para;</a></h2>
 <p>Defesa em três camadas, implementada em <code>src/security/guardrails.py</code> com
 heurísticas determinísticas (regex em constantes nomeadas) — <strong>testável sem LLM</strong>.</p>
 <table>

@@ -1376,6 +1376,13 @@ Regra de ouro: <strong>uma sprint não começa sem a anterior concluída</strong
 <li>[x] Testes: 25 em <code>tests/unit/test_guardrails.py</code> (detecção parametrizada, validação de saída, separação de chunks, ingestão com auditoria, endpoints /chat e /chat/stream, LangSmith espião/falha) — incl. usuário staff, pois o intent institucional só aciona o agente documental para esse perfil</li>
 <li>[x] Política documentada em <code>docs/03-rag-e-infraestrutura.md</code> (seção 10)</li>
 <li>[x] Teste manual: pergunta com injeção → 200 com resposta cordial + log JSON <code>guardrail_triggered=true, origem=entrada, padroes=[ignorar_instrucoes, revelar_system_prompt]</code></li>
+<li>[~] <strong>T9.4 — Deploy público em nuvem</strong> <em>(artefatos concluídos; provisionamento e aceite HTTPS aguardam execução na assinatura Azure do proprietário)</em></li>
+<li>[x] <code>infra/azure/registry.bicep</code>, <code>main.bicep</code> e <code>deploy.ps1</code>: ACR Basic, ambiente Container Apps, frontend externo, API/Qdrant internos, Azure Files para Qdrant, PostgreSQL gerenciado para estado transacional e job manual de ingestão.</li>
+<li>[x] Secrets/env vars de produção documentados e declarados: <code>JWT_SECRET</code>, <code>OPENCODE_*</code>, <code>LANGSMITH_*</code>/<code>LANGCHAIN_*</code>, <code>QDRANT_URL</code>, SQLite, cache, rate limit e CORS.</li>
+<li>[x] <code>scripts/ingest_knowledge_base.py</code> para o job de seed; imagem da API passa a incluir <code>scripts/</code>.</li>
+<li>[x] Proxy nginx configurável por <code>UPSTREAM_API_URL</code>; CORS deixa de aceitar wildcard com credenciais.</li>
+<li>[x] README com guia de deploy/cold start e <code>capture_screenshots.py --base-url</code>.</li>
+<li>[~] Executar o job, validar <code>/health</code>, login → chat → feedback → <code>/insights</code> e registrar a URL pública HTTPS. <em>(bloqueado até <code>az login</code> do proprietário.)</em></li>
 </ul>
 <p><strong>DoD da sprint (parcial):</strong> sistema exposto publicamente sem surpresas de custo/abuso.</p>
 <hr />
