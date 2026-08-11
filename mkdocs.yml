@@ -46,6 +46,8 @@ nav:
     - Contratos Técnicos: 09-contratos-tecnicos.md
   - Avaliação:
     - Roteiro de Vídeo Demo: 10-roteiro-video-demo.md
+  - Operação:
+    - Validação do Piloto Público: profissionalizacao/01-validacao-piloto.md
 
 markdown_extensions:
   - admonition
