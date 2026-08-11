@@ -48,40 +48,45 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+
 class LoginResponse(BaseModel):
-    access_token: str          # JWT, expira em 1h
+    access_token: str  # JWT, expira em 1h
     token_type: str = "bearer"
     profile: Literal["student", "staff"]
     display_name: str
 
+
 # chat
 class ChatRequest(BaseModel):
-    session_id: str            # uuid fornecido pelo cliente
-    message: str               # máx. 2000 caracteres
+    session_id: str  # uuid fornecido pelo cliente
+    message: str  # máx. 2000 caracteres
+
 
 class Source(BaseModel):
-    document: str              # ex.: "Regimento Geral da UnB"
-    section: str | None        # ex.: "Título III, Cap. II, Art. 112"
-    excerpt: str               # trecho recuperado
+    document: str  # ex.: "Regimento Geral da UnB"
+    section: str | None  # ex.: "Título III, Cap. II, Art. 112"
+    excerpt: str  # trecho recuperado
     url: str | None
+
 
 class ChatResponse(BaseModel):
     session_id: str
     answer: str
-    agents_involved: list[str]             # ex.: ["academico", "financeiro"]
+    agents_involved: list[str]  # ex.: ["academico", "financeiro"]
     sources: list[Source]
-    intent: Literal["academico", "financeiro", "institucional",
-                    "composta", "fora_de_escopo"]
+    intent: Literal["academico", "financeiro", "institucional", "composta", "fora_de_escopo"]
+
 
 # histórico (T7.4)
 class ChatHistoryMessage(BaseModel):
     role: Literal["user", "assistant"]
     content: str
-    timestamp: str | None = None   # o checkpointer não persiste timestamp
+    timestamp: str | None = None  # o checkpointer não persiste timestamp
+
 
 class ChatHistoryResponse(BaseModel):
     session_id: str
-    messages: list[ChatHistoryMessage]     # agentes/fontes omitidos: só texto
+    messages: list[ChatHistoryMessage]  # agentes/fontes omitidos: só texto
 ```
 
 ### 2.2.1 Eventos SSE do `POST /chat/stream` (T7.3)
@@ -156,19 +161,20 @@ USIEDU_CHECKPOINTER_DB=usiedu_checkpoints.db
 ```python
 STUDENTS = {
     "ana-123": {
-        "nome": "Ana Souza", "curso": "ADS", "periodo": 1,
+        "nome": "Ana Souza",
+        "curso": "ADS",
+        "periodo": 1,
         "notas": {"calculo-1": 5.8, "programacao-1": 9.1},
         "faltas": {"calculo-1": 6, "programacao-1": 0},
     },
 }
 BOLETOS = {
     "ana-123": [
-        {"id": "bol-001", "valor": 890.00, "vencimento": "2026-07-10",
-         "status": "vencido"},
+        {"id": "bol-001", "valor": 890.00, "vencimento": "2026-07-10", "status": "vencido"},
     ],
 }
 POLITICA_RENEGOCIACAO = {
-    "desconto_maximo_percentual": 10,        # aplicado apenas a juros/multa
+    "desconto_maximo_percentual": 10,  # aplicado apenas a juros/multa
     "parcelas_maximas": 6,
     "condicao": "apenas boletos vencidos há menos de 30 dias",
 }
@@ -194,10 +200,9 @@ Saída estruturada do supervisor (validada com Pydantic):
 
 ```python
 class SupervisorDecision(BaseModel):
-    intent: Literal["academico", "financeiro", "institucional",
-                    "composta", "fora_de_escopo"]
-    plan: list[str] | None      # sub-tarefas, apenas para intent="composta"
-    reasoning: str              # breve justificativa (aparece no trace)
+    intent: Literal["academico", "financeiro", "institucional", "composta", "fora_de_escopo"]
+    plan: list[str] | None  # sub-tarefas, apenas para intent="composta"
+    reasoning: str  # breve justificativa (aparece no trace)
 ```
 
 ## 6. Convenções de código

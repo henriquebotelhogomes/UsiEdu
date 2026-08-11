@@ -54,13 +54,13 @@ Cada conversa é uma execução do grafo com estado compartilhado.
 ```python
 class AgentState(TypedDict):
     user_id: str
-    profile: Literal["student", "staff"]      # controla quais agentes estão disponíveis
-    messages: Annotated[list, add_messages]   # histórico da conversa
-    plan: list[str] | None                    # plano (perguntas compostas)
-    delegations: list[Delegation]             # quem foi acionado e por quê
-    agent_results: dict[str, AgentResult]     # resultados parciais por agente
-    retrieved_sources: list[Source]           # fontes RAG usadas (para citação)
-    needs_more_info: bool                     # alimenta a aresta cíclica
+    profile: Literal["student", "staff"]  # controla quais agentes estão disponíveis
+    messages: Annotated[list, add_messages]  # histórico da conversa
+    plan: list[str] | None  # plano (perguntas compostas)
+    delegations: list[Delegation]  # quem foi acionado e por quê
+    agent_results: dict[str, AgentResult]  # resultados parciais por agente
+    retrieved_sources: list[Source]  # fontes RAG usadas (para citação)
+    needs_more_info: bool  # alimenta a aresta cíclica
 ```
 
 ### 1.3 Persistência e memória
