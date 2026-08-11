@@ -1278,40 +1278,45 @@ interfaces; o PRD prevalece para comportamento.</p>
     <span class="n">email</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">password</span><span class="p">:</span> <span class="nb">str</span>
 
+
 <span class="k">class</span><span class="w"> </span><span class="nc">LoginResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">access_token</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># JWT, expira em 1h</span>
+    <span class="n">access_token</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># JWT, expira em 1h</span>
     <span class="n">token_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bearer&quot;</span>
     <span class="n">profile</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;student&quot;</span><span class="p">,</span> <span class="s2">&quot;staff&quot;</span><span class="p">]</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
 
+
 <span class="c1"># chat</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ChatRequest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># uuid fornecido pelo cliente</span>
-    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span>               <span class="c1"># máx. 2000 caracteres</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># uuid fornecido pelo cliente</span>
+    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># máx. 2000 caracteres</span>
+
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Source</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">document</span><span class="p">:</span> <span class="nb">str</span>              <span class="c1"># ex.: &quot;Regimento Geral da UnB&quot;</span>
-    <span class="n">section</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>        <span class="c1"># ex.: &quot;Título III, Cap. II, Art. 112&quot;</span>
-    <span class="n">excerpt</span><span class="p">:</span> <span class="nb">str</span>               <span class="c1"># trecho recuperado</span>
+    <span class="n">document</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># ex.: &quot;Regimento Geral da UnB&quot;</span>
+    <span class="n">section</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># ex.: &quot;Título III, Cap. II, Art. 112&quot;</span>
+    <span class="n">excerpt</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># trecho recuperado</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ChatResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">answer</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">agents_involved</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>             <span class="c1"># ex.: [&quot;academico&quot;, &quot;financeiro&quot;]</span>
+    <span class="n">agents_involved</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># ex.: [&quot;academico&quot;, &quot;financeiro&quot;]</span>
     <span class="n">sources</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Source</span><span class="p">]</span>
-    <span class="n">intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;academico&quot;</span><span class="p">,</span> <span class="s2">&quot;financeiro&quot;</span><span class="p">,</span> <span class="s2">&quot;institucional&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;composta&quot;</span><span class="p">,</span> <span class="s2">&quot;fora_de_escopo&quot;</span><span class="p">]</span>
+    <span class="n">intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;academico&quot;</span><span class="p">,</span> <span class="s2">&quot;financeiro&quot;</span><span class="p">,</span> <span class="s2">&quot;institucional&quot;</span><span class="p">,</span> <span class="s2">&quot;composta&quot;</span><span class="p">,</span> <span class="s2">&quot;fora_de_escopo&quot;</span><span class="p">]</span>
+
 
 <span class="c1"># histórico (T7.4)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ChatHistoryMessage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">role</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant&quot;</span><span class="p">]</span>
     <span class="n">content</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># o checkpointer não persiste timestamp</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># o checkpointer não persiste timestamp</span>
+
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ChatHistoryResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatHistoryMessage</span><span class="p">]</span>     <span class="c1"># agentes/fontes omitidos: só texto</span>
+    <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatHistoryMessage</span><span class="p">]</span>  <span class="c1"># agentes/fontes omitidos: só texto</span>
 </code></pre></div>
 <h3 id="221-eventos-sse-do-post-chatstream-t73">2.2.1 Eventos SSE do <code>POST /chat/stream</code> (T7.3)<a class="headerlink" href="#221-eventos-sse-do-post-chatstream-t73" title="Permanent link">&para;</a></h3>
 <p>Linhas <code>data: {json}\n\n</code> com o tipo no campo <code>event</code>:</p>
@@ -1398,19 +1403,20 @@ Códigos: <code>UNAUTHORIZED</code> (401), <code>FORBIDDEN</code> (403), <code>V
 <h2 id="4-modelos-de-dados-mockados-srctoolsmock_datapy">4. Modelos de dados mockados (<code>src/tools/mock_data.py</code>)<a class="headerlink" href="#4-modelos-de-dados-mockados-srctoolsmock_datapy" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">STUDENTS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;ana-123&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;nome&quot;</span><span class="p">:</span> <span class="s2">&quot;Ana Souza&quot;</span><span class="p">,</span> <span class="s2">&quot;curso&quot;</span><span class="p">:</span> <span class="s2">&quot;ADS&quot;</span><span class="p">,</span> <span class="s2">&quot;periodo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;nome&quot;</span><span class="p">:</span> <span class="s2">&quot;Ana Souza&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;curso&quot;</span><span class="p">:</span> <span class="s2">&quot;ADS&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;periodo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
         <span class="s2">&quot;notas&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;calculo-1&quot;</span><span class="p">:</span> <span class="mf">5.8</span><span class="p">,</span> <span class="s2">&quot;programacao-1&quot;</span><span class="p">:</span> <span class="mf">9.1</span><span class="p">},</span>
         <span class="s2">&quot;faltas&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;calculo-1&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;programacao-1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
     <span class="p">},</span>
 <span class="p">}</span>
 <span class="n">BOLETOS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;ana-123&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;bol-001&quot;</span><span class="p">,</span> <span class="s2">&quot;valor&quot;</span><span class="p">:</span> <span class="mf">890.00</span><span class="p">,</span> <span class="s2">&quot;vencimento&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-07-10&quot;</span><span class="p">,</span>
-         <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;vencido&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;bol-001&quot;</span><span class="p">,</span> <span class="s2">&quot;valor&quot;</span><span class="p">:</span> <span class="mf">890.00</span><span class="p">,</span> <span class="s2">&quot;vencimento&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-07-10&quot;</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;vencido&quot;</span><span class="p">},</span>
     <span class="p">],</span>
 <span class="p">}</span>
 <span class="n">POLITICA_RENEGOCIACAO</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;desconto_maximo_percentual&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>        <span class="c1"># aplicado apenas a juros/multa</span>
+    <span class="s2">&quot;desconto_maximo_percentual&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>  <span class="c1"># aplicado apenas a juros/multa</span>
     <span class="s2">&quot;parcelas_maximas&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
     <span class="s2">&quot;condicao&quot;</span><span class="p">:</span> <span class="s2">&quot;apenas boletos vencidos há menos de 30 dias&quot;</span><span class="p">,</span>
 <span class="p">}</span>
@@ -1429,10 +1435,9 @@ Checkpointer: SQLite, chave thread_id = session_id
 </code></pre></div>
 <p>Saída estruturada do supervisor (validada com Pydantic):</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SupervisorDecision</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;academico&quot;</span><span class="p">,</span> <span class="s2">&quot;financeiro&quot;</span><span class="p">,</span> <span class="s2">&quot;institucional&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;composta&quot;</span><span class="p">,</span> <span class="s2">&quot;fora_de_escopo&quot;</span><span class="p">]</span>
-    <span class="n">plan</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>      <span class="c1"># sub-tarefas, apenas para intent=&quot;composta&quot;</span>
-    <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>              <span class="c1"># breve justificativa (aparece no trace)</span>
+    <span class="n">intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;academico&quot;</span><span class="p">,</span> <span class="s2">&quot;financeiro&quot;</span><span class="p">,</span> <span class="s2">&quot;institucional&quot;</span><span class="p">,</span> <span class="s2">&quot;composta&quot;</span><span class="p">,</span> <span class="s2">&quot;fora_de_escopo&quot;</span><span class="p">]</span>
+    <span class="n">plan</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># sub-tarefas, apenas para intent=&quot;composta&quot;</span>
+    <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># breve justificativa (aparece no trace)</span>
 </code></pre></div>
 <h2 id="6-convencoes-de-codigo">6. Convenções de código<a class="headerlink" href="#6-convencoes-de-codigo" title="Permanent link">&para;</a></h2>
 <table>
