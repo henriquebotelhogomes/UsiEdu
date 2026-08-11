@@ -999,6 +999,174 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operação
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operação
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programa de Profissionalização
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/00-prd-programa/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD do Programa
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/01-validacao-piloto/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validação do Piloto Público
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/TEMPLATE_INICIATIVA/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Template de Iniciativa
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1368,7 +1536,7 @@ mas as metas do doc 03 (seção 6.1) não foram atingidas no agregado. Plano de 
 <li>[~] Relatório Ragas com ≥30 perguntas atingindo as metas do doc 03 (seção 5.1). <em>(parcialmente validado 07/08/2026 — 30 perguntas avaliadas com Ragas+LLM; metas não atingidas no agregado: faithfulness 0,565, context precision/recall 0,645, answer relevancy 0,565 vs metas 0,90/0,80/0,80/0,85. Causas: artefato de medição nas 4 perguntas fora_de_escopo (comportamento correto RF-10 pontua 0), lacuna de corpus staff em q018–q022 e juiz LLM de baixo custo. <code>sem_resposta</code> = 1,000 em tudo. Leitura crítica e plano de melhoria: seção 3.1 e <code>src/evaluation/relatorio_ragas.md</code>)</em></li>
 <li>[x] <code>pytest</code> verde com cobertura ≥ 80% em orquestração/RAG; <code>ruff check</code> sem erros. <em>(validado 06/08/2026 — 206 testes, cobertura 96,7% em orchestration+rag; ruff limpo)</em></li>
 <li>[x] Site MkDocs publicado (GitHub Pages) com toda a documentação navegável. <em>(validado 07/08/2026 — https://henriquebotelhogomes.github.io/UsiEdu/, republicação automática via <code>.github/workflows/docs.yml</code>)</em></li>
-<li>[~] Visitante anônimo usa landing, login demo, chat, feedback e <code>/insights</code> por HTTPS. <em>(artefatos Azure Container Apps preparados em T9.4; validação aguarda primeiro provisionamento público.)</em></li>
+<li>[x] Visitante anônimo usa landing, login demo, chat, feedback e <code>/insights</code> por HTTPS. <em>(validado em 11/08/2026 na revisão pública final: landing, login após escala a zero (~95 s), chat RAG composto com fontes/agentes, feedback e <code>/insights</code>. A revisão atual da API não registrou exit 137; cold start configurado em até 180 s.)</em></li>
 </ul>
 <h2 id="6-base-de-conhecimento-do-piloto-fontes-abertas-reais">6. Base de conhecimento do piloto (fontes abertas reais)<a class="headerlink" href="#6-base-de-conhecimento-do-piloto-fontes-abertas-reais" title="Permanent link">&para;</a></h2>
 <p>A base de conhecimento usa documentos reais e públicos de <strong>uma única instituição</strong> (UnB),
