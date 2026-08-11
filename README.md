@@ -17,7 +17,7 @@ LangGraph, com respostas sempre citando as fontes da base de conhecimento.
 
 Construído como projeto piloto de ponta a ponta — do RAG com reranker local à
 observabilidade com LangSmith, do guardrails contra prompt injection ao deploy
-em Azure com CI/CD — este repositório é uma demonstração prática de engenharia
+em Azure com CI e deploy manual documentado — este repositório é uma demonstração prática de engenharia
 de IA em produção, não apenas de um protótipo de notebook.
 
 ## Diferenciais
@@ -118,8 +118,8 @@ Para regenerar os prints com o sistema rodando localmente: `python scripts/captu
   viram código versionável e testável, não "prompt magic".
 - **Embeddings e reranker locais (ONNX)**: qualidade de RAG sem custo por
   chamada de API de embedding — decisão crítica para escala e economia.
-- **Qdrant**: vector DB dedicado com filtros e alta disponibilidade, em vez de
-  embutir a busca na aplicação.
+- **Qdrant**: vector DB dedicado com filtros e persistência em Azure Files, em
+  vez de embutir a busca na aplicação.
 
 Detalhes completos na documentação (`docs/`).
 
@@ -247,6 +247,7 @@ A documentação completa está em `docs/`:
 | `07-prd-requisitos.md` | PRD: requisitos funcionais e não-funcionais |
 | `08-plano-execucao.md` | Sprints, tarefas e Definition of Done |
 | `09-contratos-tecnicos.md` | API, env vars, modelos de dados, convenções |
+| `profissionalizacao/07-decisoes-provisorias.md` | Decisões provisórias, gates explícitos e pendências factuais do piloto |
 
 ## Licença
 
