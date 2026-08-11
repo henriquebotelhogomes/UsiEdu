@@ -5,7 +5,7 @@
 | Estado | Planejado — especificado, não iniciado |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
-| Dependências | [PRD do programa](00-prd-programa.md), [relatório Ragas](../../src/evaluation/relatorio_ragas.md), `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
+| Dependências | [PRD do programa](00-prd-programa.md), `src/evaluation/relatorio_ragas.md`, `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
 | Documentos normativos | `PLANO_PROFISSIONALIZACAO.md`; `docs/03-rag-e-infraestrutura.md` §§ 1 e 6; `docs/04-piloto-e-roadmap.md` § 3.1; `docs/07-prd-requisitos.md` RF-10, RF-14 e RF-18–29; `docs/08-plano-execucao.md` T6.1–T6.2; `docs/09-contratos-tecnicos.md` |
 | Checklists legados afetados | `docs/04-piloto-e-roadmap.md` § 5, “Relatório Ragas…”; `docs/07-prd-requisitos.md` § 7, “Relatório Ragas…”; `docs/08-plano-execucao.md` T6.1 e T6.2. Não alterar status nesta especificação. |
 | Atualizado em | 2026-08-11 |
