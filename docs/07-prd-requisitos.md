@@ -149,4 +149,4 @@ com relatório Ragas dentro das metas do doc 03 (seção 6.1).
 - [x] `docker compose up` funcional do zero (api + frontend + qdrant)
 - [x] MkDocs publicado + README com quickstart (`mkdocs.yml` + build validado)
 - [~] Vídeo de demo cobrindo US-01 a US-05 — roteiro pronto (doc 10); gravação pendente de ambiente com LLM real
-- [~] Deploy Azure Container Apps validado por HTTPS (landing, login demo, chat e feedback). *(P0.2 em 2026-08-11 confirmou landing e `/health` públicos, mas o login demo retornou `Erro de autenticação`; P0.3 mediu cold start HTTP 504 em 81,72 s e encontrou eventos exit 137 na API. Aceite funcional bloqueado.)*
+- [~] Deploy Azure Container Apps validado por HTTPS (landing, login demo, chat e feedback). *(P0.2 em 2026-08-11 confirmou landing e `/health` públicos, mas o login demo retornou `Erro de autenticação`; P0.3 mediu cold start HTTP 504 em 81,72 s e exit 137 apenas em revisões antigas. A correção está testada localmente, porém sua publicação é bloqueada por Docker Desktop parado e ACR Tasks indisponível; aceite funcional bloqueado.)*

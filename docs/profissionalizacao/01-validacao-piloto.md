@@ -95,3 +95,43 @@ az monitor log-analytics query --workspace $workspaceId --analytics-query `
 
 O 504 em cold start e os eventos 137 impedem o aceite T9.4 e exigem T-P0.4:
 diagnostico, teste de regressao e a menor correcao possivel.
+
+## T-P0.4 - Diagnostico e correcao minima
+
+**Status:** bloqueada apos a correcao local em 2026-08-11.
+
+### Diagnostico
+
+- Os eventos exit 137 pertencem somente as revisoes `usiedu-api--0000006`,
+  `usiedu-api--0000007` e `usiedu-api--0000011`. A revisao atual
+  `usiedu-api--0000012`, com 2 vCPU e 4 GiB, retornou zero eventos 137 na
+  consulta equivalente.
+- O timeout ativo e independente da autenticacao: o nginx retornou 504 para
+  `POST /auth/login` antes de receber o header da API, enquanto a API registrou
+  HTTP 200 para a mesma solicitacao apos terminar o bootstrap.
+- O `proxy_read_timeout` padrao de 60 s e menor que o cold start observado de
+  81,72 s. A menor correcao e declarar 120 s no bloco `server` do nginx, sem
+  alterar a API, a autenticacao ou a topologia Azure.
+
+### Correcao e teste de regressao
+
+- `tests/unit/test_deploy_config.py::test_frontend_proxy_allows_api_cold_start`
+  foi criado antes da implementacao, falhou sem a diretiva e passou depois dela.
+- `frontend/nginx/default.conf.template` agora declara
+  `proxy_read_timeout 120s;`; o streaming conserva o timeout especifico de
+  300 s.
+- O commit local da correcao e `0b3e284` (`fix(deploy): ampliar timeout do proxy`).
+
+### Bloqueio de publicacao
+
+A imagem corrigida nao pode ser publicada nesta sessao:
+
+1. O Docker Desktop local nao esta em execucao, impedindo `docker build` e
+   `docker push`.
+2. A alternativa `az acr build` foi recusada pelo Azure com
+   `TasksOperationsNotAllowed` para o ACR da assinatura.
+
+Sem uma nova imagem no ACR, a revisao publica continua usando a configuracao
+anterior e nao e possivel repetir P0.2/P0.3 com a correcao. P0.5 permanece
+fora de execucao: README e checklists nao podem declarar o aceite HTTPS ou a
+URL corrigida sem essa evidencia.
