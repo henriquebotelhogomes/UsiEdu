@@ -50,6 +50,11 @@ def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _canonical_text_sha256(path: Path) -> str:
+    content = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
 def test_inventario_tem_schema_ids_urls_e_cobertura_completos() -> None:
     inventory = _load(INVENTORY_PATH)
 
@@ -168,7 +173,7 @@ def test_evidencia_comprova_ingestao_isolada_idempotente_e_recuperacao() -> None
     assert evidence["schema_version"] == "1.1.0"
     assert evidence["collection"].startswith("t02_2_")
     assert evidence["collection"] not in {"academico", "institucional"}
-    assert evidence["manifest_sha256"] == hashlib.sha256(MANIFEST_PATH.read_bytes()).hexdigest()
+    assert evidence["manifest_sha256"] == _canonical_text_sha256(MANIFEST_PATH)
     assert evidence["ingestion"]["first_run"]["uploaded_points"] > 0
     assert set(evidence["ingestion"]["first_run"]["per_document"]) == {
         source["title"] for source in inventory["sources"]

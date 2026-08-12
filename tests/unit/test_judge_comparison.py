@@ -182,7 +182,7 @@ def test_documentation_records_t02_5_evidence_without_claiming_p1_complete() -> 
         encoding="utf-8"
     )
 
-    assert "T02.2 parcial; T02.3–T02.5 concluídas" in document
+    assert "T02.1–T02.5 concluídas; gates hospedado e operacional pendentes" in document
     assert "- [x] **T02.5 — Comparar juízes**" in document
     assert "US$ 0,319520" in document
     assert "temperatura efetiva 1" in document
