@@ -30,3 +30,83 @@ jobs:
 
       - name: Pytest
         run: pytest -v --tb=short
+
+      - name: Exercise image promotion policy
+        run: |
+          mkdir -p artifacts
+          python -m src.delivery.image_policy \
+            --scan tests/fixtures/trivy/clean.json \
+            --policy src/delivery/image_policy_v1.json \
+            --digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+            --date 2026-08-12 \
+            --output artifacts/image-policy-pass.json
+          if python -m src.delivery.image_policy \
+            --scan tests/fixtures/trivy/high-fixable.json \
+            --policy src/delivery/image_policy_v1.json \
+            --digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+            --date 2026-08-12 \
+            --output artifacts/image-policy-block.json; then
+            echo "Expected the fixable HIGH fixture to block promotion"
+            exit 1
+          fi
+
+      - name: Upload image policy self-test
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-policy-self-test
+          path: artifacts/image-policy-*.json
+          if-no-files-found: error
+
+      - name: Exercise RAG regression gate
+        run: |
+          python -m src.evaluation.regression_gate \
+            --baseline src/evaluation/regression_fixtures/baseline.json \
+            --candidate src/evaluation/regression_fixtures/candidate.json \
+            --policy src/evaluation/regression_policy_v1.json \
+            --output artifacts/rag-regression-report.json
+
+      - name: Upload RAG regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-regression-evidence
+          path: artifacts/rag-regression-report.json
+          if-no-files-found: error
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test frontend
+        run: npm test
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Generate sanitized E2E evidence
+        run: >
+          npm run test:e2e --
+          --reporter=json --outputFile=e2e-report.json
+
+      - name: Upload E2E evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-e2e-evidence
+          path: frontend/e2e-report.json
+          if-no-files-found: error

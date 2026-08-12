@@ -1,0 +1,307 @@
+{
+  "schema_version": "2.0.0",
+  "baseline": {
+    "snapshot_version": "2026-08-06.1",
+    "generated_at": "2026-08-06T14:50:48.482095+00:00",
+    "source_revision": {
+      "commit": "9f7c9bc73c1def78dd2efc489a022a6541d8ff74",
+      "hash_algorithm": "git-blob-sha1",
+      "historical_dataset_blob": "7d643a666021218443598288c5c8f5acc5b7ef81",
+      "historical_manifest_blob": "d49071f2c96a856f52cfc610adce7e02f9886d91",
+      "historical_report_blob": "6e9bcfccbcdc1e455ce193cb8bd704e80d416840",
+      "dataset_snapshot_path": "src/evaluation/baseline_snapshots/2026-08-06/dataset.jsonl",
+      "dataset_snapshot_blob": "7d643a666021218443598288c5c8f5acc5b7ef81",
+      "manifest_snapshot_path": "src/evaluation/baseline_snapshots/2026-08-06/manifest.json",
+      "manifest_snapshot_blob": "d49071f2c96a856f52cfc610adce7e02f9886d91",
+      "report_snapshot_path": "src/evaluation/baseline_snapshots/2026-08-06/relatorio_ragas.md",
+      "report_snapshot_blob": "6e9bcfccbcdc1e455ce193cb8bd704e80d416840"
+    },
+    "execution": {
+      "declared_mode": "Ragas+LLM",
+      "observed_mechanism": "heuristic_scoring",
+      "ragas_invocation_observed": false,
+      "raw_answers_recorded": false,
+      "raw_errors_recorded": false,
+      "exception_policy": "zero_metrics"
+    },
+    "aggregate_scores": {
+      "faithfulness": 0.565,
+      "context_precision": 0.645,
+      "context_recall": 0.645,
+      "answer_relevancy": 0.565
+    }
+  },
+  "post_baseline_revisions": {
+    "q022": {
+      "commit": "80d27c306bcf8c14eb732d13d48d09d0714db2e6",
+      "historical_dataset_blob": "67933038582591b4009f9b2aba1286bf85a4ada3",
+      "dataset_blob_snapshot": "src/evaluation/baseline_snapshots/2026-08-06/dataset_q022_reclassificado.jsonl",
+      "snapshot_blob": "808ac51aee250822f9baed3f79db164f10e5bcba",
+      "change": "q022 category changed from direct to sem_resposta after the baseline report."
+    }
+  },
+  "taxonomy": {
+    "direct": {
+      "category": "direct",
+      "report": "Question with an institutional answer expected from retrieval; one report row per dataset question."
+    },
+    "tool": {
+      "category": "tool",
+      "report": "Outside the RAG aggregate. Validate deterministic value, authorization, and absence of retrieval with deterministic assertions."
+    },
+    "composta": {
+      "category": "composta",
+      "report": "Keep the historical row. A future aggregate includes only retrieval-required subquestions and publishes a subreport for every subquestion."
+    },
+    "fora_de_escopo": {
+      "category": "fora_de_escopo",
+      "report": "Outside the RAG aggregate. Measure correct UsiEdu redirection and zero RAG or agent calls."
+    },
+    "sem_resposta": {
+      "category": "sem_resposta",
+      "report": "Outside the RAG aggregate. Measure honest refusal and absence of invented sources."
+    }
+  },
+  "inventory": [
+    {
+      "id": "q001",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.762, "answer_relevancy": 0.762},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q001."
+    },
+    {
+      "id": "q002",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.717, "answer_relevancy": 0.717},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q002."
+    },
+    {
+      "id": "q003",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.717, "answer_relevancy": 0.717},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q003."
+    },
+    {
+      "id": "q004",
+      "profile": "student",
+      "category": "tool",
+      "reported_scores": {"faithfulness": 0.744, "answer_relevancy": 0.744},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q004."
+    },
+    {
+      "id": "q005",
+      "profile": "student",
+      "category": "tool",
+      "reported_scores": {"faithfulness": 0.685, "answer_relevancy": 0.685},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q005."
+    },
+    {
+      "id": "q006",
+      "profile": "student",
+      "category": "tool",
+      "reported_scores": {"faithfulness": 0.845, "answer_relevancy": 0.845},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q006."
+    },
+    {
+      "id": "q007",
+      "profile": "student",
+      "category": "tool",
+      "reported_scores": {"faithfulness": 0.362, "answer_relevancy": 0.362},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q007."
+    },
+    {
+      "id": "q008",
+      "profile": "student",
+      "category": "composta",
+      "reported_scores": {"faithfulness": 0.8, "answer_relevancy": 0.8},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q008."
+    },
+    {
+      "id": "q009",
+      "profile": "student",
+      "category": "fora_de_escopo",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
+    },
+    {
+      "id": "q010",
+      "profile": "student",
+      "category": "fora_de_escopo",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
+    },
+    {
+      "id": "q011",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q011."
+    },
+    {
+      "id": "q012",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.845, "answer_relevancy": 0.845},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q012."
+    },
+    {
+      "id": "q013",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.925, "answer_relevancy": 0.925},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q013."
+    },
+    {
+      "id": "q014",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.717, "answer_relevancy": 0.717},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q014."
+    },
+    {
+      "id": "q015",
+      "profile": "student",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.9, "answer_relevancy": 0.9},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q015."
+    },
+    {
+      "id": "q016",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.8, "answer_relevancy": 0.8},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q016."
+    },
+    {
+      "id": "q017",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.55, "answer_relevancy": 0.55},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q017."
+    },
+    {
+      "id": "q018",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
+    },
+    {
+      "id": "q019",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
+    },
+    {
+      "id": "q020",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
+    },
+    {
+      "id": "q021",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
+    },
+    {
+      "id": "q022",
+      "profile": "staff",
+      "category": "direct",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
+    },
+    {
+      "id": "q023",
+      "profile": "staff",
+      "category": "composta",
+      "reported_scores": {"faithfulness": 0.863, "answer_relevancy": 0.863},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q023."
+    },
+    {
+      "id": "q024",
+      "profile": "staff",
+      "category": "fora_de_escopo",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
+    },
+    {
+      "id": "q025",
+      "profile": "staff",
+      "category": "fora_de_escopo",
+      "reported_scores": {"faithfulness": 0.0, "answer_relevancy": 0.0},
+      "zero_score_cause": "indeterminada",
+      "evidence": "relatorio historico; resposta e erro bruto indisponiveis."
+    },
+    {
+      "id": "q026",
+      "profile": "staff",
+      "category": "sem_resposta",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q026."
+    },
+    {
+      "id": "q027",
+      "profile": "staff",
+      "category": "sem_resposta",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q027."
+    },
+    {
+      "id": "q028",
+      "profile": "staff",
+      "category": "sem_resposta",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q028."
+    },
+    {
+      "id": "q029",
+      "profile": "staff",
+      "category": "sem_resposta",
+      "reported_scores": {"faithfulness": 1.0, "answer_relevancy": 1.0},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q029."
+    },
+    {
+      "id": "q030",
+      "profile": "staff",
+      "category": "composta",
+      "reported_scores": {"faithfulness": 0.729, "answer_relevancy": 0.729},
+      "zero_score_cause": null,
+      "evidence": "relatorio_ragas.md, Detalhe por pergunta, q030."
+    }
+  ]
+}

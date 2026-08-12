@@ -228,10 +228,11 @@ class TestRunRagas:
         assert "❌" in conteudo
 
     @pytest.mark.asyncio
-    async def test_executar_avaliacao_gera_relatorio(self, tmp_path) -> None:
+    async def test_executar_avaliacao_gera_relatorio(self, tmp_path, monkeypatch) -> None:
         """executar_avaliacao deve gerar relatório para o dataset (limit 2)."""
         from src.evaluation.run_ragas import executar_avaliacao
 
+        monkeypatch.delenv("OPENCODE_GO_API_KEY", raising=False)
         output = tmp_path / "relatorio_eval.md"
         resultado = await executar_avaliacao(dataset_path=DATASET_PATH, output_path=output, limit=2)
         assert resultado == output
@@ -241,6 +242,7 @@ class TestRunRagas:
         """main deve executar a CLI com sucesso."""
         from src.evaluation.run_ragas import main
 
+        monkeypatch.delenv("OPENCODE_GO_API_KEY", raising=False)
         monkeypatch.setattr(
             "sys.argv",
             [

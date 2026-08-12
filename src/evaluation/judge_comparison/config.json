@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "comparison_id": "judge-comparison-2026-08-11",
+  "inputs": {
+    "dataset_path": "src/evaluation/dataset.jsonl",
+    "dataset_git_blob_sha1": "67933038582591b4009f9b2aba1286bf85a4ada3",
+    "manifest_path": "src/evaluation/baseline_runs/2026-08-11/manifest.json",
+    "manifest_git_blob_sha1": "1f16ac3fb74603b3a96a510024a35ae64aa63306",
+    "slice_contract_path": "src/evaluation/recortes_avaliacao_v1.json",
+    "slice_contract_git_blob_sha1": "3d4805ad67e6614dd5be4baab08aa4dd2d90370d",
+    "source_records_path": "src/evaluation/baseline_runs/2026-08-11/records.jsonl",
+    "source_records_sha256": "7b689f67dd881677eca65440473eb656f2e07981f3b33770929f261091a64fea"
+  },
+  "protocol": {
+    "repetitions": 3,
+    "requested_temperature": 0,
+    "effective_temperature": 1,
+    "temperature_zero_supported": false,
+    "temperature_limitation": "Console Go rejected temperature=0 for both models with: invalid temperature: only 1 is allowed for this model",
+    "max_output_tokens": 8192,
+    "max_context_chars_per_source": 1200,
+    "max_concurrency": 2,
+    "max_attempts": 2,
+    "budget_usd": 5.0,
+    "prompt_version": "rubric-judge-v1",
+    "score_mechanism": "rubric_llm_judge_v1"
+  },
+  "judges": {
+    "economic": {
+      "provider": "opencode-go",
+      "model": "deepseek-v4-flash",
+      "pricing_source": "https://models.dev/api.json",
+      "pricing_retrieved_at": "2026-08-11",
+      "input_per_million_usd": 0.07,
+      "output_per_million_usd": 0.14
+    },
+    "strong": {
+      "provider": "opencode-go",
+      "model": "kimi-k2.7-code",
+      "pricing_source": "https://models.dev/api.json",
+      "pricing_retrieved_at": "2026-08-11",
+      "input_per_million_usd": 0.95,
+      "output_per_million_usd": 4.0
+    }
+  },
+  "output": {
+    "directory": "src/evaluation/judge_comparison/2026-08-11",
+    "records_file": "records.jsonl",
+    "report_file": "report.json",
+    "report_markdown_file": "report.md"
+  }
+}

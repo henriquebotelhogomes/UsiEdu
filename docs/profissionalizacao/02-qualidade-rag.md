@@ -2,23 +2,23 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Planejado — especificado, não iniciado |
+| Estado | Em andamento — T02.1–T02.5 concluídas; gates hospedado e operacional pendentes |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `src/evaluation/relatorio_ragas.md`, `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
 | Documentos normativos | `PLANO_PROFISSIONALIZACAO.md`; `docs/03-rag-e-infraestrutura.md` §§ 1 e 6; `docs/04-piloto-e-roadmap.md` § 3.1; `docs/07-prd-requisitos.md` RF-10, RF-14 e RF-18–29; `docs/08-plano-execucao.md` T6.1–T6.2; `docs/09-contratos-tecnicos.md` |
 | Checklists legados afetados | `docs/04-piloto-e-roadmap.md` § 5, “Relatório Ragas…”; `docs/07-prd-requisitos.md` § 7, “Relatório Ragas…”; `docs/08-plano-execucao.md` T6.1 e T6.2. Não alterar status nesta especificação. |
-| Atualizado em | 2026-08-11 |
+| Atualizado em | 2026-08-12 |
 
 ## 1. Contexto e evidências
 
-O relatório Ragas+LLM de 06/08/2026 avaliou 30 perguntas e registrou
-faithfulness 0,565, context precision 0,645, context recall 0,645 e answer
-relevancy 0,565, abaixo das metas de 0,90/0,80/0,80/0,85. Ele identifica quatro
-perguntas `fora_de_escopo` com redirecionamento correto do RF-10, quatro
-`sem_resposta` com 1,000 em todas as métricas e lacuna real de corpus staff em
-q018–q022. Excluindo `fora_de_escopo`, o próprio relatório estima cerca de 0,65
-para faithfulness/relevancy e 0,70 para precision/recall.
+O relatório de 06/08/2026 declara o modo `Ragas+LLM`, avaliou 30 perguntas e
+registrou faithfulness 0,565, context precision 0,645, context recall 0,645 e
+answer relevancy 0,565, abaixo das metas de 0,90/0,80/0,80/0,85. Ele contém
+quatro casos `fora_de_escopo`, quatro `sem_resposta` e cinco zeros em q018–q022.
+Como a execução histórica não preservou respostas, contextos ou erros por caso,
+esses scores não demonstram o comportamento do redirecionamento, a qualidade da
+recusa ou uma causa de corpus.
 
 O plano legado já determina separar `fora_de_escopo` e `sem_resposta`, mapear
 notas zero, ampliar somente corpus autorizado, criar gate de regressão e
@@ -115,31 +115,38 @@ dataset, não altera o JSONL atual.
 
 ## 7. Tarefas e microtarefas
 
-- [ ] **T02.1 — Congelar baseline e diagnóstico**
-  - [ ] Versionar a taxonomia e mapear q001–q030, começando por q018–q022 e as categorias especiais.
-  - [ ] Teste: validar schema e unicidade de IDs do dataset/diagnóstico.
-  - [ ] Evidência: relatório comparando o novo inventário com `relatorio_ragas.md`.
-  - [ ] Commit esperado: `docs(rag): registrar baseline e diagnostico`.
-- [ ] **T02.2 — Cobrir lacunas autorizadas do corpus**
-  - [ ] Para cada fonte aprovada, registrar origem, checksum, público e perguntas cobertas antes da ingestão.
-  - [ ] Teste: ingestão idempotente e consultas de recuperação para as perguntas mapeadas.
-  - [ ] Evidência: manifest, log de ingestão e resultados antes/depois.
-  - [ ] Commit esperado: `feat(rag): adicionar corpus autorizado`.
-- [ ] **T02.3 — Definir recortes e critérios de categorias especiais**
-  - [ ] Registrar a decisão provisória sobre `tool`, `composta`, `fora_de_escopo` e `sem_resposta` e os campos por caso.
-  - [ ] Teste: casos de categoria exercitam o agregador correto.
-  - [ ] Evidência: decisão registrada e relatório com todos os recortes.
-  - [ ] Commit esperado: `docs(rag): definir recortes de avaliacao`.
-- [ ] **T02.4 — Criar regressão automatizada**
-  - [ ] Implementar comparação baseline/candidato sem alterar o agregado histórico.
-  - [ ] Teste: regressão simulada falha e melhora dentro do limiar aprovado passa.
-  - [ ] Evidência: artefato de CI com dataset, manifest, scores e decisão.
-  - [ ] Commit esperado: `test(rag): adicionar gate de regressao`.
-- [ ] **T02.5 — Comparar juízes**
-  - [ ] Preparar e, com credencial autorizada, rodar DeepSeek V4 Flash versus Kimi K2.7 Code no mesmo dataset/recorte, três vezes, temperatura 0 quando suportada e até US$ 5 no total.
-  - [ ] Teste: validação de configuração impede comparar datasets ou recortes distintos.
-  - [ ] Evidência: tabela de comparação e decisão de manutenção/troca.
-  - [ ] Commit esperado: `docs(rag): comparar juizes de avaliacao`.
+- [x] **T02.1 — Congelar baseline e diagnóstico**
+  - [x] Versionar a taxonomia e mapear q001–q030, começando por q018–q022 e as categorias especiais. *(Inventario: `src/evaluation/baseline_diagnostico_2026-08-06.json`, schema 2.0.0.)*
+  - [x] Teste: validar schema e unicidade de IDs do dataset/diagnóstico. *(`tests/unit/test_rag_baseline_diagnostico.py`.)*
+  - [x] Evidência: relatório comparando o novo inventário com `relatorio_ragas.md`. *(`src/evaluation/evidencia_baseline_2026-08-06.md`; a lacuna histórica permanece explicitamente registrada, sem reconstrução fictícia.)*
+  - [x] Commits: `e011601`, `f90200a`, `6b0ef79`, `5c595d5` e `1622aca`.
+- [x] **T02.1b — Gerar novo baseline auditável**
+  - [x] Fixar commit, dataset, manifest, modelos, parâmetros, mecanismo de score e orçamento antes da execução.
+  - [x] Teste: validar schema por caso, IDs, hashes, agregados, custo e diagnóstico dos zeros.
+  - [x] Evidência: `src/evaluation/baseline_runs/2026-08-11/`, com respostas, fontes, erros, duração, tokens, custo, relatório e proveniência.
+  - [x] Commit esperado: `docs(rag): publicar baseline auditavel`.
+- [x] **T02.2 — Cobrir lacunas autorizadas do corpus**
+  - [x] Para cada fonte aprovada, registrar origem, checksum, público e perguntas cobertas antes da ingestão. *(`src/evaluation/corpus_t02_2.json`; a revisão 1.1.0 adiciona o texto consolidado oficial da Lei 8.112 e registra a delimitação da STI autorizada pelo proprietário.)*
+  - [x] Teste: ingestão idempotente e consultas de recuperação para as perguntas mapeadas. *(Coleção local isolada `t02_2_corpus_20260812`: 350 pontos na primeira passagem e zero na segunda; profundidade 25 somente para evidenciar o corpus ampliado.)*
+  - [x] Evidência: manifest, log de ingestão e resultados antes/depois. *(`src/evaluation/evidencia_corpus_t02_2.json` e `tests/unit/test_rag_corpus_t02_2.py`.)*
+  - [x] Cobertura factual: q018 e q019 permanecem cobertas; q020 está coberta pela Lei 8.112 consolidada; q021 foi delimitada à STI e usa o horário publicado pela própria secretaria; q022 permanece `sem_resposta`, pois não foi comprovada política geral e regulamento de unidade não pode fundamentar resposta institucional.
+  - [x] Commit esperado: `feat(rag): adicionar corpus autorizado`.
+- [x] **T02.3 — Definir recortes e critérios de categorias especiais**
+  - [x] Registrar a decisão provisória sobre `tool`, `composta`, `fora_de_escopo` e `sem_resposta` e os campos por caso. *(`src/evaluation/recortes_avaliacao_v1.json`, schema e taxonomia 1.0.0.)*
+  - [x] Teste: casos de categoria exercitam o agregador correto. *(`tests/unit/test_evaluation_slices.py`; implementação somente de avaliação em `src/evaluation/slices.py`.)*
+  - [x] Evidência: decisão registrada e relatório com todos os recortes. *(`src/evaluation/evidencia_recortes_t02_3.json`: 30 casos, 33 subperguntas, sem recalcular scores.)*
+  - [x] Commit esperado: `docs(rag): definir recortes de avaliacao`.
+- [x] **T02.4 — Criar regressão automatizada**
+  - [x] Implementar comparação baseline/candidato sem alterar o agregado histórico. *(`src/evaluation/regression_gate.py`; política conservadora sem queda em `src/evaluation/regression_policy_v1.json`.)*
+  - [x] Teste: regressão simulada falha e melhora dentro do limiar aprovado passa. *(`tests/unit/test_rag_regression_gate.py` também rejeita proveniência, recorte ou mecanismo divergentes.)*
+  - [x] Evidência: artefato de CI com dataset, manifest, scores e decisão. *(O job `quality` publica `rag-regression-evidence`; os fixtures versionados são marcados `gate_self_test` e não alegam avaliação real.)*
+  - [x] Commit esperado: `test(rag): adicionar gate de regressao`.
+- [x] **T02.5 — Comparar juízes**
+  - [x] Preparar e, com credencial autorizada, rodar DeepSeek V4 Flash versus Kimi K2.7 Code no mesmo dataset/recorte, três vezes, temperatura 0 quando suportada e até US$ 5 no total. *(O Console Go rejeitou `temperature=0` para ambos com `only 1 is allowed`; a execução registra temperatura solicitada 0 e temperatura efetiva 1.)*
+  - [x] Teste: validação de configuração impede comparar datasets ou recortes distintos. *(`tests/unit/test_judge_comparison.py` valida hashes, 17 subperguntas, 102 registros, schema, repetições e custo.)*
+  - [x] Evidência: tabela de comparação e decisão de manutenção/troca. *(`src/evaluation/judge_comparison/2026-08-11/`: custo equivalente estimado US$ 0,319520; Kimi pontuou mais alto em faithfulness e answer relevancy, mas custou mais e variou mais nessas métricas.)*
+  - [x] Decisão: manter provisoriamente o DeepSeek V4 Flash; sem calibração humana, score maior não prova maior correção e não justifica a troca pelo juiz mais caro.
+  - [x] Commit esperado: `docs(rag): comparar juizes de avaliacao`.
 
 ## 8. Estratégia de testes e validação
 
@@ -156,10 +163,10 @@ dataset, não altera o JSONL atual.
 
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
-| G0 — Baseline | Concluído parcialmente | Relatório Ragas de 06/08/2026 existe; T02.1 ainda deve versionar inventário, commit, manifest e configuração exigidos por RQ-RAG-01. |
-| G1 — Especificação | Concluído | Este documento e a decisão provisória definem o recorte e o protocolo; o acesso autorizado ao provedor bloqueia apenas a execução externa de T02.5. |
-| G2 — Implementação | Não iniciado | Commits T02.1–T02.5 e testes correspondentes. |
-| G3 — Verificação | Não iniciado | Pytest/Ruff, relatório reproduzível e gate executado. |
+| G0 — Baseline | Concluído | O histórico permanece como legado incompleto e imutável; o baseline auditável de 11/08/2026 é a nova referência, com commit, dataset, manifest, configuração, respostas, fontes, erros, duração, tokens, custo e hashes versionados. |
+| G1 — Especificação | Concluído | Este documento e a decisão provisória definem recorte, gate e protocolo comparativo; a execução externa de T02.5 foi realizada com acesso autorizado. |
+| G2 — Implementação | Concluído | T02.1–T02.5 possuem implementação, evidência e testes; q022 é deliberadamente `sem_resposta`, sem fonte local promovida a política geral. |
+| G3 — Verificação | Em andamento | Gate e comparação foram executados localmente; a primeira execução hospedada do gate depende do próximo push/PR. |
 | G4 — Operação | Não iniciado | Ingestão Azure e avaliação pós-deploy, se corpus mudar. |
 | G5 — Encerramento | Não iniciado | Checklists legados atualizados apenas com evidência. |
 

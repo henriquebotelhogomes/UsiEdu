@@ -1,11 +1,20 @@
 import { useState } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import type { LoginResponse, StoredUser } from "./types";
 import { clearStoredSession, loadStoredSession, setToken, storeSession } from "./api";
 import LandingPage from "./components/LandingPage";
 import LoginPage from "./components/LoginPage";
 import ChatPage from "./components/ChatPage";
 import InsightsPage from "./components/InsightsPage";
+
+function postLoginRoute(state: unknown): "/chat" | "/insights" {
+  return typeof state === "object" &&
+    state !== null &&
+    "from" in state &&
+    state.from === "/insights"
+    ? "/insights"
+    : "/chat";
+}
 
 export default function App() {
   // Restaura a sessão persistida no localStorage (T7.4 / RF2-04)
@@ -14,6 +23,7 @@ export default function App() {
     if (stored) setToken(stored.access_token);
     return stored;
   });
+  const location = useLocation();
   const navigate = useNavigate();
 
   const handleLogin = (loggedUser: LoginResponse, email: string) => {
@@ -21,7 +31,7 @@ export default function App() {
     storeSession(storedUser);
     setToken(storedUser.access_token);
     setUser(storedUser);
-    navigate("/chat");
+    navigate(postLoginRoute(location.state), { replace: true });
   };
 
   const handleLogout = () => {
@@ -62,7 +72,7 @@ export default function App() {
               <InsightsPage user={user} onLogout={handleLogout} />
             </div>
           ) : (
-            <Navigate to="/login" replace />
+            <Navigate to="/login" replace state={{ from: "/insights" }} />
           )
         }
       />

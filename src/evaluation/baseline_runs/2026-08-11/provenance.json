@@ -1,0 +1,36 @@
+{
+  "aggregate_scores": {
+    "answer_relevancy": 0.686704776705,
+    "context_precision": 0.750947200947,
+    "context_recall": 0.750947200947,
+    "faithfulness": 0.686704776705
+  },
+  "budget_usd": 5.0,
+  "config_git_blob_sha1": "cec9b3135e9867ce338ec4ade9379b149f0b3e74",
+  "config_path": "src/evaluation/baseline_runs/2026-08-11/config.json",
+  "dataset_git_blob_sha1": "67933038582591b4009f9b2aba1286bf85a4ada3",
+  "dataset_path": "src/evaluation/dataset.jsonl",
+  "dataset_sha256": "a421f55c530fec518e120afe0d5e5cf2b85eb50c6ba1b21f9bbb5d853d50b5f5",
+  "error_count": 0,
+  "estimated_cost_usd": 0.030807145,
+  "manifest_git_blob_sha1": "1f16ac3fb74603b3a96a510024a35ae64aa63306",
+  "manifest_path": "knowledge_base/manifest.json",
+  "manifest_snapshot_path": "src/evaluation/baseline_runs/2026-08-11/manifest.json",
+  "manifest_sha256": "e3c4480ebb28e0b1774efd08c89c5b87076cf40f5cff2956362f67fb0c1a5c46",
+  "record_count": 30,
+  "records_file": "records.jsonl",
+  "records_sha256": "7b689f67dd881677eca65440473eb656f2e07981f3b33770929f261091a64fea",
+  "report_file": "report.md",
+  "report_sha256": "ad8a8c3809fa6ca801543f6e37cdca84526b3ec88f1073a5ca359d5b0de5bd5f",
+  "run_id": "baseline-2026-08-11",
+  "schema_version": "1.0.0",
+  "source_commit": "f90907e619ca62c12d07308910449bc6ffd39e66",
+  "success_count": 30,
+  "usage": {
+    "input_tokens": 57889,
+    "output_tokens": 21624,
+    "total_tokens": 79513
+  },
+  "zero_diagnostics_file": "zero_diagnostics.json",
+  "zero_diagnostics_sha256": "b25d0a13e2c4f3728327c9e72b1bbd9b874149e1e7412faa27271f5fbe1d4ee4"
+}

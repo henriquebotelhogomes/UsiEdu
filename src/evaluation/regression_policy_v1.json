@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "policy_id": "rag-regression-v1-no-drop",
+  "metric_max_allowed_drop": {
+    "faithfulness": 0.0,
+    "context_precision": 0.0,
+    "context_recall": 0.0,
+    "answer_relevancy": 0.0
+  },
+  "special_max_new_failures": {
+    "tool": 0,
+    "fora_de_escopo": 0,
+    "sem_resposta": 0
+  }
+}
