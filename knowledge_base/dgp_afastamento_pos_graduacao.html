@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pt-br" lang="pt-br" dir="ltr">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  	<base href="https://dgp.unb.br/afastamentos/afastamento-pos-graduacao" />
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="author" content="Pedro" />
+	<title>Decanato de Gestão de Pessoas - Afastamento para Mestrado, Doutorado e Pós-doutorado</title>
+	<link href="/templates/unb-unidades/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+	<link href="/media/com_phocadownload/css/main/phocadownload.css" rel="stylesheet" type="text/css" />
+	<link href="/media/plg_content_phocadownload/css/phocadownload.css" rel="stylesheet" type="text/css" />
+	<link href="/media/system/css/modal.css?d2252777aff4cc37462c58232ca50f58" rel="stylesheet" type="text/css" />
+	<link href="/media/com_attachments/css/attachments_hide.css" rel="stylesheet" type="text/css" />
+	<link href="/media/com_attachments/css/attachments_list.css" rel="stylesheet" type="text/css" />
+	<link href="/media/sliders/css/style.min.css?v=8.3.1" rel="stylesheet" type="text/css" />
+	<link href="/templates/unb-unidades/css/template.css" rel="stylesheet" type="text/css" />
+	<link href="/templates/unb-unidades/css/custom.css" rel="stylesheet" type="text/css" />
+	<link href="/templates/unb-unidades/css/menu.css" rel="stylesheet" type="text/css" />
+	<link href="/plugins/system/vembed/vembed.css" rel="stylesheet" type="text/css" />
+	<link href="/modules/mod_djimageslider/themes/default/css/djimageslider.css" rel="stylesheet" type="text/css" />
+	<link href="/media/jfontsize/css/jfontsize.css" rel="stylesheet" type="text/css" />
+	<style type="text/css">
+
+ .rl_sliders.accordion > .accordion-group > .accordion-body > .accordion-inner[hidden] {display: block;} 
+
+	</style>
+	<script type="application/json" class="joomla-script-options new">{"csrf.token":"13a355ce47f75915b50b2ea626c9a3b5","system.paths":{"root":"","base":""},"rl_sliders":{"use_hash":1,"reload_iframes":0,"init_timeout":0,"urlscroll":0}}</script>
+	<script src="/media/system/js/mootools-core.js?d2252777aff4cc37462c58232ca50f58" type="text/javascript"></script>
+	<script src="/media/system/js/core.js?d2252777aff4cc37462c58232ca50f58" type="text/javascript"></script>
+	<script src="/media/system/js/mootools-more.js?d2252777aff4cc37462c58232ca50f58" type="text/javascript"></script>
+	<script src="/media/system/js/modal.js?d2252777aff4cc37462c58232ca50f58" type="text/javascript"></script>
+	<script src="/media/jui/js/jquery.min.js?d2252777aff4cc37462c58232ca50f58" type="text/javascript"></script>
+	<script src="/media/jui/js/jquery-noconflict.js?d2252777aff4cc37462c58232ca50f58" type="text/javascript"></script>
+	<script src="/media/jui/js/jquery-migrate.min.js?d2252777aff4cc37462c58232ca50f58" type="text/javascript"></script>
+	<script src="/media/com_attachments/js/attachments_refresh.js" type="text/javascript"></script>
+	<script src="/media/system/js/caption.js?d2252777aff4cc37462c58232ca50f58" type="text/javascript"></script>
+	<script src="/media/jui/js/bootstrap.min.js?d2252777aff4cc37462c58232ca50f58" type="text/javascript"></script>
+	<script src="/media/sliders/js/script.min.js?v=8.3.1" type="text/javascript"></script>
+	<script src="/templates/unb-unidades/js/template.js" type="text/javascript"></script>
+	<script src="/media/djextensions/jquery-easing/jquery.easing.min.js" type="text/javascript"></script>
+	<script src="/modules/mod_djimageslider/assets/js/slider.js?v=4.4" type="text/javascript"></script>
+	<script src="/media/jfontsize/js/jquery.jfontsize-1.0.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+
+		jQuery(function($) {
+			SqueezeBox.initialize({});
+			initSqueezeBox();
+			$(document).on('subform-row-add', initSqueezeBox);
+
+			function initSqueezeBox(event, container)
+			{
+				SqueezeBox.assign($(container || document).find('a.modal').get(), {
+					parse: 'rel'
+				});
+			}
+		});
+
+		window.jModalClose = function () {
+			SqueezeBox.close();
+		};
+
+		// Add extra modal close functionality for tinyMCE-based editors
+		document.onreadystatechange = function () {
+			if (document.readyState == 'interactive' && typeof tinyMCE != 'undefined' && tinyMCE)
+			{
+				if (typeof window.jModalClose_no_tinyMCE === 'undefined')
+				{
+					window.jModalClose_no_tinyMCE = typeof(jModalClose) == 'function'  ?  jModalClose  :  false;
+
+					jModalClose = function () {
+						if (window.jModalClose_no_tinyMCE) window.jModalClose_no_tinyMCE.apply(this, arguments);
+						tinyMCE.activeEditor.windowManager.close();
+					};
+				}
+
+				if (typeof window.SqueezeBoxClose_no_tinyMCE === 'undefined')
+				{
+					if (typeof(SqueezeBox) == 'undefined')  SqueezeBox = {};
+					window.SqueezeBoxClose_no_tinyMCE = typeof(SqueezeBox.close) == 'function'  ?  SqueezeBox.close  :  false;
+
+					SqueezeBox.close = function () {
+						if (window.SqueezeBoxClose_no_tinyMCE)  window.SqueezeBoxClose_no_tinyMCE.apply(this, arguments);
+						tinyMCE.activeEditor.windowManager.close();
+					};
+				}
+			}
+		};
+		jQuery(window).on('load',  function() {
+				new JCaption('img.caption');
+			});
+	</script>
+	<script type="text/javascript">
+	(function ($) {
+		$().ready(function () {
+			 $('body').jfontsize({
+			     btnMinusClasseId: '#jfontsize-minus',
+			     btnDefaultClasseId: '#jfontsize-default',
+			     btnPlusClasseId: '#jfontsize-plus',
+			     btnMinusMaxHits: 10,
+			     btnPlusMaxHits: 10,
+			     sizeChange: 1
+			 });
+		});
+	})(jQuery)
+</script>
+
+					<style type="text/css">
+		body.site
+		{
+			border-top: 3px solid #0088cc;
+			background-color: #f4f6f7		}
+		a
+		{
+			color: #0088cc;
+		}
+		.navbar-inner, .nav-list > .active > a, .nav-list > .active > a:hover, .dropdown-menu li > a:hover, .dropdown-menu .active > a, .dropdown-menu .active > a:hover, .nav-pills > .active > a, .nav-pills > .active > a:hover,
+		.btn-primary
+		{
+			background: #0088cc;
+		}
+		.navbar-inner
+		{
+			-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, .25), inset 0 -1px 0 rgba(0, 0, 0, .1), inset 0 30px 10px rgba(0, 0, 0, .2);
+			-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, .25), inset 0 -1px 0 rgba(0, 0, 0, .1), inset 0 30px 10px rgba(0, 0, 0, .2);
+			box-shadow: 0 1px 3px rgba(0, 0, 0, .25), inset 0 -1px 0 rgba(0, 0, 0, .1), inset 0 30px 10px rgba(0, 0, 0, .2);
+		}
+
+	</style>
+		  	<!--[if lt IE 9]>
+		<script src="/media/jui/js/html5.js"></script>
+	<![endif]-->
+	<script defer="defer" src="//barra.brasil.gov.br/barra.js" type="text/javascript"></script>
+</head>
+
+<body class="site com_content view-article no-layout no-task itemid-980">
+
+	<!-- Body -->
+	<div class="body">
+	<div id="barra-brasil" style="background:#7F7F7F; height: 20px; padding:0 0 0 10px;display:block;"> 
+		<ul id="menu-barra-temp" style="list-style:none;">
+			<li style="display:inline; float:left;padding-right:10px; margin-right:10px; border-right:1px solid #EDEDED"><a href="http://brasil.gov.br" style="font-family:sans,sans-serif; text-decoration:none; color:white;">Portal do Governo Brasileiro</a></li> 
+			<li><a style="font-family:sans,sans-serif; text-decoration:none; color:white;" href="http://epwg.governoeletronico.gov.br/barra/atualize.html">Atualize sua Barra de Governo</a></li>
+		</ul>
+	</div>
+		<!--<div class="barra-topo">
+			<div class="barra-inner container">
+				<div class="row-fluid">
+					<div class="logo-unb span3">
+						
+					</div>
+					<div class="menu-unb span7">
+						<div class="menu-toggle-list">
+							<a class="btn-menu" data-toggle="collapse" data-target="#menu-collapse">
+								<img src="/images/icon-menu.png" alt="Ícone do menu"> <span>Menu</span>
+							</a>
+							<div id="menu-collapse" class="sp-mobile-menu collapse">
+								    
+							</div>
+						</div>	
+					</div>
+					<div class="links-unb span2 pull-right">
+						
+					</div>
+					<div class="clearfix"></div>
+				</div>
+			</div>-->
+       
+          <link type="text/css" href="https://web.unb.br/templates/compartilhado/css/template.css" rel="stylesheet">
+
+			<div class="barra-topo">
+    <div class="barra-inner container">
+      <div class="row-fluid">
+          <div class="logo-unb span3">
+             <div class="custom">
+				<p>
+                    <a href="https://www.unb.br" title="Ir para o Portal da UnB">
+            			            			<img alt="" src="https://web.unb.br/images/logo-unb.png">
+				  </a>
+                  </p>
+			 </div>
+          </div>
+          <div class="menu-unb span7">
+                        <div class="menu-toggle-list">
+              <a class="btn-menu collapsed" data-target="#menu-collapse" data-toggle="collapse">
+                                <img src="https://web.unb.br/images/icon-menu.png" alt="Ícone do menu"> <span>Menu</span>
+                
+              </a>
+              <div id="menu-collapse" class="barra-sp-mobile-menu collapse">
+					      <ul class="nav menu"
+      					>
+        					<li class="item-301"><a href="http://www.unb.br/a-unb?menu=423" target="_blank" >Sobre a UnB</a></li><li class="item-305"><a href="https://www.unb.br/institucional/unidades-academicas/institutos" target="_blank" >Unidades acadêmicas</a></li><li class="item-302"><a href="http://estudenaunb.unb.br/" target="_blank" >Estude na UnB</a></li><li class="item-312"><a href="http://www.unb.br/graduacao?menu=439" target="_blank" >Graduação</a></li><li class="item-313"><a href="http://www.unb.br/pos-graduacao?menu=440" target="_blank" >Pós-Graduação</a></li><li class="item-306"><a href="http://www.unb.br/estrutura-administrativa?menu=425" target="_blank" >Administração</a></li><li class="item-307"><a href="http://dgp.unb.br/" target="_blank" >Servidor</a></li>					      </ul>
+			        </div>
+            </div>
+                    
+  
+          </div>
+          <div class="links-unb span2 pull-right">
+                 <div class="modulo-icones-barratopo" style="float:right">
+                     <ul>
+                         <!-- 111 <li><a target="_blank" href="https://webmail.unb.br/" class="icones-barratopo" id="default">&nbsp;</a>
+                         </li> -->
+<!-- JONA-->                         <li><a target="_blank" href="https://webmail.unb.br/" class="icones-barratopo" id="webmail" title="Webmail">&nbsp;</a>
+                         </li>
+			 					<li style="display:none;"><a href="/mapa-do-site?view=html&amp;id=0" class="icones-barratopo" style="padding-right:35px" id="mapa" title="Mapa do Site">&nbsp;</a>
+                         		</li>
+                                                         <li><a target="_blank" href="https://noticias.unb.br/images/Telefones_unb/mprazer.pdf" id="telefones" title="Telefones da UnB">&nbsp;</a>
+                         </li>
+                         <li><a target="_blank" href="https://sistema.ouvidorias.gov.br" id="transparencia" title="Fala.BR">&nbsp;</a>
+                         </li>
+                       
+                       <li><a target="_blank" href="http://www.sistemas.unb.br" class="icones-barratopo" id="sistemas" title="Sistemas">&nbsp;</a>
+                         </li> 
+                       
+                       
+                     </ul>
+                 </div>
+          </div>
+          <div class="clearfix"></div>
+        </div>
+    </div>
+  </div>
+
+
+			
+
+
+                
+                          
+                          
+		</div>
+		<div class="container">
+			<!-- Header -->
+			<header class="header" role="banner">
+				<div class="header-inner clearfix">
+					<a class="brand pull-left" href="/">
+						<img src="https://dgp.unb.br/images/Logotipos/logo_dgp.png" alt="Decanato de Gestão de Pessoas" />											</a>
+					<div class="header-search pull-right">
+						<div class="jfontsize">
+	<a class="jfontsize-button" id="contraste"></a>
+	<a class="jfontsize-button" id="jfontsize-minus">A-</a>
+	<a class="jfontsize-button" id="jfontsize-default">A</a>
+	<a class="jfontsize-button" id="jfontsize-plus">A+</a>
+</div>
+<script>
+(function ($) {
+		$().ready(function () {
+		$( "a#contraste" ).click(function() {
+  		$("html").toggleClass( "contraste" );
+  		});
+		});
+	})(jQuery)
+
+</script>
+					</div>
+				</div>
+			</header>
+							<div class="row-fluid">
+					<div class="menu-site span12">
+						<nav class="navigation navbar" role="navigation">
+							<ul class="nav menu"style="position:relative;z-index:3">
+<li class="item-101"><a class=" hidden" href="/" >Início</a></li><li class="item-422 deeper parent"><a href="#" >Institucional</a><ul class="dropdown-menu-principal"><li class="item-986"><a href="https://dgp.unb.br/institucional" >DGP</a></li><li class="item-987"><a href="https://dgp.unb.br/sobre-cgp" >CGP</a></li><li class="item-989"><a href="https://dgp.unb.br/flex" >CFLEX</a></li><li class="item-992"><a href="https://dgp.unb.br/legislacao-federal" >Legislação</a></li><li class="item-988"><a href="https://dgp.unb.br/dados-abertos" >Dados em gestão de pessoas</a></li><li class="item-1044"><a href="/dgp/dft-unb" >Dimensionamento da Força de Trabalho (DFT)</a></li><li class="item-990"><a href="https://dgp.unb.br/contatos" >Contatos</a></li><li class="item-991"><a href="https://dgp.unb.br/noticias" >Notícias</a></li></ul></li><li class="item-920"><a href="https://pgd.unb.br/" >Programa de gestão</a></li><li class="item-378 deeper parent"><a href="#" >Servidor</a><ul class="dropdown-menu-principal"><li class="item-900"><a href="/servidor/guia-servidor" >Guia do Servidor</a></li><li class="item-993"><a href="/servidor/sigrh" >Registros SIGRH</a></li><li class="item-971"><a href="/servidor/sougov-br" >SouGov.br</a></li><li class="item-801"><a href="/servidor/carreira" >Carreira</a></li><li class="item-860"><a href="/servidor/movimentacao" >Movimentação</a></li><li class="item-918"><a href="/servidor/redistribuicao" >Redistribuição</a></li><li class="item-814"><a href="/servidor/saude" >Saúde</a></li></ul></li><li class="item-816 deeper parent"><a href="#" >Capacitação</a><ul class="dropdown-menu-principal"><li class="item-974"><a href="https://www.capacitacao.unb.br/" >Cursos e eventos</a></li><li class="item-975"><a href="/capacitacao/licenca-afastamento" >Licença e Afastamentos</a></li></ul></li><li class="item-373"><a href="http://concursos.unb.br/" target="_blank" >Concursos</a></li><li class="item-776"><a href="http://estagio.unb.br/" target="_blank" >Estagiário</a></li><li class="item-666"><a href="/fale-com-dgp" >Atendimento</a></li></ul>
+
+						</nav>
+					</div>			
+				</div>
+												<div class="moduletable slide_destaque">
+						
+<div style="border: 0px !important;">
+<div id="djslider-loader281" class="djslider-loader djslider-loader-default" data-animation='{"auto":"1","looponce":"0","transition":"easeInOutExpo","css3transition":"cubic-bezier(1.000, 0.000, 0.000, 1.000)","duration":400,"delay":3400}' data-djslider='{"id":"281","slider_type":"0","slide_size":950,"visible_slides":"1","direction":"left","show_buttons":"0","show_arrows":"1","preload":"800","css3":"1"}' tabindex="0">
+    <div id="djslider281" class="djslider djslider-default img-vcenter" style="height: 480px; width: 940px;">
+        <div id="slider-container281" class="slider-container">
+        	<ul id="slider281" class="djslider-in">
+          		          			<li style="margin: 0 10px 0px 0 !important; height: 480px; width: 940px;">
+          					            											<a  href="https://dgp.unb.br/fale-com-dgp" target="_self">
+															<img class="dj-image" src="/images/banners/AtendimentoDGP.jpg" alt="DGP inicial"  style="width: 100%; height: auto;"/>
+															</a>
+																									
+						
+					</li>
+                          			<li style="margin: 0 10px 0px 0 !important; height: 480px; width: 940px;">
+          					            											<img class="dj-image" src="/images/banners/BannerNovoHorarioCoate2.png" alt="NovoHorárioAtendimentoCOATE"  style="width: 100%; height: auto;"/>
+																									
+						
+					</li>
+                        	</ul>
+        </div>
+                <div id="navigation281" class="navigation-container" style="top: 8.3333333333333%; margin: 0 1.063829787234%;">
+        	        	<img id="prev281" class="prev-button showOnHover" src="/modules/mod_djimageslider/themes/default/images/prev.png" alt="Previous" tabindex="0" />
+			<img id="next281" class="next-button showOnHover" src="/modules/mod_djimageslider/themes/default/images/next.png" alt="Next" tabindex="0" />
+						        </div>
+                		<div id="cust-navigation281" class="navigation-container-custom ">
+			<span class="load-button load-button-active" tabindex="0"></span><span class="load-button" tabindex="0"></span>        </div>
+            </div>
+</div>
+</div>
+<div class="djslider-end" style="clear: both" tabindex="0"></div>		</div>
+			<div class="moduletable">
+						<div aria-label="Você está em:" role="navigation">
+	<ul itemscope itemtype="https://schema.org/BreadcrumbList" class="breadcrumb">
+					<li>
+				Você está aqui: &#160;
+			</li>
+		
+						<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+											<a itemprop="item" href="/afastamentos" class="pathway"><span itemprop="name">Licença e Afastamentos</span></a>
+					
+											<span class="divider">
+							<img src="/media/system/images/arrow.png" alt="" />						</span>
+										<meta itemprop="position" content="1">
+				</li>
+							<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="active">
+					<span itemprop="name">
+						Afastamento para Mestrado, Doutorado e Pós-doutorado					</span>
+					<meta itemprop="position" content="2">
+				</li>
+				</ul>
+</div>
+		</div>
+	
+						<div class="row-fluid">
+									<div id="aside" class="side span4">
+						<!-- Begin Right Sidebar -->
+								<div class="moduletable">
+							<h3 class="caixa_azul">Servidor</h3>
+						<ul class="nav menu caixa_azul"style="position:relative;z-index:3">
+<li class="item-818"><a href="/guia-do-servidor" >Guia do servidor</a></li><li class="item-972"><a href="/sougovbr" >SouGov.br</a></li><li class="item-919"><a href="/redistribuicao" >Redistribuição</a></li><li class="item-861"><a href="/servidor-remocao" >Movimentação Interna</a></li><li class="item-984"><a href="/prata-ouro-diamante" >Prata, Ouro e Diamante da Casa</a></li><li class="item-820"><a href="/formularios" >Formulários</a></li></ul>
+		</div>
+			<div class="moduletable">
+							<h3 class="caixa_azul">SIGRH</h3>
+						<ul class="nav menu caixa_azul"style="position:relative;z-index:3">
+<li class="item-995"><a href="/sigrh-sobre" >Sobre</a></li><li class="item-996"><a href="/sigrh-consultas" >Consultas</a></li><li class="item-999"><a href="/sigrh-declaracoes" >Declarações</a></li><li class="item-994"><a href="/sigrh-ponto" >Ponto eletrônico</a></li><li class="item-998"><a href="/sigrh-ocorrencias" >Ocorrências e Ausências</a></li><li class="item-997"><a href="/sigrh-recesso" >Períodos de Recesso</a></li></ul>
+		</div>
+			<div class="moduletable">
+							<h3 class="caixa_azul">Carreira - Avaliações e Progressões</h3>
+						<ul class="nav menu caixa_azul"style="position:relative;z-index:3">
+<li class="item-908"><a href="/perfil-tecnico" >Carreira dos Cargos Técnico-Administrativos em Educação</a></li><li class="item-909"><a href="/perfil-docente" >Carreira do Magistério Superior</a></li></ul>
+		</div>
+			<div class="moduletable">
+							<h3 class="caixa_azul">Capacitação</h3>
+						<ul class="nav menu caixa_azul"style="position:relative;z-index:3">
+<li class="item-977"><a href="http://www.capacitacao.unb.br/" target="_blank" >Cursos e eventos</a></li><li class="item-978 active"><a href="/afastamentos" >Licença e Afastamentos</a></li></ul>
+		</div>
+			<div class="moduletable">
+							<h3 class="caixa_azul">Saúde</h3>
+						<ul class="nav menu caixa_azul"style="position:relative;z-index:3">
+<li class="item-935"><a href="/assistencia-saude-menu" >Assistência à Saúde Suplementar</a></li><li class="item-1042"><a href="/administradora-de-planos-de-saude-contratada" >Administradora de Planos de Saúde Contratada</a></li><li class="item-973"><a href="/plano-saude" >Administradoras de Planos de Saúde</a></li><li class="item-934"><a href="/relatorio-epidemiologico" >Relatórios Epidemiológicos</a></li><li class="item-1024"><a href="/pericia-oficial-em-saude" >Perícia Oficial em Saúde</a></li><li class="item-1045"><a href="/pessoas-com-deficiencia" >Pessoas com Deficiência</a></li><li class="item-1046"><a href="/exames-medicos-periodicos" >Exames Médicos Periódicos</a></li><li class="item-1041"><a href="/epis" >Equipamentos de Proteção Individual (EPI)</a></li></ul>
+		</div>
+	
+						<!-- End Right Sidebar -->
+					</div>
+								<main id="content" role="main" class="span8">
+					<!-- Begin Content -->
+							<div class="moduletable  ultimos-editais acessorapido">
+							<h3 class=" caixa_azul">Afastamento para Participação em Ação de Desenvolvimento</h3>
+						
+
+<div class="custom  ultimos-editais acessorapido"  >
+	<table style="width: 828.422px; height: 80px; border-color: #f4f6f7; background-color: #f4f6f7;" border="0px dashed rgb(187, 187, 187)">
+<tbody>
+<tr style="height: 10px;">
+<td style="border: 0px dashed #bbbbbb; width: 10px; height: 10px; vertical-align: bottom;" colspan="6" scope="row">      </td>
+</tr>
+<tr style="height: 10px;">
+<td style="border: 0px dashed #bbbbbb; width: 10px; height: 10px; vertical-align: bottom; text-align: center;" scope="row"> </td>
+<td style="width: 78px; height: 10px; vertical-align: top; text-align: center;" scope="row">
+<p><a href="/afastamentos/licenca-capacitacao"><img src="/images/icones/icone-acessorapido-diplomadigital.png" alt="" /> </a></p>
+<p><a href="/afastamentos/licenca-capacitacao">Licença para capacitação</a></p>
+</td>
+<td style="width: 61px; height: 10px; vertical-align: top; text-align: center;" scope="row">
+<p><a href="/afastamentos/afastamento-posgraduacao"><img src="/images/icones/rt_iq.png" alt="" /></a></p>
+<p><a href="/afastamentos/afastamento-pos-graduacao">Afastamento para Mestrado, Doutorado e Pós-Doutorado</a></p>
+</td>
+<td style="width: 10px; height: 10px; vertical-align: top; text-align: center;" scope="row">
+<p><a href="/afastamentos/afastamento-aperfeicoamento"><img src="/images/icones/icone-acessorapido-aprenderunb.png" alt="" /></a></p>
+<p><a href="/afastamentos/afastamento-aperfeicoamento">Afastamento para Estudo e Aperfeiçoamento</a></p>
+</td>
+<td style="width: 10px; height: 10px; vertical-align: top; text-align: center;" scope="row">
+<p><a href="/afastamentos/faq-afastamento"><img src="/images/icones/faq.png" alt="" /></a></p>
+<p><a href="/afastamentos/faq-afastamento">FAQ</a></p>
+<p> </p>
+</td>
+<td style="width: 10px; height: 10px; vertical-align: bottom; text-align: center;" scope="row"> </td>
+</tr>
+<tr style="height: 10px;">
+<td style="border: 0px dashed #bbbbbb; width: 10px; height: 1px; text-align: center; vertical-align: bottom;" colspan="6" scope="row"> </td>
+</tr>
+</tbody>
+</table></div>
+		</div>
+	
+					<div id="system-message-container">
+	</div>
+
+					<div class="item-page" itemscope itemtype="http://schema.org/Article">
+	<meta itemprop="inLanguage" content="pt-BR" />
+	
+		
+			        <div class="page-header">
+		<h2 itemprop="name">
+						
+				Afastamento para Mestrado, Doutorado e Pós-doutorado					</h2>
+							</div>
+					                <div class="accordion-heading panel-heading" style="text-align: justify;">
+<p>&nbsp;</p>
+<p>É o afastamento&nbsp;concedido ao servidor,&nbsp;para&nbsp;participar em programa de pós-graduação&nbsp;stricto sensu&nbsp;em instituição de ensino superior., no interesse da Administração, desde que a participação não possa ocorrer simultaneamente com o exercício do cargo.</p>
+<p>&nbsp;&nbsp;</p>
+<p><strong>
+
+<!-- START: Sliders -->
+<div class="rl_sliders nn_sliders accordion panel-group" id="set-rl_sliders-1" role="presentation"><a id="rl_sliders-scrollto_1" class="anchor rl_sliders-scroll nn_sliders-scroll"></a>
+<div class="accordion-group panel rl_sliders-group nn_sliders-group">
+<a id="rl_sliders-scrollto_requisitos-para-a-solicitacao" class="anchor rl_sliders-scroll nn_sliders-scroll"></a>
+<div class="accordion-heading panel-heading" aria-controls="requisitos-para-a-solicitacao">
+<a href="https://dgp.unb.br/afastamentos/afastamento-pos-graduacao#requisitos-para-a-solicitacao" class="accordion-toggle rl_sliders-toggle nn_sliders-toggle collapsed" data-toggle="collapse" id="slider-requisitos-para-a-solicitacao" data-id="requisitos-para-a-solicitacao" data-parent="#set-rl_sliders-1" aria-expanded="false"><span class="rl_sliders-toggle-inner nn_sliders-toggle-inner"> REQUISITOS PARA A SOLICITAÇÃO</span></a>
+</div>
+<div class="accordion-body rl_sliders-body nn_sliders-body collapse"  role="region" aria-labelledby="slider-requisitos-para-a-solicitacao" id="requisitos-para-a-solicitacao">
+<div class="accordion-inner panel-body" hidden="hidden">
+<h2 class="rl_sliders-title nn_sliders-title">REQUISITOS PARA A SOLICITAÇÃO</h2></strong></p>
+<p>São requisitos básicos para a concessão do referido afastamento:</p>
+<ol>
+<li>Planejamento interno da unidade de exercício do servidor;</li>
+<li>Necessidade de desenvolvimento prevista no Plano de Desenvolvimento de Pessoas (PDP)&nbsp;(consultar em&nbsp;<a href="https://www.capacitacao.unb.br/pdp" target="_blank" rel="noopener noreferrer">https://www.capacitacao.unb.br/pdp</a>);</li>
+<li>Projeto de pesquisa alinhado ao desenvolvimento do servidor nas competências relativas:
+<ul>
+<li>ao seu&nbsp;órgão&nbsp;de exercício ou de lotação;</li>
+<li>à sua&nbsp;carreira&nbsp;ou cargo efetivo; ou</li>
+<li>ao seu&nbsp;cargo&nbsp;em comissão ou à sua função de confiança; e</li>
+</ul>
+</li>
+<li>Processo seletivo interno;</li>
+<li>Horário ou local da ação de desenvolvimento inviabilizar o cumprimento das atividades previstas ou a jornada semanal de trabalho do servidor;</li>
+<li>Demais requisitos sintetizados no quadro abaixo:</li>
+</ol>
+<table border="1" style="width: 872px;">
+<tbody>
+<tr>
+<td style="background-color: #e0e0e0; text-align: center; width: 100px;"><strong>Modalidade</strong></td>
+<td style="background-color: #e0e0e0; text-align: center; width: 285px;"><strong>Requisitos</strong></td>
+<td style="background-color: #e0e0e0; text-align: center; width: 279.672px;"><strong>Técnico-Administrativo em Educação</strong></td>
+<td style="background-color: #e0e0e0; text-align: center; width: 176.328px;"><strong>Docente</strong></td>
+</tr>
+<tr>
+<td rowspan="4" style="background-color: #e0e0e0; text-align: center;"><strong>Mestrado</strong></td>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Estabilidade</strong></td>
+<td style="width: 279.672px; text-align: center;">Sim</td>
+<td style="width: 176.328px; text-align: center;">Não</td>
+</tr>
+<tr>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Tempo de efetivo exercício na UnB</strong></td>
+<td style="width: 279.672px; text-align: center;">3 anos</td>
+<td style="width: 176.328px; text-align: center;">Não</td>
+</tr>
+<tr>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Avaliação de Desempenho</strong></td>
+<td style="width: 279.672px; text-align: center;">Sim</td>
+<td style="width: 176.328px; text-align: center;">Não</td>
+</tr>
+<tr>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Intervalo entre afastamentos</strong></td>
+<td colspan="2" style="width: 456px;">Não ter se afastado nos 2 (dois) últimos anos para Licença para Capacitação, Licença de interesse particular, ou Mestrado, Doutorado, Pós-Doutorado</td>
+</tr>
+<tr>
+<td rowspan="4" style="background-color: #e0e0e0; text-align: center;"><strong>Doutorado</strong></td>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Estabilidade</strong></td>
+<td style="width: 279.672px; text-align: center;">Sim</td>
+<td style="width: 176.328px; text-align: center;">Não</td>
+</tr>
+<tr>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Tempo de efetivo exercício na UnB</strong></td>
+<td style="width: 279.672px; text-align: center;">4 anos</td>
+<td style="width: 176.328px; text-align: center;">Não</td>
+</tr>
+<tr>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Avaliação de Desempenho</strong></td>
+<td style="width: 279.672px; text-align: center;">Sim</td>
+<td style="width: 176.328px; text-align: center;">Não</td>
+</tr>
+<tr>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Intervalo entre afastamentos</strong></td>
+<td colspan="2" style="width: 456px;">Não ter se afastado nos 2 (dois) últimos anos para Licença para Capacitação, Licença&nbsp;para Tratar de Interesse&nbsp;Particular ou Afastamento para Mestrado, Doutorado, Pós-Doutorado</td>
+</tr>
+<tr>
+<td rowspan="3" style="background-color: #e0e0e0; text-align: center;"><strong>Pós-Doutorado</strong></td>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Estabilidade</strong></td>
+<td style="width: 279.672px; text-align: center;">Sim</td>
+<td style="width: 176.328px; text-align: center;">Não</td>
+</tr>
+<tr>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Tempo de efetivo exercício na UnB</strong></td>
+<td style="width: 279.672px; text-align: center;">4 anos</td>
+<td style="width: 176.328px; text-align: center;">Não</td>
+</tr>
+<tr>
+<td style="background-color: #e0e0e0; text-align: center;"><strong>Intervalo entre afastamentos</strong></td>
+<td colspan="2" style="width: 456px;">Não ter se afastado nos 4 (quatro) últimos anos para Licença para Tratar de Interesse Particular ou Afastamento para Mestrado, Doutorado e Pós-Doutorado&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p><strong>Avaliação de desempenho</strong></p>
+<p>A&nbsp;liberação do servidor Técnico-Administrativo em Educação para a realização de cursos de Mestrado e Doutorado está condicionada ao resultado favorável na avaliação de desempenho (Lei nº&nbsp;11.091/2005).</p>
+<p>&nbsp;</p>
+<p><strong>Projeto de pesquisa</strong></p>
+<p>O projeto de pesquisa a ser desenvolvido durante o afastamento deverá estar alinhado à área de atribuição do cargo efetivo, do cargo em comissão ou da função de confiança do servidor ou à área de competências da sua unidade de exercício (Decreto nº&nbsp;9.991/ 2019).</p>
+<p>&nbsp;</p>
+<p><strong>Processo seletivo interno</strong></p>
+<p>Para a concessão do afastamento para&nbsp;participação em programa de pós-graduação&nbsp;stricto sensu,&nbsp;recomenda-se a realização de&nbsp;processo seletivo específico,&nbsp;conduzido&nbsp;pelas unidades, com critérios de elegibilidade isonômicos e transparentes. Recomendamos que a periodicidade e o formato desse&nbsp;processo seletivo&nbsp;sejam adaptados à realidade da unidade e de acordo com a demanda por afastamentos dessa natureza. Esse&nbsp;processo seletivo pode ocorrer, por exemplo,&nbsp;por meio de edital, deliberação em colegiados e conselhos a partir de critérios objetivos ou avaliação de comissão própria para esse fim&nbsp;(Decreto nº&nbsp;9.991/ 2019).</p>
+<p>&nbsp;</p>
+<p><strong>Intervalo entre afastamentos</strong></p>
+<p>Além desses requisitos deverá ser observado o interstício de sessenta dias entre os seguintes afastamentos para (Instrução Normativa SGP-ENAP/SEDGG/ME Nº 21/2021):</p>
+<ul>
+<li>duas licenças para capacitação;</li>
+<li>parcelas de licenças para capacitação;</li>
+<li>licença para capacitação ou parcela de licença para capacitação e treinamento regularmente instituído, e vice-versa;</li>
+<li>duas participações em programas de treinamento regularmente instituído; e</li>
+<li>licença para capacitação ou parcela de licença para capacitação ou treinamento regularmente instituído e pós-graduação ou estudo no exterior.</li>
+</ul>
+</div>
+<div id="licenca-para-capacitacao">
+<p>&nbsp;</p>
+<p><strong>
+
+</div></div></div>
+<div class="accordion-group panel rl_sliders-group nn_sliders-group">
+<a id="rl_sliders-scrollto_procedimentos-para-a-solicitacao" class="anchor rl_sliders-scroll nn_sliders-scroll"></a>
+<div class="accordion-heading panel-heading" aria-controls="procedimentos-para-a-solicitacao">
+<a href="https://dgp.unb.br/afastamentos/afastamento-pos-graduacao#procedimentos-para-a-solicitacao" class="accordion-toggle rl_sliders-toggle nn_sliders-toggle collapsed" data-toggle="collapse" id="slider-procedimentos-para-a-solicitacao" data-id="procedimentos-para-a-solicitacao" data-parent="#set-rl_sliders-1" aria-expanded="false"><span class="rl_sliders-toggle-inner nn_sliders-toggle-inner"> PROCEDIMENTOS PARA A SOLICITAÇÃO</span></a>
+</div>
+<div class="accordion-body rl_sliders-body nn_sliders-body collapse"  role="region" aria-labelledby="slider-procedimentos-para-a-solicitacao" id="procedimentos-para-a-solicitacao">
+<div class="accordion-inner panel-body" hidden="hidden">
+<h2 class="rl_sliders-title nn_sliders-title">PROCEDIMENTOS PARA A SOLICITAÇÃO</h2></strong></p>
+<p>&nbsp;</p>
+<p>O servidor encaminhará a solicitação de afastamento à unidade organizacional de lotação que, aprovando o pedido, encaminhará ao órgão competente da UnB para as providências necessárias.&nbsp;</p>
+<p>&nbsp;</p>
+<p>Os procedimentos que devem ser adotados são os seguintes:</p>
+<ol>
+<li>(SERVIDOR): No SEI, iniciar processo “Pessoal: Autorização de Afastamento no País” ou “Pessoal: Autorização de Afastamento do País”, conforme o caso;</li>
+<li>(SERVIDOR): <span class="ui-provider ee bai baj bak bal bam ban bao bap baq bar bas bat bau bav baw bax bay baz bba bbb bbc bbd bbe bbf bbg bbh bbi bbj bbk bbl bbm bbn bbo bbp" dir="ltr">No processo, incluir o formulário&nbsp;“Afastamento para ações de desenvolvimento”;</span></li>
+<li>(SERVIDOR): Preencher todo o formulário, conforme instruções, assinar e anexar&nbsp;a documentação comprobatória necessária;</li>
+<li>(SERVIDOR): Solicitar manifestação da chefia imediata e do dirigente máximo da unidade*;</li>
+<li>(UNIDADE): Após manifestação positiva, enviar o processo para DGP/Dcade/CAC;</li>
+<li>(DGP/Dcade/CAC): Realizar análise da documentação, providenciar publicação do ato de afastamento e&nbsp;enviar para registro**.</li>
+</ol>
+<p>*&nbsp;A manifestação da chefia imediata e do dirigente máximo da unidade deverão ocorrer por meio dos procedimentos definidos pela Unidade.</p>
+<p>&nbsp;**&nbsp;Para o afastamento no país o ato será do Decanato de Gestão de Pessoas.&nbsp;Para o afastamento para o exterior será acrescentado ato da Reitora.</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 12.16px;">Após a publicação do ato de afastamento, o processo será encaminhado à DGP/DAP/Coref que realizará o cadastro no registro funcional do servidor após o início do afastamento.</span></p>
+<p>&nbsp;</p>
+<p>Solicitamos que os processos sejam encaminhados ao Decanato de Gestão de Pessoas, representado pela&nbsp;Coordenadoria de Acompanhamento de Carreira (DGP/DCADE/CAC),&nbsp;com antecedência mínima de 30 dias e máxima de 90 dias. Caso&nbsp;o afastamento enseje a&nbsp;contratação de professor substituto, excepcionalmente, a solicitação poderá ser encaminhada com maior antecedência, conforme definição&nbsp;da&nbsp;Coordenadoria de Provimento (DGP/DPAM/CPROV). Solicita-se que&nbsp;os processos de afastamento e contratação sejam relacionados.</p>
+<p>&nbsp;</p>
+<p>O servidor somente poderá se afastar após a autorização e publicação do ato que concede o afastamento.</p>
+<p>&nbsp;</p>
+<p style="text-align: justify;"><strong>
+
+</div></div></div>
+<div class="accordion-group panel rl_sliders-group nn_sliders-group">
+<a id="rl_sliders-scrollto_documentacao-comprobatoria" class="anchor rl_sliders-scroll nn_sliders-scroll"></a>
+<div class="accordion-heading panel-heading" aria-controls="documentacao-comprobatoria">
+<a href="https://dgp.unb.br/afastamentos/afastamento-pos-graduacao#documentacao-comprobatoria" class="accordion-toggle rl_sliders-toggle nn_sliders-toggle collapsed" data-toggle="collapse" id="slider-documentacao-comprobatoria" data-id="documentacao-comprobatoria" data-parent="#set-rl_sliders-1" aria-expanded="false"><span class="rl_sliders-toggle-inner nn_sliders-toggle-inner"> DOCUMENTAÇÃO COMPROBATÓRIA</span></a>
+</div>
+<div class="accordion-body rl_sliders-body nn_sliders-body collapse"  role="region" aria-labelledby="slider-documentacao-comprobatoria" id="documentacao-comprobatoria">
+<div class="accordion-inner panel-body" hidden="hidden">
+<h2 class="rl_sliders-title nn_sliders-title">DOCUMENTAÇÃO COMPROBATÓRIA</h2></strong></p>
+<p style="text-align: justify;">A documentação&nbsp;deverá&nbsp;indicar as datas de início e término das ações, compatíveis com o período do afastamento. Além das informações necessárias para a concessão do afastamento&nbsp;deverão ser apresentados, conforme o caso, os seguintes documentos:</p>
+<p style="text-align: justify;">&nbsp;</p>
+<table border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td colspan="2">
+<ul>
+<li class="Tabela_Texto_Alinhado_Esquerda">Comprovante de matrícula, aprovação no programa de pós-graduação stricto sensu ou carta de aceite, com informação da data prevista para o início;</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<ul>
+<li class="Tabela_Texto_Alinhado_Esquerda">Projeto de pesquisa que será desenvolvido;</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<ul>
+<li class="Tabela_Texto_Alinhado_Esquerda">Currículo atualizado (link ou anexo).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="Tabela_Texto_Alinhado_Esquerda">&nbsp;</p>
+<p><strong>
+
+</div></div></div>
+<div class="accordion-group panel rl_sliders-group nn_sliders-group">
+<a id="rl_sliders-scrollto_procedimentos-para-prestacao-de-contas" class="anchor rl_sliders-scroll nn_sliders-scroll"></a>
+<div class="accordion-heading panel-heading" aria-controls="procedimentos-para-prestacao-de-contas">
+<a href="https://dgp.unb.br/afastamentos/afastamento-pos-graduacao#procedimentos-para-prestacao-de-contas" class="accordion-toggle rl_sliders-toggle nn_sliders-toggle collapsed" data-toggle="collapse" id="slider-procedimentos-para-prestacao-de-contas" data-id="procedimentos-para-prestacao-de-contas" data-parent="#set-rl_sliders-1" aria-expanded="false"><span class="rl_sliders-toggle-inner nn_sliders-toggle-inner"> PROCEDIMENTOS PARA PRESTAÇÃO DE CONTAS</span></a>
+</div>
+<div class="accordion-body rl_sliders-body nn_sliders-body collapse"  role="region" aria-labelledby="slider-procedimentos-para-prestacao-de-contas" id="procedimentos-para-prestacao-de-contas">
+<div class="accordion-inner panel-body" hidden="hidden">
+<h2 class="rl_sliders-title nn_sliders-title">PROCEDIMENTOS PARA PRESTAÇÃO DE CONTAS</h2></strong></p>
+<p>O acompanhamento do afastamento do servidor é de responsabilidade da sua unidade de lotação a quem deve ser apresentada os documentos comprobatórios da sua participação nas ações de capacitação.</p>
+<p>&nbsp;</p>
+<p>Após a conclusão do afastamento, o servidor deverá comprovar à chefia imediata a participação efetiva na ação que gerou seu afastamento, no prazo de&nbsp;até trinta dias da data de retorno às atividades, apresentando:</p>
+<ol>
+<li>
+<p>certificado ou documento equivalente&nbsp;que comprove a participação;</p>
+</li>
+<li>
+<p>relatório de atividades desenvolvidas; e</p>
+</li>
+<li>
+<p>cópia de dissertação de mestrado, tese de doutorado ou estágio pós-doutoral com assinatura do orientador, quando for o caso.</p>
+</li>
+</ol>
+<p>&nbsp;</p>
+<p>Após a comprovação, a unidade de lotação do servidor deverá encaminhar o processo à&nbsp;Coordenadoria de Arquivos Funcionais&nbsp;(DGP/ASCOL/COARQ) que realizará seu arquivamento.</p>
+<p>&nbsp;</p>
+<p>Informamos que a&nbsp;não apresentação da documentação acima sujeitará ao servidor o ressarcimento das despesas&nbsp;com seu afastamento ao órgão ou à entidade, na forma da legislação vigente, salvo na hipótese comprovada de força maior ou de caso fortuito, a critério do dirigente máximo da entidade. O mesmo procedimento será adotado caso a documentação apresentada não comprove a participação na ação prevista para o afastamento. Nesses casos, o processo deverá ser encaminhado à&nbsp;DGP/DCADE/CAC com a justificativa do servidor e análise da unidade de lotação.</p>
+<p>&nbsp;</p>
+<p><strong>
+
+</div></div></div>
+<div class="accordion-group panel rl_sliders-group nn_sliders-group">
+<a id="rl_sliders-scrollto_informacoes-complementares" class="anchor rl_sliders-scroll nn_sliders-scroll"></a>
+<div class="accordion-heading panel-heading" aria-controls="informacoes-complementares">
+<a href="https://dgp.unb.br/afastamentos/afastamento-pos-graduacao#informacoes-complementares" class="accordion-toggle rl_sliders-toggle nn_sliders-toggle collapsed" data-toggle="collapse" id="slider-informacoes-complementares" data-id="informacoes-complementares" data-parent="#set-rl_sliders-1" aria-expanded="false"><span class="rl_sliders-toggle-inner nn_sliders-toggle-inner"> INFORMAÇÕES COMPLEMENTARES</span></a>
+</div>
+<div class="accordion-body rl_sliders-body nn_sliders-body collapse"  role="region" aria-labelledby="slider-informacoes-complementares" id="informacoes-complementares">
+<div class="accordion-inner panel-body" hidden="hidden">
+<h2 class="rl_sliders-title nn_sliders-title">INFORMAÇÕES COMPLEMENTARES</h2></strong></p>
+<p>&nbsp;</p>
+<p>Os servidores que usufruírem do afastamento para participação em programa de pós-graduação&nbsp;stricto sensu&nbsp;terão que permanecer no exercício de suas funções após o seu retorno por um período igual ao do afastamento concedido (§&nbsp;4º&nbsp;do art. 96-A da Lei nº&nbsp;8.112/1990).<br /><br /></p>
+<p>Caso o servidor venha a solicitar exoneração do cargo ou aposentadoria, antes de cumprido o período de permanência previsto no item anterior, deverá ressarcir o órgão ou entidade, dos gastos com seu aperfeiçoamento&nbsp;(§ 5º&nbsp;do art. 96-A da Lei nº 8.112/1990).</p>
+<p>&nbsp;</p>
+<p>Se o servidor vier a solicitar exoneração do cargo ou aposentadoria antes de cumprido o período de permanência nas funções, referido no § 4º do art. 96-A da Lei nº 8.112, de 1990, o ressarcimento ao erário deverá se dar de modo proporcional ao período não cumprido. (Parecer SEI Nº 8508/2022/ME)</p>
+<p>&nbsp;</p>
+<p>Caso o servidor não obtenha o título ou grau que justificou seu afastamento no período previsto, deverá ressarcir as despesas com seu aperfeiçoamento, salvo na hipótese comprovada de força maior ou de caso fortuito, a critério do dirigente máximo do órgão ou entidade&nbsp;(§ 6º&nbsp;do art. 96-A da Lei nº 8.112/1990). &nbsp;</p>
+<p>&nbsp;</p>
+<p>O servidor em usufruto do afastamento para participação em programa de pós-graduação&nbsp;stricto sensu&nbsp;terá direito a férias, que, se não forem programadas, serão registradas e pagas a cada mês de dezembro (Orientação Normativa nº 10, de 3 de dezembro de 2014).</p>
+<p>&nbsp;</p>
+<p>É vedado ao servidor celebrar contrato de trabalho, receber gratificação por encargo de curso e concurso ou qualquer valor que se configure como contraprestação de serviço durante o período do afastamento&nbsp;(Decreto nº 91.800/1985, Nota Técnica SEI nº 164/2022/ME e Decreto nº 11.069/2022).</p>
+<p>&nbsp;</p>
+<p>&nbsp;Nos afastamentos&nbsp;por período superior a trinta dias consecutivos, o servidor (Decreto no&nbsp;9.991/2019):</p>
+<ul>
+<li>Requererá, conforme o caso, a exoneração ou a dispensa do cargo em comissão ou função de confiança eventualmente ocupado, a contar da data de início do afastamento; e&nbsp;</li>
+<li>Não fará jus às gratificações e adicionais vinculados à atividade ou ao local de trabalho e que não façam parte da estrutura remuneratória básica do seu cargo efetivo. Essa regra não se aplica às parcelas legalmente vinculadas ao desempenho individual do cargo efetivo ou ao desempenho institucional.&nbsp;</li>
+</ul>
+<p>&nbsp;</p>
+<p>Caso o afastamento&nbsp;impacte negativamente no desenvolvimento dos trabalhos apuratórios de Sindicância ou Processo Administrativo Disciplinar (PAD) que o servidor esteja respondendo, é possível a suspensão da fruição ou indeferimento do pedido (item 10.1.1 do Manual de Processo Administrativo Disciplinar da CGU 2019).</p>
+<p>&nbsp;</p>
+<p>O afastamento para participação em programa de pós-graduação stricto sensu, quando autorizado, é considerado como de efetivo exercício, contando-se para todos os fins.</p>
+<p>&nbsp;</p>
+<p>Demais informações podem ser consultadas na Circular nº 0003/2022/DCADE/DGP (Processo SEI nº 23106.125983/2021-46).</p>
+<p>&nbsp;</p>
+<p><strong>
+
+</div></div></div>
+<div class="accordion-group panel rl_sliders-group nn_sliders-group">
+<a id="rl_sliders-scrollto_normativos" class="anchor rl_sliders-scroll nn_sliders-scroll"></a>
+<div class="accordion-heading panel-heading" aria-controls="normativos">
+<a href="https://dgp.unb.br/afastamentos/afastamento-pos-graduacao#normativos" class="accordion-toggle rl_sliders-toggle nn_sliders-toggle collapsed" data-toggle="collapse" id="slider-normativos" data-id="normativos" data-parent="#set-rl_sliders-1" aria-expanded="false"><span class="rl_sliders-toggle-inner nn_sliders-toggle-inner"> NORMATIVOS</span></a>
+</div>
+<div class="accordion-body rl_sliders-body nn_sliders-body collapse"  role="region" aria-labelledby="slider-normativos" id="normativos">
+<div class="accordion-inner panel-body" hidden="hidden">
+<h2 class="rl_sliders-title nn_sliders-title">NORMATIVOS</h2></strong></p>
+<ul>
+<li><a href="http://www.planalto.gov.br/ccivil_03/leis/L8112compilado.htm" target="_blank" rel="noopener noreferrer">LEI Nº 8.112, DE 11 DE DEZEMBRO DE 1990;</a>&nbsp;</li>
+<li><a href="http://www.planalto.gov.br/ccivil_03/_ato2004-2006/2005/lei/l11091.htm" target="_blank" rel="noopener noreferrer">LEI Nº 11.091, DE 12 DE JANEIRO DE 2005;</a>&nbsp;</li>
+<li><a href="http://www.planalto.gov.br/ccivil_03/_ato2011-2014/2012/lei/L12772compilado.htm" target="_blank" rel="noopener noreferrer">LEI Nº 12.772, DE 28 DE DEZEMBRO DE 2012;</a>&nbsp;</li>
+<li><a href="http://www.planalto.gov.br/ccivil_03/decreto/D91800compilado.htm" target="_blank" rel="noopener noreferrer">DECRETO Nº 91.800 DE 18 DE OUTUBRO DE 1985;</a>&nbsp;</li>
+<li><a href="http://www.planalto.gov.br/ccivil_03/decreto/D1387.htm" target="_blank" rel="noopener noreferrer">DECRETO Nº 1.387 DE 7 DE FEVEREIRO DE 1995</a>;&nbsp;</li>
+<li><a href="http://www.planalto.gov.br/ccivil_03/_ato2019-2022/2019/decreto/D9991.htm" target="_blank" rel="noopener noreferrer" data-reflinkpro="X5x0KmiV">DECRETO Nº 9.991, DE 28 DE AGOSTO DE 2019</a>;</li>
+<li><a href="https://www.in.gov.br/en/web/dou/-/instrucao-normativa-sgp-enap/sedgg/me-n-21-de-1-de-fevereiro-de-2021-302021570" target="_blank" rel="noopener noreferrer">INSTRUÇÃO NORMATIVA SGP-ENAP/SEDGG/ME Nº 21, DE 1º DE FEVEREIRO DE 2021</a>;</li>
+<li><a href="https://sig.unb.br/sigrh/downloadArquivo?idArquivo=2047790&amp;key=95057a85386f0438021ad35dfa9a89df" target="_blank" rel="noopener noreferrer">RESOLUÇÃO DO CONSELHO DE ADMINISTRAÇÃO DA UNB Nº 03, DE 20 DE AGOSTO DE 2002.</a>&nbsp;</li>
+</ul>
+</div></div></div></div><!-- END: Sliders -->
+</div>
+    	
+		
+	        		
+				    <!-- Sutiã - alterar para fulltext -->
+    
+	<div itemprop="articleBody">
+		 <div class="attachmentsContainer">
+
+<div class="attachmentsList" id="attachmentsList_com_content_default_171"></div>
+
+</div>	</div>
+
+	
+							
+	<!---->
+	
+
+		</div>
+					
+					<!-- End Content -->
+				</main>
+								
+			</div>
+						<div class="row-fluid destaques">
+								
+			</div>
+
+		</div>
+					<div class="row-fluid">
+				<div class="base">
+					<div class="base-inner container">
+								<div class="moduletable  ultimos-editais acessorapido">
+							<h3 class=" caixa_azul">Acesso Rápido</h3>
+						
+
+<div class="custom  ultimos-editais acessorapido"  >
+	<table style="width: 934px; height: 54px; border-color: #ffffff; background-color: #ffffff;" border="0px dashed rgb(187, 187, 187)">
+<tbody>
+<tr style="height: 19px;">
+<td style="border: 0px dashed #bbbbbb; width: 129px; height: 19px; text-align: center;"> </td>
+<td style="width: 181.125px; height: 19px; text-align: center;"> </td>
+<td style="width: 256.875px; height: 19px; text-align: center;"> </td>
+<td style="width: 205px; height: 19px; text-align: center;"> </td>
+<td style="border: 0px dashed #bbbbbb; width: 132px; height: 19px; text-align: center;"> </td>
+</tr>
+<tr style="height: 19px;">
+<td style="border: 0px dashed #bbbbbb; width: 129px; height: 19px; text-align: center;"> </td>
+<td style="width: 181.125px; height: 19px; text-align: center;"><a href="https://sig.unb.br/sigrh/login.jsf" target="_blank" rel="noopener noreferrer"><img src="/images/Logotipos/logo_SIG.png" alt="" /></a></td>
+<td style="width: 256.875px; height: 19px; text-align: center;"><a href="https://sougov.economia.gov.br/sougov/" target="_blank" rel="noopener noreferrer"><img src="/images/Logotipos/logo_sougov.png" alt="" width="97" height="72" /></a></td>
+<td style="width: 205px; height: 19px; text-align: center;"> <a href="https://sso.gestaodeacesso.planejamento.gov.br/" target="_blank" rel="noopener noreferrer"><img src="/images/Logotipos/logo_sigac.png" alt="" width="213" height="42" /></a></td>
+<td style="border: 0px dashed #bbbbbb; width: 132px; height: 19px; text-align: center;"> </td>
+</tr>
+<tr style="height: 19px;">
+<td style="border: 0px dashed #bbbbbb; width: 129px; height: 19px; text-align: center;"> </td>
+<td style="width: 181.125px; height: 19px; text-align: center;"> </td>
+<td style="width: 256.875px; height: 19px; text-align: center;"> </td>
+<td style="width: 205px; height: 19px; text-align: center;"> </td>
+<td style="border: 0px dashed #bbbbbb; width: 132px; height: 19px; text-align: center;"> </td>
+</tr>
+<tr style="height: 23px;">
+<td style="border: 0px dashed #bbbbbb; width: 129px; height: 23px; text-align: center;"><strong> </strong></td>
+<td style="width: 181.125px; height: 23px; text-align: center;"><a href="https://www.sintfub.org.br/" target="_blank" rel="noopener noreferrer"><img src="/images/Logotipos/logo_sintfub.png" alt="" width="109" height="83" /></a></td>
+<td style="width: 256.875px; height: 23px; text-align: center;"><a href="https://adunb.org/" target="_blank" rel="noopener noreferrer"><img src="/images/Logotipos/logo_adunb.png" alt="" width="125" height="70" /></a></td>
+<td style="width: 205px; height: 23px; text-align: center;"><a href="https://www.atens-sn.org.br/" target="_blank" rel="noopener noreferrer"><img src="/images/Logotipos/logo_atens.png" alt="" width="162" height="68" /></a></td>
+<td style="border: 0px dashed #bbbbbb; width: 132px; height: 23px; text-align: center;"> </td>
+</tr>
+</tbody>
+</table></div>
+		</div>
+			<div class="moduletable">
+						<style>
+
+</style>
+
+<div class="custom contato_azul"  >
+	<p style="text-align: center;">Decanato de Gestão de Pessoas - DGP<br />Telefone: (61)3107-0578 / 3107-0579<br />Horário de Atendimento: 08h00 às 12h00 e 14h00 às 18h00<br />Campus Universitário Darcy Ribeiro - Gleba A, Reitoria, Bloco A - 1° Andar - CEP 70910-900, Brasília - DF</p></div>
+		</div>
+	
+					</div>
+				</div>
+			</div>
+					    <!--<style>
+  
+       a:hover {
+         color:#fff;
+         
+      }</style>-->
+	<!-- Footer --> 
+	<footer class="footer" role="contentinfo">
+		<!--<div class="footer-inner">
+						<div class="clearfix"></div>
+			<hr />
+			
+			<div class="creditos text-center container">
+				<p>
+					<em>Campus</em> Universitário Darcy Ribeiro, Brasília-DF | CEP 70910-900 | telefone geral 55 61 3107 3300 <br />
+					Copyright &copy; 2026 Universidade de Brasília. Todos os direitos reservados.
+				</p>
+			</div>
+		</div>-->
+
+       <link type="text/css" href="https://web.unb.br/templates/compartilhado/css/template.css" rel="stylesheet">
+	<!--div class='cookie_bar'>
+            Usamos cookies para permitir que o nosso website funcione corretamente, para personalizar conteúdo e anúncios, para proporcionar funcionalidades das redes sociais e para analisar o nosso tráfego. Também partilhamos informação com os nossos parceiros das redes sociais, de publicidade e de analítica sobre o seu uso do nosso website. Saiba mais: 
+            <a href='https://web.unb.br/images/politica-de-cookies/Poltica_de_Cookies.pdf' title='Políticas de cookies' target='_blank'>Políticas de cookies</a>
+                <button type='button'>Aceitar cookies</button>
+        </div-->
+       	<footer class="footer" role="contentinfo">
+		<div class="footer-inner">
+			<div class="menu-footer container">
+			
+			<!-- <footer class="footer" role="contentinfo">
+	<div class="footer-inner">
+		<div class="menu-footer container"> -->
+			<ul class="nav menu">
+			<li class="item-113 divider deeper parent"><span class="separator">
+	Institucional</span>
+<ul class="nav-child unstyled small"><li class="item-114"><a href="https://unb.br/institucional-rodape/historia" >História da UnB</a></li><li class="item-221"><a href="https://unb.br/institucional-rodape/unb-em-numeros" >UnB em Números</a></li><li class="item-222"><a href="https://unb.br/institucional-rodape/campi" >Conheça os campi</a></li><li class="item-223"><a href="https://unb.br/institucional-rodape/transportes" >Como chegar</a></li><li class="item-224"><a href="https://unb.br/images/Documentos/Estatuto_e_Regimento_Geral_UnB.pdf" target="_blank" >Estatuto e Regimento</a></li></ul></li><li class="item-280 divider deeper parent"><span class="separator">
+	Administrativo</span>
+<ul class="nav-child unstyled small"><li class="item-281"><a href="https://unb.br/administrativo-rodape/reitoria" >Reitoria</a></li><li class="item-282"><a href="https://unb.br/administrativo-rodape/vice-reitoria" >Vice-Reitoria</a></li><li class="item-284"><a href="https://unb.br/administrativo-rodape/conselhos-e-camaras" >Conselhos e câmaras</a></li><li class="item-283"><a href="https://unb.br/administrativo-rodape/decanatos" >Decanatos</a></li><li class="item-146"><a href="https://unb.br/administrativo-rodape/secretarias" >Secretarias</a></li><li class="item-285"><a href="http://www.prc.unb.br/" >Prefeitura da UnB</a></li></ul></li><li class="item-259 divider deeper parent"><span class="separator">
+	Acadêmico</span>
+<ul class="nav-child unstyled small"><li class="item-261"><a href="https://unb.br/academico-rodape/faculdades" >Faculdades</a></li><li class="item-262"><a href="https://unb.br/academico-rodape/institutos" >Institutos</a></li><li class="item-260"><a href="https://unb.br/academico-rodape/centros" >Centros</a></li><li class="item-277"><a href="https://unb.br/academico-rodape/educacao-a-distancia" >Educação a Distância</a></li><li class="item-263"><a href="http://int.unb.br/br/institucional/a-int" >Assuntos Internacionais</a></li></ul></li><li class="item-122 divider deeper parent"><span class="separator">
+	Serviços</span>
+<ul class="nav-child unstyled small"><li class="item-142"><a href="https://www.arquivocentral.unb.br/" >Arquivo Central</a></li><li class="item-273"><a href="https://bce.unb.br/" >Biblioteca Central</a></li><li class="item-124"><a href="https://www.editora.unb.br/" >Editora UnB</a></li><li class="item-279"><a href="https://www.etir.unb.br/" target="_blank" >Equipe de Tratamento e Resposta a Incidentes Cibernéticos</a></li><li class="item-145"><a href="http://fal.unb.br/" >Fazenda Água Limpa</a></li><li class="item-138"><a href="http://www.ebserh.gov.br/web/hub-unb" >Hospital Universitário</a></li><li class="item-276"><a href="https://unb.br/servicos-rodape/hospitais-veterinarios" >Hospitais Veterinários</a></li><li class="item-475"><a href="https://ru.unb.br/index.php/cardapio" >Restaurante Universitário</a></li></ul></li><li class="item-173 divider deeper parent"><span class="separator">
+	Comunicação</span>
+<ul class="nav-child unstyled small"><li class="item-291"><a href="https://secom.unb.br/" target="_blank" >Atendimento a Jornalistas</a></li><li class="item-294"><a href="http://noticias.unb.br/secom/123-secom/equipe" >Fale com a Secom</a></li><li class="item-174"><a href="http://noticias.unb.br/secom-unb/2-publicacoes/4012-canais-oficiais" >Canais Oficiais</a></li><li class="item-293"><a href="http://www.marca.unb.br" >Marca UnB</a></li><li class="item-468"><a href="https://drive.google.com/drive/folders/12zGEDxybFCGJH4p7ZPf1dOy5W_ZSg0Xy" >Campanha Institucional 2025</a></li><li class="item-486"><a href="https://noticias.unb.br/planner" >Planner 2024</a></li><li class="item-289"><a href="http://www.unbtv.unb.br/" >UnB TV</a></li></ul></li></ul>
+<!-- 		</div>
+<div class="clearfix"></div>
+<hr>
+<div class="creditos text-center container">
+	<p>
+		<em>Campus</em>
+		Universitário Darcy Ribeiro, Brasília-DF | CEP 70910-900 | telefone geral 55 61 3107 3300
+		<br>
+		Copyright © 2015 Universidade de Brasília. Todos os direitos reservados.
+	</p>
+</div>
+	</div>
+</footer> -->
+
+						</div>
+			<div class="clearfix"></div>
+			<hr>
+<div class="container creditos">
+   <div class="prestacao-contas text-center">
+      <div>&nbsp;</div>
+   </div>
+   <div class="copyright text-center">
+      <span><em>Campus</em> Universitário Darcy Ribeiro, </span>
+      <span>Brasília-DF | CEP 70910-900</span>
+      <span><a href="https://noticias.unb.br/images/Telefones_unb/mprazer.pdf" alt="" target="_blank">Telefones UnB</a></span>
+      <br />
+      <span>Horário de funcionamento: de 2ª a 6ª, das 7h às 23h. Sábado, das 8h às 18h.</span>
+      <br />
+      <span>Copyright © 2022 <a href="http://unb.br" target="_blank" alt="">Universidade de Brasília</a>.</span>
+      <span>Todos os direitos reservados.</span>
+      <br />
+      <span>Melhor visualizado nos navegadores Google Chrome e Mozilla Firefox</span>
+   </div>
+   <div class="acesso-informacao text-center">
+      <div class="media">
+         <a href="https://unb.br/administrativo" title="Acesso à Informação" target="_blank">
+            <img src="https://web.unb.br/images/icones/acesso_informacao.png" alt="Acesso à Informação" style="width: 32px;" />
+         </a>
+         <div style="text-align: left;">
+            <h6 style="margin: 0 0 0 0.9rem;">
+               <small>
+                  <a href="https://unb.br/administrativo" title="Acesso à Informação" target="_blank" style="color: #026e3a !important; font-size: 0.8rem; font-weight: initial;">Acesso à Informação</a>
+               </small>
+            </h6>
+         </div>
+      </div>
+      <h6 style="font-size: 1.8rem; font-weight: inherit; margin: 1.5rem 0.5rem 0.5rem 0;">
+         <a href="https://ouvidoria.unb.br/" title="Ouvidoria UnB" target="_blank">OUVIDORIA<span style="font-weight: bold;">UnB</span></a>
+      </h6>
+      <h6 style="font-size: 1rem; margin: 1.5rem 0.5rem 1.5rem;">
+         <a href="https://unb.br/institucional/transparencia-e-prestacao-de-contas" title="Transparência UnB" target="_blank" style="line-height: 1.3rem;">TRANSPARÊNCIA E PRESTAÇÃO DE CONTAS</a>
+      </h6>
+   </div>
+</div>
+		
+			
+			
+	</footer>
+<!--script>
+(function($)
+{
+	
+	$(document).ready(function()
+	{
+		
+		//COOKIES
+		if (localStorage.getItem('unb-cookies') != '1') {
+			$('.cookie_bar').fadeIn();
+			$('.cookie_bar a:first-child').focus();
+		}
+		$('body').on('click', '.cookie_bar button', function() {
+			localStorage.setItem('unb-cookies', '1');
+			$('.cookie_bar').fadeOut();
+		});
+	})
+})(jQuery);
+
+</script-->
+
+
+
+
+	
+    </footer>
+	
+</body>
+</html>

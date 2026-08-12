@@ -43,6 +43,78 @@
       "checksum": "07a214e1ac20497abe2e5592b496e70d341ab6dcf60859314622cfc92b53b979",
       "indexed": true,
       "chunks": 163
+    },
+    {
+      "name": "Afastamento para Mestrado, Doutorado e Pos-Doutorado",
+      "file": "dgp_afastamento_pos_graduacao.html",
+      "url": "https://dgp.unb.br/afastamentos/afastamento-pos-graduacao",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "checksum": "37236d44b3914fd115fb94af4cc9be8f8eae00c8eee1d4684b89da363a20def3",
+      "indexed": false,
+      "chunks": 0,
+      "questions": ["q018"]
+    },
+    {
+      "name": "Adicional de Insalubridade e Periculosidade",
+      "file": "sigrh_adicional_insalubridade.html",
+      "url": "https://sig.unb.br/sigrh/public/documentos/manual_servidor/adicional.htm",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "checksum": "d08fdeb3ab21103c160a4a3887c3ed394c21a2438902930dfc9c8efc65aaa24b",
+      "indexed": false,
+      "chunks": 0,
+      "questions": ["q019"]
+    },
+    {
+      "name": "Legislacao Federal do DGP",
+      "file": "dgp_legislacao_federal.html",
+      "url": "https://dgp.unb.br/legislacao-federal",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "checksum": "e60f5ce4518a78fc6d873fe2e7801e9d05cca9d1aafa1d0b202422fe848adae2",
+      "indexed": false,
+      "chunks": 0,
+      "questions": ["q020"]
+    },
+    {
+      "name": "Assessorias e Secretarias",
+      "file": "unb_assessorias_secretarias.html",
+      "url": "https://unb.br/administrativo-rodape/secretarias",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "checksum": "0027b6ed1e9c886b2366ffc97f68ff263079728bdfc91ac9f828e1431403421a",
+      "indexed": false,
+      "chunks": 0,
+      "questions": ["q021"]
+    },
+    {
+      "name": "Servicos de Tecnologia da Informacao",
+      "file": "sti_servicos_ti.html",
+      "url": "https://sti.unb.br/servicos-ti/",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "checksum": "1bb626d315ffa0e604117ac5c15258c950b91e564f950ec584ed408000189ed3",
+      "indexed": false,
+      "chunks": 0,
+      "questions": ["q021"]
+    },
+    {
+      "name": "Normas de Utilizacao do Laboratorio de Praticas Integradas em Saude",
+      "file": "fce_regimento_lapis.pdf",
+      "url": "https://fcts.unb.br/wp-content/uploads/2025/01/regimento_lapis.pdf",
+      "file_type": "pdf",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "checksum": "eb57e222aad93eaa9f57a6bf0ebfadc554daad6b099b7fecd384e50e7ea5e9f3",
+      "indexed": false,
+      "chunks": 0,
+      "questions": ["q022"]
     }
   ]
 }
