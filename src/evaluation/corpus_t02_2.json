@@ -1,26 +1,36 @@
 {
-  "schema_version": "1.0.0",
-  "authorization_policy": "Documentos publicos da UnB foram autorizados pelo proprietario do projeto.",
+  "schema_version": "1.1.0",
+  "authorization_policy": "Fontes institucionais publicas da UnB e do Governo Federal foram autorizadas pelo proprietario do projeto.",
   "questions": {
     "q018": {
       "status": "covered",
-      "finding": "O DGP informa antecedencia minima de 30 e maxima de 90 dias e o fluxo institucional."
+      "finding": "O DGP informa antecedencia minima de 30 e maxima de 90 dias e o fluxo institucional.",
+      "evaluation_question": "Qual o prazo para solicitacao de afastamento para pos-graduacao?",
+      "expected_behavior": "retrieval"
     },
     "q019": {
       "status": "covered",
-      "finding": "O manual institucional informa solicitacao na unidade, formulario especifico e Portaria de Localizacao."
+      "finding": "O manual institucional informa solicitacao na unidade, formulario especifico e Portaria de Localizacao.",
+      "evaluation_question": "Como solicitar adicional de insalubridade?",
+      "expected_behavior": "retrieval"
     },
     "q020": {
-      "status": "partially_covered",
-      "finding": "O DGP confirma a Lei 8.112 como regime juridico aplicavel, mas a pagina nao enumera todos os direitos."
+      "status": "covered",
+      "finding": "O texto consolidado oficial da Lei 8.112 contem o Titulo III, Direitos e Vantagens, incluindo vencimento, remuneracao, vantagens, ferias e licencas.",
+      "evaluation_question": "Quais os direitos do servidor publico segundo a Lei 8.112?",
+      "expected_behavior": "retrieval"
     },
     "q021": {
-      "status": "scope_clarification_required",
-      "finding": "Nao existe horario geral demonstrado; a pagina central lista secretarias e a STI publica horario apenas do proprio atendimento."
+      "status": "covered",
+      "finding": "Por decisao do proprietario, secretaria significa a STI; a pagina oficial informa atendimento das 08h as 18h, exceto finais de semana, feriados e ponto facultativo.",
+      "evaluation_question": "Qual e o horario de atendimento da Secretaria de Tecnologia da Informacao (STI) da UnB?",
+      "expected_behavior": "retrieval"
     },
     "q022": {
-      "status": "unit_specific_only",
-      "finding": "O regulamento localizado vale somente para o LAPIS/FCE; nao demonstra politica unica para todos os laboratorios."
+      "status": "honest_refusal",
+      "finding": "Nao foi comprovada politica geral de uso cotidiano aplicavel a todos os laboratorios; regulamentos localizados sao de unidades especificas e nao devem fundamentar resposta institucional geral.",
+      "evaluation_question": "Qual a politica institucional para uso dos laboratorios?",
+      "expected_behavior": "honest_refusal"
     }
   },
   "sources": [
@@ -33,7 +43,7 @@
       "file_type": "html",
       "publico_alvo": "staff",
       "authorized": true,
-      "authorization_basis": "publico_unb_autorizado_pelo_proprietario",
+      "authorization_basis": "fonte_institucional_publica_autorizada",
       "sha256": "37236d44b3914fd115fb94af4cc9be8f8eae00c8eee1d4684b89da363a20def3",
       "questions": ["q018"],
       "evidence": [
@@ -53,7 +63,7 @@
       "file_type": "html",
       "publico_alvo": "staff",
       "authorized": true,
-      "authorization_basis": "publico_unb_autorizado_pelo_proprietario",
+      "authorization_basis": "fonte_institucional_publica_autorizada",
       "sha256": "d08fdeb3ab21103c160a4a3887c3ed394c21a2438902930dfc9c8efc65aaa24b",
       "questions": ["q019"],
       "evidence": [
@@ -73,7 +83,7 @@
       "file_type": "html",
       "publico_alvo": "staff",
       "authorized": true,
-      "authorization_basis": "publico_unb_autorizado_pelo_proprietario",
+      "authorization_basis": "fonte_institucional_publica_autorizada",
       "sha256": "e60f5ce4518a78fc6d873fe2e7801e9d05cca9d1aafa1d0b202422fe848adae2",
       "questions": ["q020"],
       "evidence": [
@@ -81,6 +91,26 @@
           "question_id": "q020",
           "locator": "Legislacao aplicada aos servidores publicos",
           "excerpt": "A pagina lista a Lei 8.112/1990 como regime juridico dos servidores publicos civis da Uniao, autarquias e fundacoes publicas federais."
+        }
+      ]
+    },
+    {
+      "id": "governo-federal-lei-8112-consolidada",
+      "title": "Lei 8.112 Consolidada",
+      "publisher": "Presidencia da Republica",
+      "source_url": "https://www.planalto.gov.br/ccivil_03/leis/l8112cons.htm",
+      "file": "lei_8112_consolidada.html",
+      "file_type": "html",
+      "publico_alvo": "staff",
+      "authorized": true,
+      "authorization_basis": "fonte_institucional_publica_autorizada",
+      "sha256": "43ed1fe4cb2494ecb8a1d18c1b377c08ce0e53256c8f2ac998f4074d25344c85",
+      "questions": ["q020"],
+      "evidence": [
+        {
+          "question_id": "q020",
+          "locator": "Titulo III - Dos Direitos e Vantagens",
+          "excerpt": "O Titulo III organiza vencimento e remuneracao, vantagens, ferias, licencas, afastamentos, concessoes e direito de peticao."
         }
       ]
     },
@@ -93,7 +123,7 @@
       "file_type": "html",
       "publico_alvo": "staff",
       "authorized": true,
-      "authorization_basis": "publico_unb_autorizado_pelo_proprietario",
+      "authorization_basis": "fonte_institucional_publica_autorizada",
       "sha256": "0027b6ed1e9c886b2366ffc97f68ff263079728bdfc91ac9f828e1431403421a",
       "questions": ["q021"],
       "evidence": [
@@ -113,7 +143,7 @@
       "file_type": "html",
       "publico_alvo": "staff",
       "authorized": true,
-      "authorization_basis": "publico_unb_autorizado_pelo_proprietario",
+      "authorization_basis": "fonte_institucional_publica_autorizada",
       "sha256": "1bb626d315ffa0e604117ac5c15258c950b91e564f950ec584ed408000189ed3",
       "questions": ["q021"],
       "evidence": [
@@ -121,26 +151,6 @@
           "question_id": "q021",
           "locator": "Central de Servicos",
           "excerpt": "A STI informa atendimento das 08h as 18h, exceto finais de semana, feriados e ponto facultativo; o horario e especifico desse servico."
-        }
-      ]
-    },
-    {
-      "id": "unb-fce-regulamento-lapis",
-      "title": "Normas de Utilizacao do Laboratorio de Praticas Integradas em Saude",
-      "publisher": "Universidade de Brasilia",
-      "source_url": "https://fcts.unb.br/wp-content/uploads/2025/01/regimento_lapis.pdf",
-      "file": "fce_regimento_lapis.pdf",
-      "file_type": "pdf",
-      "publico_alvo": "staff",
-      "authorized": true,
-      "authorization_basis": "publico_unb_autorizado_pelo_proprietario",
-      "sha256": "eb57e222aad93eaa9f57a6bf0ebfadc554daad6b099b7fecd384e50e7ea5e9f3",
-      "questions": ["q022"],
-      "evidence": [
-        {
-          "question_id": "q022",
-          "locator": "Art. 1, Art. 3 e Art. 7",
-          "excerpt": "O regulamento limita seu escopo ao LAPIS/FCE, exige docente ou tecnico presente e preve agendamento por e-mail."
         }
       ]
     }

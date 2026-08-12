@@ -248,7 +248,7 @@ def test_t02_1_encerra_legado_incompleto_com_nova_referencia_auditavel() -> None
     conteudo = DOC_QUALIDADE_PATH.read_text(encoding="utf-8")
     contexto = conteudo.split("## 2. Objetivo mensurável", maxsplit=1)[0]
 
-    assert "| Estado | Em andamento — T02.1/T02.1b concluídas;" in conteudo
+    assert "| Estado | Em andamento — T02.1–T02.5 concluídas;" in conteudo
     assert "- [x] **T02.1 — Congelar baseline e diagnóstico**" in conteudo
     assert "- [x] **T02.1b — Gerar novo baseline auditável**" in conteudo
     assert "a lacuna histórica permanece explicitamente registrada" in conteudo

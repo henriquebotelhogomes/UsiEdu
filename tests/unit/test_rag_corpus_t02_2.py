@@ -16,9 +16,19 @@ EXPECTED_QUESTIONS = {f"q{number:03d}" for number in range(18, 23)}
 EXPECTED_STATUS = {
     "q018": "covered",
     "q019": "covered",
-    "q020": "partially_covered",
-    "q021": "scope_clarification_required",
-    "q022": "unit_specific_only",
+    "q020": "covered",
+    "q021": "covered",
+    "q022": "honest_refusal",
+}
+EXPECTED_BEHAVIOR = {
+    "q018": "retrieval",
+    "q019": "retrieval",
+    "q020": "retrieval",
+    "q021": "retrieval",
+    "q022": "honest_refusal",
+}
+COVERED_QUESTIONS = {
+    question for question, behavior in EXPECTED_BEHAVIOR.items() if behavior == "retrieval"
 }
 REQUIRED_SOURCE_FIELDS = {
     "id",
@@ -49,33 +59,54 @@ def test_inventario_tem_schema_ids_urls_e_cobertura_completos() -> None:
         "questions",
         "sources",
     }
-    assert inventory["schema_version"] == "1.0.0"
+    assert inventory["schema_version"] == "1.1.0"
     assert inventory["authorization_policy"] == (
-        "Documentos publicos da UnB foram autorizados pelo proprietario do projeto."
+        "Fontes institucionais publicas da UnB e do Governo Federal foram autorizadas "
+        "pelo proprietario do projeto."
     )
     assert set(inventory["questions"]) == EXPECTED_QUESTIONS
     assert {
         question: inventory["questions"][question]["status"] for question in EXPECTED_QUESTIONS
     } == EXPECTED_STATUS
     for question in EXPECTED_QUESTIONS:
-        assert set(inventory["questions"][question]) == {"status", "finding"}
+        assert set(inventory["questions"][question]) == {
+            "status",
+            "finding",
+            "evaluation_question",
+            "expected_behavior",
+        }
         assert inventory["questions"][question]["finding"]
+        assert inventory["questions"][question]["evaluation_question"]
+        assert inventory["questions"][question]["expected_behavior"] == EXPECTED_BEHAVIOR[question]
+    assert inventory["questions"]["q021"]["evaluation_question"] == (
+        "Qual e o horario de atendimento da Secretaria de Tecnologia da Informacao (STI) da UnB?"
+    )
 
     sources = inventory["sources"]
     source_ids = [source["id"] for source in sources]
     source_urls = [source["source_url"] for source in sources]
     assert len(source_ids) == len(set(source_ids))
     assert len(source_urls) == len(set(source_urls))
-    assert set().union(*(set(source["questions"]) for source in sources)) == EXPECTED_QUESTIONS
+    assert set().union(*(set(source["questions"]) for source in sources)) == COVERED_QUESTIONS
+    assert "governo-federal-lei-8112-consolidada" in source_ids
+    assert "unb-sti-servicos" in source_ids
+    assert "unb-fce-regulamento-lapis" not in source_ids
 
     for source in sources:
         assert set(source) == REQUIRED_SOURCE_FIELDS
         assert source["authorized"] is True
-        assert source["authorization_basis"] == "publico_unb_autorizado_pelo_proprietario"
-        assert source["publisher"] == "Universidade de Brasilia"
+        assert source["authorization_basis"] == "fonte_institucional_publica_autorizada"
+        assert source["publisher"] in {
+            "Universidade de Brasilia",
+            "Presidencia da Republica",
+        }
         assert urlparse(source["source_url"]).scheme == "https"
         hostname = urlparse(source["source_url"]).hostname
-        assert hostname == "unb.br" or hostname.endswith(".unb.br")
+        assert (
+            hostname == "unb.br"
+            or hostname.endswith(".unb.br")
+            or hostname in {"planalto.gov.br", "www.planalto.gov.br"}
+        )
         assert source["file_type"] in {"pdf", "html"}
         assert source["publico_alvo"] == "staff"
         assert len(source["sha256"]) == 64
@@ -102,7 +133,7 @@ def test_manifest_reproduz_inventario_e_checksums_dos_arquivos() -> None:
         assert document["publico_alvo"] == source["publico_alvo"]
         assert document["questions"] == source["questions"]
         assert document["isolated_validation"] == {
-            "collection": "t02_2_corpus_20260811",
+            "collection": "t02_2_corpus_20260812",
             "chunks": document["isolated_validation"]["chunks"],
             "evidence": "src/evaluation/evidencia_corpus_t02_2.json",
         }
@@ -124,6 +155,7 @@ def test_evidencia_comprova_ingestao_isolada_idempotente_e_recuperacao() -> None
         }
         for question in EXPECTED_QUESTIONS
     }
+    assert source_by_question["q022"] == set()
 
     assert set(evidence) == {
         "schema_version",
@@ -133,7 +165,7 @@ def test_evidencia_comprova_ingestao_isolada_idempotente_e_recuperacao() -> None
         "ingestion",
         "retrieval",
     }
-    assert evidence["schema_version"] == "1.0.0"
+    assert evidence["schema_version"] == "1.1.0"
     assert evidence["collection"].startswith("t02_2_")
     assert evidence["collection"] not in {"academico", "institucional"}
     assert evidence["manifest_sha256"] == hashlib.sha256(MANIFEST_PATH.read_bytes()).hexdigest()
@@ -157,9 +189,19 @@ def test_evidencia_comprova_ingestao_isolada_idempotente_e_recuperacao() -> None
     retrieval = evidence["retrieval"]
     assert set(retrieval) == EXPECTED_QUESTIONS
     for question, result in retrieval.items():
-        assert set(result) == {"question", "before", "after"}
+        assert set(result) == {"question", "expected_behavior", "before", "after"}
+        assert result["expected_behavior"] == EXPECTED_BEHAVIOR[question]
         assert isinstance(result["before"], list)
-        assert isinstance(result["after"], list) and result["after"]
+        assert isinstance(result["after"], list)
+        if question == "q022":
+            assert result["question"] == inventory["questions"]["q022"]["evaluation_question"]
+            assert all(
+                hit["document"]
+                != "Normas de Utilizacao do Laboratorio de Praticas Integradas em Saude"
+                for hit in result["after"]
+            )
+            continue
+        assert result["after"]
         after_documents = {hit["document"] for hit in result["after"]}
         assert after_documents & source_by_question[question]
         for hit in result["after"]:
@@ -168,12 +210,11 @@ def test_evidencia_comprova_ingestao_isolada_idempotente_e_recuperacao() -> None
             assert hit["excerpt"]
 
 
-def test_status_documental_mantem_t02_2_parcial_apos_t02_3() -> None:
+def test_status_documental_conclui_t02_2_sem_inventar_politica_geral() -> None:
     document = DOC_PATH.read_text(encoding="utf-8")
 
-    assert "| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial;" in document
-    assert "- [~] **T02.2 — Cobrir lacunas autorizadas do corpus**" in document
-    assert "q020 permanece parcialmente coberta" in document
-    assert "q021 exige identificar a secretaria" in document
-    assert "q022 possui apenas regulamento de unidade" in document
+    assert "- [x] **T02.2 — Cobrir lacunas autorizadas do corpus**" in document
+    assert "q020 está coberta pela Lei 8.112 consolidada" in document
+    assert "q021 foi delimitada à STI" in document
+    assert "q022 permanece `sem_resposta`" in document
     assert "- [x] **T02.3 — Definir recortes" in document

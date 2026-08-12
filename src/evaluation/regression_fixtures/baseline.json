@@ -3,7 +3,7 @@
   "evidence_kind": "gate_self_test",
   "run_id": "regression-fixture-baseline-v1",
   "dataset_git_blob_sha1": "67933038582591b4009f9b2aba1286bf85a4ada3",
-  "manifest_git_blob_sha1": "d96ea843de1035f77b0b5c08287529f496745433",
+  "manifest_git_blob_sha1": "9ed206531610a0ea62cb5c029fd81d455b03c2dd",
   "slice_contract_git_blob_sha1": "3d4805ad67e6614dd5be4baab08aa4dd2d90370d",
   "taxonomy_version": "1.0.0",
   "score_mechanism": "deterministic_fixture",

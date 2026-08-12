@@ -56,7 +56,7 @@
       "chunks": 0,
       "questions": ["q018"],
       "isolated_validation": {
-        "collection": "t02_2_corpus_20260811",
+        "collection": "t02_2_corpus_20260812",
         "chunks": 4,
         "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
       }
@@ -73,7 +73,7 @@
       "chunks": 0,
       "questions": ["q019"],
       "isolated_validation": {
-        "collection": "t02_2_corpus_20260811",
+        "collection": "t02_2_corpus_20260812",
         "chunks": 1,
         "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
       }
@@ -90,8 +90,25 @@
       "chunks": 0,
       "questions": ["q020"],
       "isolated_validation": {
-        "collection": "t02_2_corpus_20260811",
+        "collection": "t02_2_corpus_20260812",
         "chunks": 6,
+        "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
+      }
+    },
+    {
+      "name": "Lei 8.112 Consolidada",
+      "file": "lei_8112_consolidada.html",
+      "url": "https://www.planalto.gov.br/ccivil_03/leis/l8112cons.htm",
+      "file_type": "html",
+      "instituicao": "Governo Federal",
+      "publico_alvo": "staff",
+      "checksum": "43ed1fe4cb2494ecb8a1d18c1b377c08ce0e53256c8f2ac998f4074d25344c85",
+      "indexed": false,
+      "chunks": 0,
+      "questions": ["q020"],
+      "isolated_validation": {
+        "collection": "t02_2_corpus_20260812",
+        "chunks": 337,
         "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
       }
     },
@@ -107,7 +124,7 @@
       "chunks": 0,
       "questions": ["q021"],
       "isolated_validation": {
-        "collection": "t02_2_corpus_20260811",
+        "collection": "t02_2_corpus_20260812",
         "chunks": 1,
         "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
       }
@@ -124,25 +141,8 @@
       "chunks": 0,
       "questions": ["q021"],
       "isolated_validation": {
-        "collection": "t02_2_corpus_20260811",
+        "collection": "t02_2_corpus_20260812",
         "chunks": 1,
-        "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
-      }
-    },
-    {
-      "name": "Normas de Utilizacao do Laboratorio de Praticas Integradas em Saude",
-      "file": "fce_regimento_lapis.pdf",
-      "url": "https://fcts.unb.br/wp-content/uploads/2025/01/regimento_lapis.pdf",
-      "file_type": "pdf",
-      "instituicao": "UnB",
-      "publico_alvo": "staff",
-      "checksum": "eb57e222aad93eaa9f57a6bf0ebfadc554daad6b099b7fecd384e50e7ea5e9f3",
-      "indexed": false,
-      "chunks": 0,
-      "questions": ["q022"],
-      "isolated_validation": {
-        "collection": "t02_2_corpus_20260811",
-        "chunks": 31,
         "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
       }
     }

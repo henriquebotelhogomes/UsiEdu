@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial; T02.3–T02.5 concluídas |
+| Estado | Em andamento — T02.1–T02.5 concluídas; gates hospedado e operacional pendentes |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `src/evaluation/relatorio_ragas.md`, `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
 | Documentos normativos | `PLANO_PROFISSIONALIZACAO.md`; `docs/03-rag-e-infraestrutura.md` §§ 1 e 6; `docs/04-piloto-e-roadmap.md` § 3.1; `docs/07-prd-requisitos.md` RF-10, RF-14 e RF-18–29; `docs/08-plano-execucao.md` T6.1–T6.2; `docs/09-contratos-tecnicos.md` |
 | Checklists legados afetados | `docs/04-piloto-e-roadmap.md` § 5, “Relatório Ragas…”; `docs/07-prd-requisitos.md` § 7, “Relatório Ragas…”; `docs/08-plano-execucao.md` T6.1 e T6.2. Não alterar status nesta especificação. |
-| Atualizado em | 2026-08-11 |
+| Atualizado em | 2026-08-12 |
 
 ## 1. Contexto e evidências
 
@@ -125,11 +125,11 @@ dataset, não altera o JSONL atual.
   - [x] Teste: validar schema por caso, IDs, hashes, agregados, custo e diagnóstico dos zeros.
   - [x] Evidência: `src/evaluation/baseline_runs/2026-08-11/`, com respostas, fontes, erros, duração, tokens, custo, relatório e proveniência.
   - [x] Commit esperado: `docs(rag): publicar baseline auditavel`.
-- [~] **T02.2 — Cobrir lacunas autorizadas do corpus**
-  - [x] Para cada fonte aprovada, registrar origem, checksum, público e perguntas cobertas antes da ingestão. *(`src/evaluation/corpus_t02_2.json`; fontes versionadas primeiro no commit `691f579`.)*
-  - [x] Teste: ingestão idempotente e consultas de recuperação para as perguntas mapeadas. *(Coleção isolada `t02_2_corpus_20260811`: 44 pontos na primeira passagem e zero na segunda.)*
+- [x] **T02.2 — Cobrir lacunas autorizadas do corpus**
+  - [x] Para cada fonte aprovada, registrar origem, checksum, público e perguntas cobertas antes da ingestão. *(`src/evaluation/corpus_t02_2.json`; a revisão 1.1.0 adiciona o texto consolidado oficial da Lei 8.112 e registra a delimitação da STI autorizada pelo proprietário.)*
+  - [x] Teste: ingestão idempotente e consultas de recuperação para as perguntas mapeadas. *(Coleção local isolada `t02_2_corpus_20260812`: 350 pontos na primeira passagem e zero na segunda; profundidade 25 somente para evidenciar o corpus ampliado.)*
   - [x] Evidência: manifest, log de ingestão e resultados antes/depois. *(`src/evaluation/evidencia_corpus_t02_2.json` e `tests/unit/test_rag_corpus_t02_2.py`.)*
-  - [~] Cobertura factual: q018 e q019 estão cobertas; q020 permanece parcialmente coberta pela página legislativa do DGP; q021 exige identificar a secretaria; q022 possui apenas regulamento de unidade, sem política geral comprovada.
+  - [x] Cobertura factual: q018 e q019 permanecem cobertas; q020 está coberta pela Lei 8.112 consolidada; q021 foi delimitada à STI e usa o horário publicado pela própria secretaria; q022 permanece `sem_resposta`, pois não foi comprovada política geral e regulamento de unidade não pode fundamentar resposta institucional.
   - [x] Commit esperado: `feat(rag): adicionar corpus autorizado`.
 - [x] **T02.3 — Definir recortes e critérios de categorias especiais**
   - [x] Registrar a decisão provisória sobre `tool`, `composta`, `fora_de_escopo` e `sem_resposta` e os campos por caso. *(`src/evaluation/recortes_avaliacao_v1.json`, schema e taxonomia 1.0.0.)*
@@ -165,7 +165,7 @@ dataset, não altera o JSONL atual.
 |---|---|---|
 | G0 — Baseline | Concluído | O histórico permanece como legado incompleto e imutável; o baseline auditável de 11/08/2026 é a nova referência, com commit, dataset, manifest, configuração, respostas, fontes, erros, duração, tokens, custo e hashes versionados. |
 | G1 — Especificação | Concluído | Este documento e a decisão provisória definem recorte, gate e protocolo comparativo; a execução externa de T02.5 foi realizada com acesso autorizado. |
-| G2 — Implementação | Concluído | T02.1–T02.5 possuem implementação, evidência e testes; T02.2 permanece parcial apenas na cobertura factual. |
+| G2 — Implementação | Concluído | T02.1–T02.5 possuem implementação, evidência e testes; q022 é deliberadamente `sem_resposta`, sem fonte local promovida a política geral. |
 | G3 — Verificação | Em andamento | Gate e comparação foram executados localmente; a primeira execução hospedada do gate depende do próximo push/PR. |
 | G4 — Operação | Não iniciado | Ingestão Azure e avaliação pós-deploy, se corpus mudar. |
 | G5 — Encerramento | Não iniciado | Checklists legados atualizados apenas com evidência. |
