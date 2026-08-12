@@ -29,11 +29,9 @@ def test_promotion_is_manual_main_only_and_requires_production_approval() -> Non
 
 def test_oidc_uses_variables_without_persistent_azure_secret() -> None:
     text, workflow = _workflow()
-    login_step = next(
-        step
-        for step in workflow["jobs"]["promote"]["steps"]
-        if step.get("uses") == "azure/login@v2"
-    )
+    steps = workflow["jobs"]["promote"]["steps"]
+    login_step = next(step for step in steps if step.get("uses") == "azure/login@v2")
+    step_names = [step.get("name") for step in steps]
 
     assert login_step["with"] == {
         "client-id": "${{ vars.AZURE_CLIENT_ID }}",
@@ -44,6 +42,9 @@ def test_oidc_uses_variables_without_persistent_azure_secret() -> None:
     assert "${{ secrets." not in lowered
     assert "client-secret" not in lowered
     assert "password" not in lowered
+    assert step_names.index("Prepare evidence directory") < step_names.index(
+        "Login to Azure with OIDC"
+    )
 
 
 def test_candidate_is_sha_tagged_scanned_and_policy_gated_before_push() -> None:
@@ -94,3 +95,4 @@ def test_documentation_does_not_claim_hosted_execution_before_push() -> None:
     assert "- [~] **T03.4 — Criar pipeline de promoção**" in document
     assert "identidade OIDC e Environment `production` configurados" in document
     assert "execução hospedada depende de push" in document
+    assert "repo:henriquebotelhogomes@43866427/UsiEdu@1324468469:environment:production" in document
