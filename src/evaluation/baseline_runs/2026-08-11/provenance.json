@@ -15,6 +15,7 @@
   "estimated_cost_usd": 0.030807145,
   "manifest_git_blob_sha1": "1f16ac3fb74603b3a96a510024a35ae64aa63306",
   "manifest_path": "knowledge_base/manifest.json",
+  "manifest_snapshot_path": "src/evaluation/baseline_runs/2026-08-11/manifest.json",
   "manifest_sha256": "e3c4480ebb28e0b1774efd08c89c5b87076cf40f5cff2956362f67fb0c1a5c46",
   "record_count": 30,
   "records_file": "records.jsonl",

@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2–T02.5 não iniciadas |
+| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial; T02.3–T02.5 não iniciadas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `src/evaluation/relatorio_ragas.md`, `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
@@ -125,11 +125,12 @@ dataset, não altera o JSONL atual.
   - [x] Teste: validar schema por caso, IDs, hashes, agregados, custo e diagnóstico dos zeros.
   - [x] Evidência: `src/evaluation/baseline_runs/2026-08-11/`, com respostas, fontes, erros, duração, tokens, custo, relatório e proveniência.
   - [x] Commit esperado: `docs(rag): publicar baseline auditavel`.
-- [ ] **T02.2 — Cobrir lacunas autorizadas do corpus**
-  - [ ] Para cada fonte aprovada, registrar origem, checksum, público e perguntas cobertas antes da ingestão.
-  - [ ] Teste: ingestão idempotente e consultas de recuperação para as perguntas mapeadas.
-  - [ ] Evidência: manifest, log de ingestão e resultados antes/depois.
-  - [ ] Commit esperado: `feat(rag): adicionar corpus autorizado`.
+- [~] **T02.2 — Cobrir lacunas autorizadas do corpus**
+  - [x] Para cada fonte aprovada, registrar origem, checksum, público e perguntas cobertas antes da ingestão. *(`src/evaluation/corpus_t02_2.json`; fontes versionadas primeiro no commit `691f579`.)*
+  - [x] Teste: ingestão idempotente e consultas de recuperação para as perguntas mapeadas. *(Coleção isolada `t02_2_corpus_20260811`: 44 pontos na primeira passagem e zero na segunda.)*
+  - [x] Evidência: manifest, log de ingestão e resultados antes/depois. *(`src/evaluation/evidencia_corpus_t02_2.json` e `tests/unit/test_rag_corpus_t02_2.py`.)*
+  - [~] Cobertura factual: q018 e q019 estão cobertas; q020 permanece parcialmente coberta pela página legislativa do DGP; q021 exige identificar a secretaria; q022 possui apenas regulamento de unidade, sem política geral comprovada.
+  - [x] Commit esperado: `feat(rag): adicionar corpus autorizado`.
 - [ ] **T02.3 — Definir recortes e critérios de categorias especiais**
   - [ ] Registrar a decisão provisória sobre `tool`, `composta`, `fora_de_escopo` e `sem_resposta` e os campos por caso.
   - [ ] Teste: casos de categoria exercitam o agregador correto.

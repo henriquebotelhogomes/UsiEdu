@@ -54,7 +54,12 @@
       "checksum": "37236d44b3914fd115fb94af4cc9be8f8eae00c8eee1d4684b89da363a20def3",
       "indexed": false,
       "chunks": 0,
-      "questions": ["q018"]
+      "questions": ["q018"],
+      "isolated_validation": {
+        "collection": "t02_2_corpus_20260811",
+        "chunks": 4,
+        "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
+      }
     },
     {
       "name": "Adicional de Insalubridade e Periculosidade",
@@ -66,7 +71,12 @@
       "checksum": "d08fdeb3ab21103c160a4a3887c3ed394c21a2438902930dfc9c8efc65aaa24b",
       "indexed": false,
       "chunks": 0,
-      "questions": ["q019"]
+      "questions": ["q019"],
+      "isolated_validation": {
+        "collection": "t02_2_corpus_20260811",
+        "chunks": 1,
+        "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
+      }
     },
     {
       "name": "Legislacao Federal do DGP",
@@ -78,7 +88,12 @@
       "checksum": "e60f5ce4518a78fc6d873fe2e7801e9d05cca9d1aafa1d0b202422fe848adae2",
       "indexed": false,
       "chunks": 0,
-      "questions": ["q020"]
+      "questions": ["q020"],
+      "isolated_validation": {
+        "collection": "t02_2_corpus_20260811",
+        "chunks": 6,
+        "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
+      }
     },
     {
       "name": "Assessorias e Secretarias",
@@ -90,7 +105,12 @@
       "checksum": "0027b6ed1e9c886b2366ffc97f68ff263079728bdfc91ac9f828e1431403421a",
       "indexed": false,
       "chunks": 0,
-      "questions": ["q021"]
+      "questions": ["q021"],
+      "isolated_validation": {
+        "collection": "t02_2_corpus_20260811",
+        "chunks": 1,
+        "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
+      }
     },
     {
       "name": "Servicos de Tecnologia da Informacao",
@@ -102,7 +122,12 @@
       "checksum": "1bb626d315ffa0e604117ac5c15258c950b91e564f950ec584ed408000189ed3",
       "indexed": false,
       "chunks": 0,
-      "questions": ["q021"]
+      "questions": ["q021"],
+      "isolated_validation": {
+        "collection": "t02_2_corpus_20260811",
+        "chunks": 1,
+        "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
+      }
     },
     {
       "name": "Normas de Utilizacao do Laboratorio de Praticas Integradas em Saude",
@@ -114,7 +139,12 @@
       "checksum": "eb57e222aad93eaa9f57a6bf0ebfadc554daad6b099b7fecd384e50e7ea5e9f3",
       "indexed": false,
       "chunks": 0,
-      "questions": ["q022"]
+      "questions": ["q022"],
+      "isolated_validation": {
+        "collection": "t02_2_corpus_20260811",
+        "chunks": 31,
+        "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
+      }
     }
   ]
 }

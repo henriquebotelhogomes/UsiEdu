@@ -11,6 +11,7 @@ ROOT = Path(__file__).parent.parent.parent
 INVENTORY_PATH = ROOT / "src" / "evaluation" / "corpus_t02_2.json"
 MANIFEST_PATH = ROOT / "knowledge_base" / "manifest.json"
 EVIDENCE_PATH = ROOT / "src" / "evaluation" / "evidencia_corpus_t02_2.json"
+DOC_PATH = ROOT / "docs" / "profissionalizacao" / "02-qualidade-rag.md"
 EXPECTED_QUESTIONS = {f"q{number:03d}" for number in range(18, 23)}
 EXPECTED_STATUS = {
     "q018": "covered",
@@ -54,8 +55,7 @@ def test_inventario_tem_schema_ids_urls_e_cobertura_completos() -> None:
     )
     assert set(inventory["questions"]) == EXPECTED_QUESTIONS
     assert {
-        question: inventory["questions"][question]["status"]
-        for question in EXPECTED_QUESTIONS
+        question: inventory["questions"][question]["status"] for question in EXPECTED_QUESTIONS
     } == EXPECTED_STATUS
     for question in EXPECTED_QUESTIONS:
         assert set(inventory["questions"][question]) == {"status", "finding"}
@@ -101,6 +101,12 @@ def test_manifest_reproduz_inventario_e_checksums_dos_arquivos() -> None:
         assert document["checksum"] == source["sha256"]
         assert document["publico_alvo"] == source["publico_alvo"]
         assert document["questions"] == source["questions"]
+        assert document["isolated_validation"] == {
+            "collection": "t02_2_corpus_20260811",
+            "chunks": document["isolated_validation"]["chunks"],
+            "evidence": "src/evaluation/evidencia_corpus_t02_2.json",
+        }
+        assert document["isolated_validation"]["chunks"] > 0
 
         file_path = ROOT / "knowledge_base" / source["file"]
         assert file_path.is_file()
@@ -109,12 +115,12 @@ def test_manifest_reproduz_inventario_e_checksums_dos_arquivos() -> None:
 
 def test_evidencia_comprova_ingestao_isolada_idempotente_e_recuperacao() -> None:
     inventory = _load(INVENTORY_PATH)
+    manifest = _load(MANIFEST_PATH)
+    manifest_by_file = {document["file"]: document for document in manifest["documents"]}
     evidence = _load(EVIDENCE_PATH)
     source_by_question = {
         question: {
-            source["title"]
-            for source in inventory["sources"]
-            if question in source["questions"]
+            source["title"] for source in inventory["sources"] if question in source["questions"]
         }
         for question in EXPECTED_QUESTIONS
     }
@@ -132,6 +138,16 @@ def test_evidencia_comprova_ingestao_isolada_idempotente_e_recuperacao() -> None
     assert evidence["collection"] not in {"academico", "institucional"}
     assert evidence["manifest_sha256"] == hashlib.sha256(MANIFEST_PATH.read_bytes()).hexdigest()
     assert evidence["ingestion"]["first_run"]["uploaded_points"] > 0
+    assert set(evidence["ingestion"]["first_run"]["per_document"]) == {
+        source["title"] for source in inventory["sources"]
+    }
+    assert all(chunks > 0 for chunks in evidence["ingestion"]["first_run"]["per_document"].values())
+    for source in inventory["sources"]:
+        document = manifest_by_file[source["file"]]
+        assert (
+            evidence["ingestion"]["first_run"]["per_document"][source["title"]]
+            == document["isolated_validation"]["chunks"]
+        )
     assert evidence["ingestion"]["second_run"]["uploaded_points"] == 0
     assert (
         evidence["ingestion"]["first_run"]["points_after"]
@@ -150,3 +166,14 @@ def test_evidencia_comprova_ingestao_isolada_idempotente_e_recuperacao() -> None
             assert set(hit) == {"document", "section", "url", "score", "excerpt"}
             assert isinstance(hit["score"], (int, float)) and not isinstance(hit["score"], bool)
             assert hit["excerpt"]
+
+
+def test_status_documental_reflete_cobertura_parcial_sem_avancar_t02_3() -> None:
+    document = DOC_PATH.read_text(encoding="utf-8")
+
+    assert "| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial;" in document
+    assert "- [~] **T02.2 — Cobrir lacunas autorizadas do corpus**" in document
+    assert "q020 permanece parcialmente coberta" in document
+    assert "q021 exige identificar a secretaria" in document
+    assert "q022 possui apenas regulamento de unidade" in document
+    assert "- [ ] **T02.3 — Definir recortes" in document

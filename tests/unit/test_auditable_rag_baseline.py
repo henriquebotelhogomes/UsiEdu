@@ -23,6 +23,7 @@ DATASET_PATH = ROOT / "src" / "evaluation" / "dataset.jsonl"
 MANIFEST_PATH = ROOT / "knowledge_base" / "manifest.json"
 CONFIG_PATH = ROOT / "src" / "evaluation" / "baseline_runs" / "2026-08-11" / "config.json"
 RUN_DIR = CONFIG_PATH.parent
+BASELINE_MANIFEST_PATH = RUN_DIR / "manifest.json"
 RECORDS_PATH = RUN_DIR / "records.jsonl"
 PROVENANCE_PATH = RUN_DIR / "provenance.json"
 REPORT_PATH = RUN_DIR / "report.md"
@@ -243,7 +244,12 @@ def test_execucao_real_tem_30_casos_e_proveniencia_recalculavel() -> None:
     }
     assert provenance["config_git_blob_sha1"] == canonical_git_blob_sha1(CONFIG_PATH)
     assert provenance["dataset_git_blob_sha1"] == canonical_git_blob_sha1(DATASET_PATH)
-    assert provenance["manifest_git_blob_sha1"] == canonical_git_blob_sha1(MANIFEST_PATH)
+    assert provenance["manifest_snapshot_path"] == (
+        "src/evaluation/baseline_runs/2026-08-11/manifest.json"
+    )
+    assert provenance["manifest_git_blob_sha1"] == canonical_git_blob_sha1(BASELINE_MANIFEST_PATH)
+    assert provenance["manifest_sha256"] == canonical_sha256(BASELINE_MANIFEST_PATH)
+    assert canonical_git_blob_sha1(BASELINE_MANIFEST_PATH) != canonical_git_blob_sha1(MANIFEST_PATH)
     assert provenance["records_sha256"] == canonical_sha256(RECORDS_PATH)
     assert provenance["report_sha256"] == canonical_sha256(REPORT_PATH)
     assert provenance["zero_diagnostics_sha256"] == canonical_sha256(DIAGNOSTICS_PATH)
