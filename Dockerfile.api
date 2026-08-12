@@ -29,6 +29,9 @@ WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
+# O SBOM incorporado no pip descreve versões vendorizadas antigas, não o runtime.
+RUN rm -f /usr/local/lib/python3.12/site-packages/pip/_vendor/bom.cdx.json
+
 # Copia o código
 COPY src/ ./src/
 COPY knowledge_base/ ./knowledge_base/

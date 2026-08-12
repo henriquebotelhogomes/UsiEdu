@@ -121,6 +121,7 @@ def test_api_image_installs_trivy_remediated_python_dependencies() -> None:
 
     assert "setuptools>=78.1.1" in dockerfile
     assert '"msgpack>=1.2.1"' in pyproject
+    assert "pip/_vendor/bom.cdx.json" in dockerfile
 
 
 def test_hatchling_build_includes_src_package() -> None:
