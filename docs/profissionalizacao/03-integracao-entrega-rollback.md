@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T03.1–T03.3 concluídas; T03.4–T03.5 não iniciadas |
+| Estado | Em andamento — T03.1–T03.3 concluídas; T03.4 implementada localmente; T03.5 não iniciada |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/`, `.github/workflows/ci.yml`, `.github/workflows/docs.yml`, Dockerfiles e `docker-compose.yml` |
 | Documentos normativos | `PLANO_PROFISSIONALIZACAO.md`; `PRD.v2.md` T9.4; `docs/03-rag-e-infraestrutura.md` § 10; `docs/04-piloto-e-roadmap.md` § 5; `docs/07-prd-requisitos.md` RF-01–05, RF-32 e § 7; `docs/08-plano-execucao.md` T9.4; `docs/09-contratos-tecnicos.md` § 2 |
 | Checklists legados afetados | `docs/08-plano-execucao.md` T9.4; `docs/04-piloto-e-roadmap.md` § 5; `docs/07-prd-requisitos.md` § 7. Não alterar status enquanto só houver especificação. |
-| Atualizado em | 2026-08-11 |
+| Atualizado em | 2026-08-12 |
 
 ## 1. Contexto e evidências
 
@@ -30,8 +30,8 @@ Disponibilizar uma entrega rastreável do commit ao Azure: cada candidato deve
 ter imagens identificadas por commit imutável, testes de integração e E2E
 definidos, aprovação explícita antes do ambiente público e procedimento
 verificado de retorno à revisão anterior. A política provisória usa OIDC
-federado, GitHub Environment `production` e Trivy; permanece pendente somente a
-execução que exige acesso Azure.
+federado, GitHub Environment `production` e Trivy; permanecem pendentes a
+execução hospedada e o experimento de rollback.
 
 ## 3. Escopo e não escopo
 
@@ -68,9 +68,9 @@ execução que exige acesso Azure.
 |---|---|---|---|
 | Decisão tomada | Azure Container Apps, ACR e Bicep são a base vigente. | `infra/azure/`. | Reutilizar sem alterar topologia nesta iniciativa. |
 | Decisão tomada | API e Qdrant permanecem internos; frontend é a origem pública. | `main.bicep` e P0. | E2E deve usar a origem pública, não expor API. |
-| Decisão provisória | GitHub→Azure usa OIDC federado, menor privilégio e Environment `production` com aprovação manual; credencial Azure persistente não pode ser secret. | Revisar quando a identidade federada, o escopo RBAC e os aprovadores forem criados e validados. | T03.4 pode desenhar YAML/runbook sem segredo; para aplicar, para no acesso Azure e na criação da identidade. |
-| Decisão provisória | Trivy é o scanner; CRITICAL e HIGH com correção disponível bloqueiam. Exceção é versionada, justificada, tem dono e vence em no máximo 30 dias. | Política `image-promotion-v1` e autoensaio sintético versionados; revisar após o primeiro relatório real e a política de exceção aplicada. | Scan/publicação reais aguardam imagem candidata em T03.4; o autoensaio não é apresentado como scan de produção. |
-| Gate explícito de execução | `activeRevisionsMode: Single` é factual no Bicep, mas a reversão operacional só vale após experimento Azure. | Exige acesso Azure e uma revisão/digest anterior validada. | Antes de automatizar, escrever/executar runbook no modo Single, preservar digest e evidenciar retorno; T03.5 para nesse ponto sem acesso. |
+| Decisão aplicada | GitHub→Azure usa OIDC federado, menor privilégio e Environment `production` com aprovação manual; credencial Azure persistente não pode ser secret. | Aplicação Entra `usiedu-github-production`, subject `repo:henriquebotelhogomes/UsiEdu:environment:production` e aprovador do repositório. | `AcrPush` está limitado a `usieduacr650206`; `Container Apps Contributor`, limitado individualmente a `usiedu-api` e `usiedu-frontend`. |
+| Decisão provisória | Trivy é o scanner; CRITICAL e HIGH com correção disponível bloqueiam. Exceção é versionada, justificada, tem dono e vence em no máximo 30 dias. | Política `image-promotion-v1` e autoensaio sintético versionados; revisar após o primeiro relatório real e a política de exceção aplicada. | Scan/publicação reais aguardam a primeira execução hospedada de T03.4; o autoensaio não é apresentado como scan de produção. |
+| Gate explícito de execução | `activeRevisionsMode: Single` é factual no Bicep, mas a reversão operacional só vale após experimento Azure. | Exige uma revisão/digest anterior validada e uma janela controlada. | Antes de automatizar, escrever/executar runbook no modo Single, preservar digest e evidenciar retorno em T03.5. |
 | Risco | Teste E2E consumir LLM, sofrer cold start ou rate limit. | API escala a zero e tem limites. | Usar ambiente/dados demo controlados e registrar custo/tempo. |
 | Risco | Tag mutável publicar código diferente do validado. | `v1` é default atual. | Promover somente digest produzido pelo candidato aprovado. |
 
@@ -83,10 +83,14 @@ Os testes devem partir dos contratos REST documentados: login, `/chat` ou
 público nem dados reais; Qdrant deve ser isolado. O teste frontend/proxy deve
 verificar que SSE não recebe buffering, sem depender de LLM externo.
 
-O workflow futuro deverá separar validação de build, scan, publicação e
+O workflow `.github/workflows/promote-azure.yml` separa build, scan, política,
+publicação e
 produção. O deploy recebe tag/digest imutável, nunca segredo no YAML ou log,
 autentica por OIDC federado e usa Environment `production` com aprovação
-manual. O runbook no modo Single deve preservar e identificar a
+manual. A identidade OIDC e Environment `production` configurados dão suporte
+ao contrato, mas a execução hospedada depende de push autorizado para `main`;
+ela ainda não foi alegada nem exercitada. O runbook no modo Single deve
+preservar e identificar a
 revisão/digest anterior validada, retornar a ela sem reconstrução, fazer smoke
 de `/health` e do fluxo autenticado e registrar resultado.
 
@@ -107,10 +111,10 @@ de `/health` e do fluxo autenticado e registrar resultado.
   - [x] Teste: imagem com achado de teste falha a política. *(`tests/unit/test_image_policy.py` cobre HIGH/CRITICAL corrigível, achado sem correção, exceções e digest inválido.)*
   - [x] Evidência: decisão, relatório de scan e retenção de digest. *(O CI publica os relatórios sintéticos pass/block com digest imutável; o primeiro relatório Trivy de imagem real permanece para T03.4.)*
   - [x] Commit esperado: `docs(entrega): definir politica de imagens`.
-- [ ] **T03.4 — Criar pipeline de promoção**
-  - [ ] Configurar, após acesso Azure, identidade OIDC federada de menor privilégio, tags por commit/digest e Environment `production` com aprovação manual.
-  - [ ] Teste: dry-run/candidato bloqueado sem aprovação e deploy autorizado em ambiente definido.
-  - [ ] Evidência: logs sem segredos, SHA/digest e revisão Azure.
+- [~] **T03.4 — Criar pipeline de promoção**
+  - [x] Configurar identidade OIDC federada de menor privilégio, tags por commit/digest e Environment `production`. *(O contrato versionado usa apenas variáveis e `id-token: write`; a proteção disponível no repositório foi aplicada sem segredo persistente.)*
+  - [~] Teste: contrato local garante execução manual em `main`, gate `production`, scan e política antes do push; o deploy autorizado hospedado depende de push, que não foi solicitado.
+  - [~] Evidência: o workflow gera artefato com SHA, digests e referências anteriores; logs e revisão Azure reais dependem da primeira execução hospedada.
   - [ ] Commit esperado: `ci(entrega): automatizar promocao azure`.
 - [ ] **T03.5 — Exercitar rollback**
   - [ ] Escrever e executar runbook com revisão/digest anterior conhecido.
@@ -135,9 +139,9 @@ de `/health` e do fluxo autenticado e registrar resultado.
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
 | G0 — Baseline | Concluído | Workflows, Bicep e P0 inventariados. |
-| G1 — Especificação | Concluído | Este documento define Trivy, OIDC, aprovação e rollback; acesso Azure bloqueia apenas aplicação/experimento dependente. |
-| G2 — Implementação | Em andamento | T03.1–T03.3 concluídas; T03.4–T03.5 permanecem. |
-| G3 — Verificação | Em andamento | Limites, E2E e política de imagem possuem autoensaios; scan real, promoção e execução pública permanecem. |
+| G1 — Especificação | Concluído | Este documento define Trivy, OIDC, aprovação e rollback; a execução hospedada e o experimento operacional permanecem separados. |
+| G2 — Implementação | Em andamento | T03.1–T03.3 concluídas; T03.4 implementada localmente e T03.5 permanece. |
+| G3 — Verificação | Em andamento | Limites, E2E, política e contrato da promoção possuem autoensaios; scan real, promoção e execução pública permanecem. |
 | G4 — Operação | Não iniciado | Deploy aprovado e rollback exercitado em Azure. |
 | G5 — Encerramento | Não iniciado | Checklists legados reconciliados com evidência. |
 

@@ -1,0 +1,147 @@
+name: Promote Azure candidate
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    env:
+      ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      API_APP: ${{ vars.AZURE_API_APP }}
+      FRONTEND_APP: ${{ vars.AZURE_FRONTEND_APP }}
+      API_TAG: ${{ vars.AZURE_ACR_NAME }}.azurecr.io/usiedu-api:${{ github.sha }}
+      FRONTEND_TAG: ${{ vars.AZURE_ACR_NAME }}.azurecr.io/usiedu-frontend:${{ github.sha }}
+    steps:
+      - name: Checkout approved commit
+        uses: actions/checkout@v4
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        run: az acr login --name "$ACR_NAME"
+
+      - name: Build candidates
+        run: |
+          docker build --file Dockerfile.api --tag "$API_TAG" .
+          docker build --file Dockerfile.frontend --tag "$FRONTEND_TAG" .
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Scan API candidate
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ${{ env.API_TAG }}
+          format: json
+          output: artifacts/trivy-api.json
+          exit-code: "0"
+
+      - name: Scan frontend candidate
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ${{ env.FRONTEND_TAG }}
+          format: json
+          output: artifacts/trivy-frontend.json
+          exit-code: "0"
+
+      - name: Enforce image policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          API_LOCAL_DIGEST=$(docker image inspect --format='{{.Id}}' "$API_TAG")
+          FRONTEND_LOCAL_DIGEST=$(docker image inspect --format='{{.Id}}' "$FRONTEND_TAG")
+          python -m src.delivery.image_policy \
+            --scan artifacts/trivy-api.json \
+            --policy src/delivery/image_policy_v1.json \
+            --digest "$API_LOCAL_DIGEST" \
+            --image usiedu-api \
+            --output artifacts/policy-api.json
+          python -m src.delivery.image_policy \
+            --scan artifacts/trivy-frontend.json \
+            --policy src/delivery/image_policy_v1.json \
+            --digest "$FRONTEND_LOCAL_DIGEST" \
+            --image usiedu-frontend \
+            --output artifacts/policy-frontend.json
+
+      - name: Push immutable candidates
+        run: |
+          docker push "$API_TAG"
+          docker push "$FRONTEND_TAG"
+
+      - name: Deploy approved digests
+        shell: bash
+        run: |
+          set -euo pipefail
+          az containerapp show --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
+            --query properties.template.containers[0].image -o tsv \
+            > artifacts/previous-api-image.txt
+          az containerapp show --resource-group "$RESOURCE_GROUP" --name "$FRONTEND_APP" \
+            --query properties.template.containers[0].image -o tsv \
+            > artifacts/previous-frontend-image.txt
+          API_DIGEST=$(az acr repository show --name "$ACR_NAME" \
+            --image "usiedu-api:$GITHUB_SHA" --query digest -o tsv)
+          FRONTEND_DIGEST=$(az acr repository show --name "$ACR_NAME" \
+            --image "usiedu-frontend:$GITHUB_SHA" --query digest -o tsv)
+          API_REF="${ACR_NAME}.azurecr.io/usiedu-api@${API_DIGEST}"
+          FRONTEND_REF="${ACR_NAME}.azurecr.io/usiedu-frontend@${FRONTEND_DIGEST}"
+          echo "API_REF=$API_REF" >> "$GITHUB_ENV"
+          echo "FRONTEND_REF=$FRONTEND_REF" >> "$GITHUB_ENV"
+          az containerapp update --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
+            --image "$API_REF" --output none
+          az containerapp update --resource-group "$RESOURCE_GROUP" --name "$FRONTEND_APP" \
+            --image "$FRONTEND_REF" --output none
+
+      - name: Smoke test public health
+        shell: bash
+        run: |
+          set -euo pipefail
+          FRONTEND_FQDN=$(az containerapp show --resource-group "$RESOURCE_GROUP" \
+            --name "$FRONTEND_APP" --query properties.configuration.ingress.fqdn -o tsv)
+          curl --fail --silent --show-error --retry 12 --retry-delay 10 \
+            "https://$FRONTEND_FQDN/health" > artifacts/health.json
+
+      - name: Write promotion evidence
+        if: always()
+        shell: bash
+        run: |
+          jq -n \
+            --arg github_sha "$GITHUB_SHA" \
+            --arg workflow_run "$GITHUB_RUN_ID" \
+            --arg api_ref "${API_REF:-}" \
+            --arg frontend_ref "${FRONTEND_REF:-}" \
+            --arg previous_api_ref "$(cat artifacts/previous-api-image.txt 2>/dev/null || true)" \
+            --arg previous_frontend_ref "$(cat artifacts/previous-frontend-image.txt 2>/dev/null || true)" \
+            '{
+              schema_version: "1.0.0",
+              github_sha: $github_sha,
+              workflow_run: $workflow_run,
+              api_ref: $api_ref,
+              frontend_ref: $frontend_ref,
+              previous_api_ref: $previous_api_ref,
+              previous_frontend_ref: $previous_frontend_ref
+            }' > artifacts/promotion-evidence.json
+
+      - name: Upload promotion evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-promotion-evidence
+          path: artifacts/
+          if-no-files-found: error
