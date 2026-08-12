@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial; T02.3 concluída; T02.4–T02.5 não iniciadas |
+| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial; T02.3–T02.4 concluídas; T02.5 não iniciada |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `src/evaluation/relatorio_ragas.md`, `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
@@ -136,11 +136,11 @@ dataset, não altera o JSONL atual.
   - [x] Teste: casos de categoria exercitam o agregador correto. *(`tests/unit/test_evaluation_slices.py`; implementação somente de avaliação em `src/evaluation/slices.py`.)*
   - [x] Evidência: decisão registrada e relatório com todos os recortes. *(`src/evaluation/evidencia_recortes_t02_3.json`: 30 casos, 33 subperguntas, sem recalcular scores.)*
   - [x] Commit esperado: `docs(rag): definir recortes de avaliacao`.
-- [ ] **T02.4 — Criar regressão automatizada**
-  - [ ] Implementar comparação baseline/candidato sem alterar o agregado histórico.
-  - [ ] Teste: regressão simulada falha e melhora dentro do limiar aprovado passa.
-  - [ ] Evidência: artefato de CI com dataset, manifest, scores e decisão.
-  - [ ] Commit esperado: `test(rag): adicionar gate de regressao`.
+- [x] **T02.4 — Criar regressão automatizada**
+  - [x] Implementar comparação baseline/candidato sem alterar o agregado histórico. *(`src/evaluation/regression_gate.py`; política conservadora sem queda em `src/evaluation/regression_policy_v1.json`.)*
+  - [x] Teste: regressão simulada falha e melhora dentro do limiar aprovado passa. *(`tests/unit/test_rag_regression_gate.py` também rejeita proveniência, recorte ou mecanismo divergentes.)*
+  - [x] Evidência: artefato de CI com dataset, manifest, scores e decisão. *(O job `quality` publica `rag-regression-evidence`; os fixtures versionados são marcados `gate_self_test` e não alegam avaliação real.)*
+  - [x] Commit esperado: `test(rag): adicionar gate de regressao`.
 - [ ] **T02.5 — Comparar juízes**
   - [ ] Preparar e, com credencial autorizada, rodar DeepSeek V4 Flash versus Kimi K2.7 Code no mesmo dataset/recorte, três vezes, temperatura 0 quando suportada e até US$ 5 no total.
   - [ ] Teste: validação de configuração impede comparar datasets ou recortes distintos.
@@ -164,8 +164,8 @@ dataset, não altera o JSONL atual.
 |---|---|---|
 | G0 — Baseline | Concluído | O histórico permanece como legado incompleto e imutável; o baseline auditável de 11/08/2026 é a nova referência, com commit, dataset, manifest, configuração, respostas, fontes, erros, duração, tokens, custo e hashes versionados. |
 | G1 — Especificação | Concluído | Este documento e a decisão provisória definem o recorte e o protocolo; o acesso autorizado ao provedor bloqueia apenas a execução externa de T02.5. |
-| G2 — Implementação | Não iniciado | Commits T02.1–T02.5 e testes correspondentes. |
-| G3 — Verificação | Não iniciado | Pytest/Ruff, relatório reproduzível e gate executado. |
+| G2 — Implementação | Em andamento | T02.1–T02.4 possuem commits e testes; T02.5 permanece. |
+| G3 — Verificação | Em andamento | Gate executável localmente e conectado ao CI; a primeira execução hospedada depende do próximo push/PR. |
 | G4 — Operação | Não iniciado | Ingestão Azure e avaliação pós-deploy, se corpus mudar. |
 | G5 — Encerramento | Não iniciado | Checklists legados atualizados apenas com evidência. |
 

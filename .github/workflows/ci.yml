@@ -30,3 +30,19 @@ jobs:
 
       - name: Pytest
         run: pytest -v --tb=short
+
+      - name: Exercise RAG regression gate
+        run: |
+          python -m src.evaluation.regression_gate \
+            --baseline src/evaluation/regression_fixtures/baseline.json \
+            --candidate src/evaluation/regression_fixtures/candidate.json \
+            --policy src/evaluation/regression_policy_v1.json \
+            --output artifacts/rag-regression-report.json
+
+      - name: Upload RAG regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-regression-evidence
+          path: artifacts/rag-regression-report.json
+          if-no-files-found: error

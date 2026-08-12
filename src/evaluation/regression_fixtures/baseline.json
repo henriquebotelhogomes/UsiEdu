@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "evidence_kind": "gate_self_test",
+  "run_id": "regression-fixture-baseline-v1",
+  "dataset_git_blob_sha1": "67933038582591b4009f9b2aba1286bf85a4ada3",
+  "manifest_git_blob_sha1": "d96ea843de1035f77b0b5c08287529f496745433",
+  "slice_contract_git_blob_sha1": "3d4805ad67e6614dd5be4baab08aa4dd2d90370d",
+  "taxonomy_version": "1.0.0",
+  "score_mechanism": "deterministic_fixture",
+  "rag_respondible": {
+    "subquestion_ids": [
+      "q001.rag",
+      "q002.rag",
+      "q003.rag",
+      "q011.rag",
+      "q012.rag",
+      "q013.rag",
+      "q014.rag",
+      "q015.rag",
+      "q016.rag",
+      "q017.rag",
+      "q018.rag",
+      "q019.rag",
+      "q020.rag",
+      "q021.rag",
+      "q023.teletrabalho",
+      "q030.seguranca",
+      "q030.treinamentos"
+    ],
+    "aggregate_scores": {
+      "faithfulness": 0.8,
+      "context_precision": 0.8,
+      "context_recall": 0.8,
+      "answer_relevancy": 0.8
+    }
+  },
+  "special_reports": {
+    "tool": {
+      "total_count": 7,
+      "passed_count": 7
+    },
+    "fora_de_escopo": {
+      "total_count": 4,
+      "passed_count": 4
+    },
+    "sem_resposta": {
+      "total_count": 5,
+      "passed_count": 5
+    }
+  }
+}
