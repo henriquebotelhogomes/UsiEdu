@@ -181,4 +181,40 @@ describe("fluxo demo E2E T03.2", () => {
       expect.objectContaining({ method: "POST" })
     );
   });
+
+  it("retorna para insights após autenticar um acesso protegido", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/auth/login") {
+        return jsonResponse({
+          access_token: "e2e-token-not-exported",
+          token_type: "bearer",
+          profile: "student",
+          display_name: "Ana Souza",
+        });
+      }
+      if (url === "/feedback/stats") {
+        return jsonResponse({ total: 1, up: 1, down: 0, satisfaction: 1 });
+      }
+      if (url.startsWith("/feedback/recent")) {
+        return jsonResponse({ items: [] });
+      }
+      throw new Error(`Requisição E2E inesperada: ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/insights"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("button", { name: "Entrar" })).toBeInTheDocument();
+    await user.click(screen.getByText("Ana Souza"));
+    await user.click(screen.getByRole("button", { name: "Entrar" }));
+
+    expect(await screen.findByRole("heading", { name: "UsiEdu — Satisfação" })).toBeInTheDocument();
+    expect(screen.getByText("100%")).toBeInTheDocument();
+  });
 });
