@@ -168,7 +168,7 @@ def test_evidencia_comprova_ingestao_isolada_idempotente_e_recuperacao() -> None
             assert hit["excerpt"]
 
 
-def test_status_documental_reflete_cobertura_parcial_sem_avancar_t02_3() -> None:
+def test_status_documental_mantem_t02_2_parcial_apos_t02_3() -> None:
     document = DOC_PATH.read_text(encoding="utf-8")
 
     assert "| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial;" in document
@@ -176,4 +176,4 @@ def test_status_documental_reflete_cobertura_parcial_sem_avancar_t02_3() -> None
     assert "q020 permanece parcialmente coberta" in document
     assert "q021 exige identificar a secretaria" in document
     assert "q022 possui apenas regulamento de unidade" in document
-    assert "- [ ] **T02.3 — Definir recortes" in document
+    assert "- [x] **T02.3 — Definir recortes" in document

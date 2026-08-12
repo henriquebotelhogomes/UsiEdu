@@ -1,0 +1,85 @@
+{
+  "counts": {
+    "cases": 30,
+    "composta": 3,
+    "fora_de_escopo": 4,
+    "rag_respondible": 17,
+    "sem_resposta": 5,
+    "subquestions": 33,
+    "tool": 7
+  },
+  "schema_version": "1.0.0",
+  "score_status": "not_recomputed_in_t02_3",
+  "slices": {
+    "composta": {
+      "q008": {
+        "rag_contribution_ids": [],
+        "subquestion_ids": [
+          "q008.notas",
+          "q008.boleto"
+        ]
+      },
+      "q023": {
+        "rag_contribution_ids": [
+          "q023.teletrabalho"
+        ],
+        "subquestion_ids": [
+          "q023.teletrabalho",
+          "q023.boleto"
+        ]
+      },
+      "q030": {
+        "rag_contribution_ids": [
+          "q030.seguranca",
+          "q030.treinamentos"
+        ],
+        "subquestion_ids": [
+          "q030.seguranca",
+          "q030.treinamentos"
+        ]
+      }
+    },
+    "fora_de_escopo": [
+      "q009",
+      "q010",
+      "q024",
+      "q025"
+    ],
+    "rag_respondible": [
+      "q001.rag",
+      "q002.rag",
+      "q003.rag",
+      "q011.rag",
+      "q012.rag",
+      "q013.rag",
+      "q014.rag",
+      "q015.rag",
+      "q016.rag",
+      "q017.rag",
+      "q018.rag",
+      "q019.rag",
+      "q020.rag",
+      "q021.rag",
+      "q023.teletrabalho",
+      "q030.seguranca",
+      "q030.treinamentos"
+    ],
+    "sem_resposta": [
+      "q022",
+      "q026",
+      "q027",
+      "q028",
+      "q029"
+    ],
+    "tool": [
+      "q004.tool",
+      "q005.tool",
+      "q006.tool",
+      "q007.tool",
+      "q008.notas",
+      "q008.boleto",
+      "q023.boleto"
+    ]
+  },
+  "taxonomy_version": "1.0.0"
+}

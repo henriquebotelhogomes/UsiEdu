@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial; T02.3–T02.5 não iniciadas |
+| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial; T02.3 concluída; T02.4–T02.5 não iniciadas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `src/evaluation/relatorio_ragas.md`, `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
@@ -131,11 +131,11 @@ dataset, não altera o JSONL atual.
   - [x] Evidência: manifest, log de ingestão e resultados antes/depois. *(`src/evaluation/evidencia_corpus_t02_2.json` e `tests/unit/test_rag_corpus_t02_2.py`.)*
   - [~] Cobertura factual: q018 e q019 estão cobertas; q020 permanece parcialmente coberta pela página legislativa do DGP; q021 exige identificar a secretaria; q022 possui apenas regulamento de unidade, sem política geral comprovada.
   - [x] Commit esperado: `feat(rag): adicionar corpus autorizado`.
-- [ ] **T02.3 — Definir recortes e critérios de categorias especiais**
-  - [ ] Registrar a decisão provisória sobre `tool`, `composta`, `fora_de_escopo` e `sem_resposta` e os campos por caso.
-  - [ ] Teste: casos de categoria exercitam o agregador correto.
-  - [ ] Evidência: decisão registrada e relatório com todos os recortes.
-  - [ ] Commit esperado: `docs(rag): definir recortes de avaliacao`.
+- [x] **T02.3 — Definir recortes e critérios de categorias especiais**
+  - [x] Registrar a decisão provisória sobre `tool`, `composta`, `fora_de_escopo` e `sem_resposta` e os campos por caso. *(`src/evaluation/recortes_avaliacao_v1.json`, schema e taxonomia 1.0.0.)*
+  - [x] Teste: casos de categoria exercitam o agregador correto. *(`tests/unit/test_evaluation_slices.py`; implementação somente de avaliação em `src/evaluation/slices.py`.)*
+  - [x] Evidência: decisão registrada e relatório com todos os recortes. *(`src/evaluation/evidencia_recortes_t02_3.json`: 30 casos, 33 subperguntas, sem recalcular scores.)*
+  - [x] Commit esperado: `docs(rag): definir recortes de avaliacao`.
 - [ ] **T02.4 — Criar regressão automatizada**
   - [ ] Implementar comparação baseline/candidato sem alterar o agregado histórico.
   - [ ] Teste: regressão simulada falha e melhora dentro do limiar aprovado passa.
