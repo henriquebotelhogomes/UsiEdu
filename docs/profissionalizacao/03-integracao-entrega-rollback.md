@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T03.1–T03.3 concluídas; T03.4 teve execução hospedada bloqueada antes do push; T03.5 não iniciada |
+| Estado | Em andamento — T03.1–T03.4 concluídas; T03.5 não iniciada |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/`, `.github/workflows/ci.yml`, `.github/workflows/docs.yml`, Dockerfiles e `docker-compose.yml` |
@@ -30,8 +30,8 @@ Disponibilizar uma entrega rastreável do commit ao Azure: cada candidato deve
 ter imagens identificadas por commit imutável, testes de integração e E2E
 definidos, aprovação explícita antes do ambiente público e procedimento
 verificado de retorno à revisão anterior. A política provisória usa OIDC
-federado, GitHub Environment `production` e Trivy; a execução hospedada
-bloqueou a promoção antes do push e o experimento de rollback permanece pendente.
+federado, GitHub Environment `production` e Trivy; a promoção hospedada foi
+concluída por digest e o experimento de rollback permanece pendente.
 
 ## 3. Escopo e não escopo
 
@@ -111,10 +111,10 @@ de `/health` e do fluxo autenticado e registrar resultado.
   - [x] Teste: imagem com achado de teste falha a política. *(`tests/unit/test_image_policy.py` cobre HIGH/CRITICAL corrigível, achado sem correção, exceções e digest inválido.)*
   - [x] Evidência: decisão, relatório de scan e retenção de digest. *(O CI publica os relatórios sintéticos pass/block com digest imutável; o primeiro relatório Trivy de imagem real permanece para T03.4.)*
   - [x] Commit esperado: `docs(entrega): definir politica de imagens`.
-- [~] **T03.4 — Criar pipeline de promoção**
+- [x] **T03.4 — Criar pipeline de promoção**
   - [x] Configurar identidade OIDC federada de menor privilégio, tags por commit/digest e Environment `production`. *(O contrato versionado usa apenas variáveis e `id-token: write`; a proteção disponível no repositório foi aplicada sem segredo persistente.)*
-  - [~] Teste: contrato local garante execução manual em `main`, gate `production`, scan e política antes do push, com cache de análise em memória para cada candidato.
-  - [~] Evidência: a execução hospedada bloqueou a promoção antes do push; o build registrou `msgpack 1.2.1` e `setuptools 84.0.0`, enquanto o relatório Trivy listou versões antigas do SBOM incorporado em `pip/_vendor/bom.cdx.json`. A nova execução remove apenas esse SBOM obsoleto da imagem final e usa Trivy `v0.73.0` com análise efêmera.
+  - [x] Teste: contrato local garante execução manual em `main`, gate `production`, scan e política antes do push, com cache de análise em memória para cada candidato.
+  - [x] Evidência: a execução `31624834815` aprovou os scans e a política, publicou os candidatos do commit `8620214da767ca8ced3af33d3e8fa913bc548bd8` e implantou `usiedu-api@sha256:f7964947f31fc338b7244335dd8851e65ff4e07382e95b3b20f319d607126303` e `usiedu-frontend@sha256:152fbad038f3defc0965102352e6eb73037dd1e20e3085539d221c58b692c9a3`. O smoke público retornou `{"status":"ok","version":"0.2.0","cache_hits":0,"cache_misses":0}`.
   - [x] Commit: `ci(entrega): automatizar promocao azure`.
 - [ ] **T03.5 — Exercitar rollback**
   - [ ] Escrever e executar runbook com revisão/digest anterior conhecido.
@@ -140,9 +140,9 @@ de `/health` e do fluxo autenticado e registrar resultado.
 |---|---|---|
 | G0 — Baseline | Concluído | Workflows, Bicep e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Trivy, OIDC, aprovação e rollback; a execução hospedada e o experimento operacional permanecem separados. |
-| G2 — Implementação | Em andamento | T03.1–T03.3 concluídas; T03.4 está versionada e T03.5 permanece. |
-| G3 — Verificação | Em andamento | Limites, E2E, política e contrato da promoção possuem autoensaios; o scan real bloqueou antes do push e requer repetição sem cache antes da promoção. |
-| G4 — Operação | Não iniciado | Deploy aprovado e rollback exercitado em Azure. |
+| G2 — Implementação | Concluído | T03.1–T03.4 estão concluídas; T03.5 permanece. |
+| G3 — Verificação | Concluído para T03.4 | Limites, E2E, política e contrato possuem autoensaios; o scan real e o smoke público da promoção `31624834815` passaram. |
+| G4 — Operação | Em andamento | Deploy aprovado por digest concluído; rollback exercitado permanece pendente em T03.5. |
 | G5 — Encerramento | Não iniciado | Checklists legados reconciliados com evidência. |
 
 Rollback deve reutilizar imagem por digest/revisão anterior, não reconstruir ou
@@ -152,7 +152,7 @@ ser necessárias, exigem plano próprio de compatibilidade e restauração.
 ### Definition of Done
 
 - [ ] Testes de integração e E2E aprovados no nível definido.
-- [ ] Imagens imutáveis, Trivy, exceções temporárias auditáveis e aprovação pública operando sem expor segredos ou credenciais Azure persistentes.
+- [x] Imagens imutáveis, Trivy, exceções temporárias auditáveis e aprovação pública operando sem expor segredos ou credenciais Azure persistentes.
 - [ ] Deploy e rollback Azure reproduzidos com evidência de revisão/digest.
 - [ ] CI, runbook e documentação atualizados.
 - [ ] Checklists legados mudaram apenas no commit da evidência correspondente.

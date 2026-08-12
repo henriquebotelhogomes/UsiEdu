@@ -104,7 +104,8 @@ def test_deploy_records_previous_and_new_digest_references() -> None:
 def test_documentation_records_hosted_execution_gate() -> None:
     document = DOC_PATH.read_text(encoding="utf-8")
 
-    assert "- [~] **T03.4 — Criar pipeline de promoção**" in document
+    assert "- [x] **T03.4 — Criar pipeline de promoção**" in document
     assert "identidade OIDC e Environment `production` configurados" in document
     assert "o scan usa Trivy `v0.73.0` com cache de análise em memória" in document
+    assert "31624834815" in document
     assert "repo:henriquebotelhogomes@43866427/UsiEdu@1324468469:environment:production" in document
