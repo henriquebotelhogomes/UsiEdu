@@ -1673,8 +1673,8 @@ bloqueou a promoção antes do push e o experimento de rollback permanece penden
 <tr>
 <td>Decisão provisória</td>
 <td>Trivy é o scanner; CRITICAL e HIGH com correção disponível bloqueiam. Exceção é versionada, justificada, tem dono e vence em no máximo 30 dias.</td>
-<td>Política <code>image-promotion-v1</code>, autoensaio sintético e scan real versionados; o cache de análise fica desabilitado para cada candidato.</td>
-<td>A execução hospedada bloqueou antes do push ao reportar versões antigas incompatíveis com o log de build; a repetição com análise sem cache é necessária antes de qualquer publicação.</td>
+<td>Política <code>image-promotion-v1</code>, autoensaio sintético e scan real versionados; o scan usa Trivy <code>v0.73.0</code> com cache de análise em memória, enquanto o banco de vulnerabilidades permanece atualizado.</td>
+<td>A execução hospedada bloqueou antes do push ao reportar versões antigas incompatíveis com o log de build; a repetição com análise efêmera é necessária antes de qualquer publicação.</td>
 </tr>
 <tr>
 <td>Gate explícito de execução</td>
@@ -1732,8 +1732,8 @@ de <code>/health</code> e do fluxo autenticado e registrar resultado.</p>
 <li>[x] Commit esperado: <code>docs(entrega): definir politica de imagens</code>.</li>
 <li>[~] <strong>T03.4 — Criar pipeline de promoção</strong></li>
 <li>[x] Configurar identidade OIDC federada de menor privilégio, tags por commit/digest e Environment <code>production</code>. <em>(O contrato versionado usa apenas variáveis e <code>id-token: write</code>; a proteção disponível no repositório foi aplicada sem segredo persistente.)</em></li>
-<li>[~] Teste: contrato local garante execução manual em <code>main</code>, gate <code>production</code>, scan e política antes do push, com cache do Trivy desabilitado para cada candidato.</li>
-<li>[~] Evidência: a execução hospedada bloqueou a promoção antes do push; o build registrou <code>msgpack 1.2.1</code> e <code>setuptools 84.0.0</code>, enquanto o relatório Trivy listou versões antigas. A nova execução sem cache deverá confirmar o relatório da imagem recém-construída.</li>
+<li>[~] Teste: contrato local garante execução manual em <code>main</code>, gate <code>production</code>, scan e política antes do push, com cache de análise em memória para cada candidato.</li>
+<li>[~] Evidência: a execução hospedada bloqueou a promoção antes do push; o build registrou <code>msgpack 1.2.1</code> e <code>setuptools 84.0.0</code>, enquanto o relatório Trivy listou versões antigas. A nova execução usa Trivy <code>v0.73.0</code> e análise efêmera para confirmar o relatório da imagem recém-construída.</li>
 <li>[x] Commit: <code>ci(entrega): automatizar promocao azure</code>.</li>
 <li>[ ] <strong>T03.5 — Exercitar rollback</strong></li>
 <li>[ ] Escrever e executar runbook com revisão/digest anterior conhecido.</li>
