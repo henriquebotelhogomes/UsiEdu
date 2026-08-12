@@ -50,9 +50,15 @@ def test_candidate_is_sha_tagged_scanned_and_policy_gated_before_push() -> None:
     text, workflow = _workflow()
     steps = workflow["jobs"]["promote"]["steps"]
     step_names = [step.get("name") for step in steps]
+    scan_actions = {
+        step["uses"]
+        for step in steps
+        if step.get("name") in {"Scan API candidate", "Scan frontend candidate"}
+    }
 
     assert "${{ github.sha }}" in text
     assert ":latest" not in text.lower()
+    assert scan_actions == {"aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25"}
     assert "Scan API candidate" in step_names
     assert "Scan frontend candidate" in step_names
     assert "Enforce image policy" in step_names
