@@ -27,6 +27,9 @@ jobs:
       - name: Checkout approved commit
         uses: actions/checkout@v4
 
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
       - name: Login to Azure with OIDC
         uses: azure/login@v2
         with:
@@ -41,9 +44,6 @@ jobs:
         run: |
           docker build --file Dockerfile.api --tag "$API_TAG" .
           docker build --file Dockerfile.frontend --tag "$FRONTEND_TAG" .
-
-      - name: Prepare evidence directory
-        run: mkdir -p artifacts
 
       - name: Scan API candidate
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
