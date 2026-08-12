@@ -31,6 +31,33 @@ jobs:
       - name: Pytest
         run: pytest -v --tb=short
 
+      - name: Exercise image promotion policy
+        run: |
+          mkdir -p artifacts
+          python -m src.delivery.image_policy \
+            --scan tests/fixtures/trivy/clean.json \
+            --policy src/delivery/image_policy_v1.json \
+            --digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+            --date 2026-08-12 \
+            --output artifacts/image-policy-pass.json
+          if python -m src.delivery.image_policy \
+            --scan tests/fixtures/trivy/high-fixable.json \
+            --policy src/delivery/image_policy_v1.json \
+            --digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+            --date 2026-08-12 \
+            --output artifacts/image-policy-block.json; then
+            echo "Expected the fixable HIGH fixture to block promotion"
+            exit 1
+          fi
+
+      - name: Upload image policy self-test
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-policy-self-test
+          path: artifacts/image-policy-*.json
+          if-no-files-found: error
+
       - name: Exercise RAG regression gate
         run: |
           python -m src.evaluation.regression_gate \

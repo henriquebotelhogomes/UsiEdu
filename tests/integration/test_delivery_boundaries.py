@@ -194,7 +194,7 @@ def test_qdrant_boundary_success_and_unavailability_are_distinct(
 def test_documentation_preserves_t03_1_after_later_microtasks() -> None:
     document = DELIVERY_DOC.read_text(encoding="utf-8")
 
-    assert "T03.1–T03.2 concluídas; T03.3–T03.5 não iniciadas" in document
     assert "- [x] **T03.1 — Cobrir limites de integração**" in document
+    assert "- [ ] **T03.1 — Cobrir limites de integração**" not in document
     assert "`tests/integration/test_delivery_boundaries.py`" in document
     assert "- [x] **T03.2 — Automatizar fluxo E2E**" in document

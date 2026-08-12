@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T03.1–T03.2 concluídas; T03.3–T03.5 não iniciadas |
+| Estado | Em andamento — T03.1–T03.3 concluídas; T03.4–T03.5 não iniciadas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/`, `.github/workflows/ci.yml`, `.github/workflows/docs.yml`, Dockerfiles e `docker-compose.yml` |
@@ -69,7 +69,7 @@ execução que exige acesso Azure.
 | Decisão tomada | Azure Container Apps, ACR e Bicep são a base vigente. | `infra/azure/`. | Reutilizar sem alterar topologia nesta iniciativa. |
 | Decisão tomada | API e Qdrant permanecem internos; frontend é a origem pública. | `main.bicep` e P0. | E2E deve usar a origem pública, não expor API. |
 | Decisão provisória | GitHub→Azure usa OIDC federado, menor privilégio e Environment `production` com aprovação manual; credencial Azure persistente não pode ser secret. | Revisar quando a identidade federada, o escopo RBAC e os aprovadores forem criados e validados. | T03.4 pode desenhar YAML/runbook sem segredo; para aplicar, para no acesso Azure e na criação da identidade. |
-| Decisão provisória | Trivy é o scanner; CRITICAL e HIGH com correção disponível bloqueiam. Exceção é versionada, justificada, tem dono e vence em no máximo 30 dias. | Revisar após o primeiro relatório real e a política de exceção aplicada. | T03.3 pode preparar política e casos de teste; scan/publicação reais aguardam runner e imagem autorizados. |
+| Decisão provisória | Trivy é o scanner; CRITICAL e HIGH com correção disponível bloqueiam. Exceção é versionada, justificada, tem dono e vence em no máximo 30 dias. | Política `image-promotion-v1` e autoensaio sintético versionados; revisar após o primeiro relatório real e a política de exceção aplicada. | Scan/publicação reais aguardam imagem candidata em T03.4; o autoensaio não é apresentado como scan de produção. |
 | Gate explícito de execução | `activeRevisionsMode: Single` é factual no Bicep, mas a reversão operacional só vale após experimento Azure. | Exige acesso Azure e uma revisão/digest anterior validada. | Antes de automatizar, escrever/executar runbook no modo Single, preservar digest e evidenciar retorno; T03.5 para nesse ponto sem acesso. |
 | Risco | Teste E2E consumir LLM, sofrer cold start ou rate limit. | API escala a zero e tem limites. | Usar ambiente/dados demo controlados e registrar custo/tempo. |
 | Risco | Tag mutável publicar código diferente do validado. | `v1` é default atual. | Promover somente digest produzido pelo candidato aprovado. |
@@ -102,11 +102,11 @@ de `/health` e do fluxo autenticado e registrar resultado.
   - [x] Teste: fluxo completo e mensagem de falha útil quando serviço dependente cair. *(O cenário cobre sucesso via SSE, avaliação positiva, cards/recentes e indisponibilidade 503 com fallback para `/chat`.)*
   - [x] Evidência: relatório E2E com URL/ambiente mascarados quando necessário. *(O job `frontend` publica `frontend-e2e-evidence`; o relatório não contém corpo, senha ou JWT.)*
   - [x] Commit esperado: `test(entrega): adicionar fluxo e2e`.
-- [ ] **T03.3 — Definir política de imagem**
-  - [ ] Registrar Trivy, bloqueio CRITICAL/HIGH com correção disponível e exceção versionada, justificada, com dono e validade máxima de 30 dias.
-  - [ ] Teste: imagem com achado de teste falha a política.
-  - [ ] Evidência: decisão, relatório de scan e retenção de digest.
-  - [ ] Commit esperado: `docs(entrega): definir politica de imagens`.
+- [x] **T03.3 — Definir política de imagem**
+  - [x] Registrar Trivy, bloqueio CRITICAL/HIGH com correção disponível e exceção versionada, justificada, com dono e validade máxima de 30 dias. *(`src/delivery/image_policy_v1.json` fixa a política e inicia sem exceções.)*
+  - [x] Teste: imagem com achado de teste falha a política. *(`tests/unit/test_image_policy.py` cobre HIGH/CRITICAL corrigível, achado sem correção, exceções e digest inválido.)*
+  - [x] Evidência: decisão, relatório de scan e retenção de digest. *(O CI publica os relatórios sintéticos pass/block com digest imutável; o primeiro relatório Trivy de imagem real permanece para T03.4.)*
+  - [x] Commit esperado: `docs(entrega): definir politica de imagens`.
 - [ ] **T03.4 — Criar pipeline de promoção**
   - [ ] Configurar, após acesso Azure, identidade OIDC federada de menor privilégio, tags por commit/digest e Environment `production` com aprovação manual.
   - [ ] Teste: dry-run/candidato bloqueado sem aprovação e deploy autorizado em ambiente definido.
@@ -136,8 +136,8 @@ de `/health` e do fluxo autenticado e registrar resultado.
 |---|---|---|
 | G0 — Baseline | Concluído | Workflows, Bicep e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Trivy, OIDC, aprovação e rollback; acesso Azure bloqueia apenas aplicação/experimento dependente. |
-| G2 — Implementação | Em andamento | T03.1–T03.2 concluídas; T03.3–T03.5 permanecem. |
-| G3 — Verificação | Em andamento | Limites e E2E local possuem testes; scan, promoção e execução pública permanecem. |
+| G2 — Implementação | Em andamento | T03.1–T03.3 concluídas; T03.4–T03.5 permanecem. |
+| G3 — Verificação | Em andamento | Limites, E2E e política de imagem possuem autoensaios; scan real, promoção e execução pública permanecem. |
 | G4 — Operação | Não iniciado | Deploy aprovado e rollback exercitado em Azure. |
 | G5 — Encerramento | Não iniciado | Checklists legados reconciliados com evidência. |
 

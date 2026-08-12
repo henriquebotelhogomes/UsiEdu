@@ -1,0 +1,10 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "usiedu-api",
+  "Results": [
+    {
+      "Target": "python",
+      "Vulnerabilities": []
+    }
+  ]
+}
