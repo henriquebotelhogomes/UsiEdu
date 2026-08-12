@@ -1314,7 +1314,7 @@
 <tbody>
 <tr>
 <td>Estado</td>
-<td>Ativo — decisões provisórias, sem implementação</td>
+<td>Ativo — decisões provisórias; contrato de avaliação T02.3 implementado, sem mudança de runtime</td>
 </tr>
 <tr>
 <td>Escopo</td>
@@ -1349,27 +1349,33 @@ autorizada, fato jurídico ou medição inexistente.</p>
 <tbody>
 <tr>
 <td>RAG — recorte</td>
-<td><code>tool</code> fica fora do agregado RAG respondível: sua saída é determinística e deve validar valor, autorização e ausência de recuperação indevida. <code>composta</code> entra somente pelas subperguntas recuperáveis e recebe sub-relatório por subpergunta. A futura versão do dataset registra <code>id</code>, <code>categoria</code>, <code>requires_retrieval</code> e expectativa; o agregado é a média simples dessas subperguntas. Isso evita atribuir qualidade RAG a operação determinística sem esconder a parte recuperada.</td>
+<td><code>tool</code> fica fora do agregado RAG respondível: sua saída é determinística e deve validar valor, autorização e ausência de recuperação indevida. <code>composta</code> entra somente pelas subperguntas recuperáveis e recebe sub-relatório por subpergunta. O contrato versionado registra <code>id</code>, <code>categoria</code>, <code>requires_retrieval</code> e expectativa; o agregado é a média simples dessas subperguntas. Isso evita atribuir qualidade RAG a operação determinística sem esconder a parte recuperada.</td>
 <td>Rever se taxonomia, roteamento ou dataset versionado mudar.</td>
-<td>02: T02.3 pode documentar campos/agregadores e testes; q008 fica fora, q023 contribui só pela norma e q030 pelas duas recuperações. Não muda runtime nesta etapa.</td>
+<td>02: contrato <code>src/evaluation/recortes_avaliacao_v1.json</code>; q008 fica fora, q023 contribui só pela norma e q030 pelas duas recuperações. Não muda runtime nesta etapa.</td>
 </tr>
 <tr>
 <td>RAG — recusas</td>
 <td><code>fora_de_escopo</code> mede taxa de redirecionamento correto para o escopo UsiEdu, com zero chamada de RAG/agentes. <code>sem_resposta</code> mede recusa honesta e ausência de fonte inventada. O racional é não premiar uma resposta RAG que não deveria ocorrer.</td>
 <td>Rever ao alterar RF-10/RF-14, guardrails ou exemplos de fronteira.</td>
-<td>02 e 06: relatórios separados e casos de teste podem ser preparados; não contam no agregado RAG.</td>
+<td>02 e 06: assertivas e relatórios separados estão definidos no contrato T02.3; não contam no agregado RAG e não alteram o runtime.</td>
+</tr>
+<tr>
+<td>RAG — regressão</td>
+<td>O gate v1 não aceita queda em nenhuma das quatro métricas nem nova falha determinística nas categorias especiais. Baseline e candidato devem ter exatamente os mesmos hashes de dataset, manifest e contrato, a mesma taxonomia, mecanismo e ordem de subperguntas. Fixtures de autoensaio usam <code>evidence_kind=gate_self_test</code> e não podem ser apresentados como avaliação real.</td>
+<td>Rever após o primeiro candidato real ou aprovação explícita de tolerância estatística.</td>
+<td>02: T02.4 implementa comparação local/CI e artefato reproduzível sem alterar o agregado histórico.</td>
 </tr>
 <tr>
 <td>Juiz</td>
-<td><code>kimi-k2.7-code</code>, configurado como modelo de agente no Bicep pelo provedor <code>opencode-go</code>, é o candidato provisório a juiz forte; DeepSeek V4 Flash é o comparador econômico. O repositório não configura hoje um juiz independente e não se cria credencial ou provedor novo.</td>
-<td>Rever se o provedor/modelo não for suportado, não permitir configuração comparável ou a evidência mostrar inadequação.</td>
-<td>02: T02.5 pode preparar configuração explícita e proveniência do juiz, além da validação de paridade.</td>
+<td>Manter provisoriamente <code>deepseek-v4-flash</code> como juiz econômico. Na comparação de 17 subperguntas × 3 repetições, <code>kimi-k2.7-code</code> atribuiu scores maiores em faithfulness e answer relevancy, mas custou mais e apresentou maior amplitude nessas métricas. Sem calibração humana, score maior não prova maior correção e não justifica a troca.</td>
+<td>Rever após calibração humana amostral, mudança de preço/modelo ou novo protocolo.</td>
+<td>02: evidência completa em <code>src/evaluation/judge_comparison/2026-08-11/</code>; custo equivalente estimado US$ 0,319520.</td>
 </tr>
 <tr>
 <td>Juiz — protocolo</td>
-<td>Comparar no mesmo dataset, corpus/manifest, recorte, prompts e métricas; executar três repetições; usar temperatura 0 quando o provedor/modelo suportar o parâmetro; registrar versão, parâmetros, duração, divergência e custo observado/estimado. Interromper antes de exceder US$ 5 por execução comparativa completa.</td>
-<td>Rever após a primeira comparação ou mudança de dataset/modelo.</td>
-<td>02: a execução externa para em configuração explícita do juiz, credencial autorizada, acesso ao provedor e custo observável/estimável; isso não bloqueia T02.1–T02.4.</td>
+<td>Comparar no mesmo dataset, snapshot de manifest, recorte, respostas, prompt e métricas; executar três repetições; solicitar temperatura 0 quando suportada; registrar parâmetros, uso, divergência, estabilidade e custo estimado. O Console Go rejeitou temperatura 0 para ambos os modelos e exigiu temperatura efetiva 1, limitação preservada na configuração e no relatório.</td>
+<td>Rever se o provedor passar a aceitar temperatura 0 ou após calibração humana.</td>
+<td>02: T02.5 concluída dentro do teto de US$ 5, sem criar ou registrar segredo.</td>
 </tr>
 <tr>
 <td>Entrega — identidade</td>
@@ -1467,8 +1473,8 @@ autorizada, fato jurídico ou medição inexistente.</p>
 </thead>
 <tbody>
 <tr>
-<td>Credencial autorizada e acesso ao <code>opencode-go</code>, com custo observável/estimável</td>
-<td>Antes das chamadas externas comparativas de T02.5.</td>
+<td>Calibração humana dos juízes</td>
+<td>Antes de afirmar que scores maiores de um juiz representam maior correção ou trocar o juiz econômico por esse motivo.</td>
 </tr>
 <tr>
 <td>Fonte institucional autorizada</td>

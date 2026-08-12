@@ -1536,7 +1536,7 @@
 <tbody>
 <tr>
 <td>Estado</td>
-<td>Planejado — especificado, não iniciado</td>
+<td>Em andamento — T03.1–T03.3 concluídas; T03.4 implementada localmente; T03.5 não iniciada</td>
 </tr>
 <tr>
 <td>Prioridade</td>
@@ -1560,7 +1560,7 @@
 </tr>
 <tr>
 <td>Atualizado em</td>
-<td>2026-08-11</td>
+<td>2026-08-12</td>
 </tr>
 </tbody>
 </table>
@@ -1580,8 +1580,8 @@ mas não constituiu um procedimento de rollback testado.</p>
 ter imagens identificadas por commit imutável, testes de integração e E2E
 definidos, aprovação explícita antes do ambiente público e procedimento
 verificado de retorno à revisão anterior. A política provisória usa OIDC
-federado, GitHub Environment <code>production</code> e Trivy; permanece pendente somente a
-execução que exige acesso Azure.</p>
+federado, GitHub Environment <code>production</code> e Trivy; permanecem pendentes a
+execução hospedada e o experimento de rollback.</p>
 <h2 id="3-escopo-e-nao-escopo">3. Escopo e não escopo<a class="headerlink" href="#3-escopo-e-nao-escopo" title="Permanent link">&para;</a></h2>
 <h3 id="escopo">Escopo<a class="headerlink" href="#escopo" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1665,22 +1665,22 @@ execução que exige acesso Azure.</p>
 <td>E2E deve usar a origem pública, não expor API.</td>
 </tr>
 <tr>
-<td>Decisão provisória</td>
+<td>Decisão aplicada</td>
 <td>GitHub→Azure usa OIDC federado, menor privilégio e Environment <code>production</code> com aprovação manual; credencial Azure persistente não pode ser secret.</td>
-<td>Revisar quando a identidade federada, o escopo RBAC e os aprovadores forem criados e validados.</td>
-<td>T03.4 pode desenhar YAML/runbook sem segredo; para aplicar, para no acesso Azure e na criação da identidade.</td>
+<td>Aplicação Entra <code>usiedu-github-production</code>, subject <code>repo:henriquebotelhogomes/UsiEdu:environment:production</code> e aprovador do repositório.</td>
+<td><code>AcrPush</code> está limitado a <code>usieduacr650206</code>; <code>Container Apps Contributor</code>, limitado individualmente a <code>usiedu-api</code> e <code>usiedu-frontend</code>.</td>
 </tr>
 <tr>
 <td>Decisão provisória</td>
 <td>Trivy é o scanner; CRITICAL e HIGH com correção disponível bloqueiam. Exceção é versionada, justificada, tem dono e vence em no máximo 30 dias.</td>
-<td>Revisar após o primeiro relatório real e a política de exceção aplicada.</td>
-<td>T03.3 pode preparar política e casos de teste; scan/publicação reais aguardam runner e imagem autorizados.</td>
+<td>Política <code>image-promotion-v1</code> e autoensaio sintético versionados; revisar após o primeiro relatório real e a política de exceção aplicada.</td>
+<td>Scan/publicação reais aguardam a primeira execução hospedada de T03.4; o autoensaio não é apresentado como scan de produção.</td>
 </tr>
 <tr>
 <td>Gate explícito de execução</td>
 <td><code>activeRevisionsMode: Single</code> é factual no Bicep, mas a reversão operacional só vale após experimento Azure.</td>
-<td>Exige acesso Azure e uma revisão/digest anterior validada.</td>
-<td>Antes de automatizar, escrever/executar runbook no modo Single, preservar digest e evidenciar retorno; T03.5 para nesse ponto sem acesso.</td>
+<td>Exige uma revisão/digest anterior validada e uma janela controlada.</td>
+<td>Antes de automatizar, escrever/executar runbook no modo Single, preservar digest e evidenciar retorno em T03.5.</td>
 </tr>
 <tr>
 <td>Risco</td>
@@ -1698,40 +1698,42 @@ execução que exige acesso Azure.</p>
 </table>
 <h2 id="6-plano-tecnico">6. Plano técnico<a class="headerlink" href="#6-plano-tecnico" title="Permanent link">&para;</a></h2>
 <p>Os testes devem partir dos contratos REST documentados: login, <code>/chat</code> ou
-<code>/chat/stream</code> e <code>/health</code>. Antes de automatizar feedback ou <code>/insights</code>,
-T03.1/T03.2 devem reconciliar seus contratos com <code>docs/09-contratos-tecnicos.md</code>
-ou registrar uma especificação complementar; não devem alegar que
-<code>/feedback</code>, <code>/feedback/stats</code> ou <code>/feedback/recent</code> já são contratos técnicos
-atuais. O banco de teste não pode usar o PostgreSQL público nem dados reais;
-Qdrant deve ser isolado. O teste frontend/proxy deve verificar que SSE não
-recebe buffering, sem depender de LLM externo.</p>
-<p>O workflow futuro deverá separar validação de build, scan, publicação e
+<code>/chat/stream</code> e <code>/health</code>. antes de automatizar feedback ou <code>/insights</code>. T03.2 reconciliou
+<code>/feedback</code>, <code>/feedback/stats</code> e <code>/feedback/recent</code> em
+<code>docs/09-contratos-tecnicos.md</code>. O banco de teste não pode usar o PostgreSQL
+público nem dados reais; Qdrant deve ser isolado. O teste frontend/proxy deve
+verificar que SSE não recebe buffering, sem depender de LLM externo.</p>
+<p>O workflow <code>.github/workflows/promote-azure.yml</code> separa build, scan, política,
+publicação e
 produção. O deploy recebe tag/digest imutável, nunca segredo no YAML ou log,
 autentica por OIDC federado e usa Environment <code>production</code> com aprovação
-manual. O runbook no modo Single deve preservar e identificar a
+manual. A identidade OIDC e Environment <code>production</code> configurados dão suporte
+ao contrato, mas a execução hospedada depende de push autorizado para <code>main</code>;
+ela ainda não foi alegada nem exercitada. O runbook no modo Single deve
+preservar e identificar a
 revisão/digest anterior validada, retornar a ela sem reconstrução, fazer smoke
 de <code>/health</code> e do fluxo autenticado e registrar resultado.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] <strong>T03.1 — Cobrir limites de integração</strong></li>
-<li>[ ] Criar fixtures isoladas para nginx/API, PostgreSQL e Qdrant.</li>
-<li>[ ] Teste: sucesso e indisponibilidade de cada limite, incluindo proxy SSE.</li>
-<li>[ ] Evidência: saída do teste e contratos exercitados.</li>
-<li>[ ] Commit esperado: <code>test(entrega): cobrir limites de integracao</code>.</li>
-<li>[ ] <strong>T03.2 — Automatizar fluxo E2E</strong></li>
-<li>[ ] Implementar cenário demo login → chat → feedback → insights sem registrar token/senha.</li>
-<li>[ ] Teste: fluxo completo e mensagem de falha útil quando serviço dependente cair.</li>
-<li>[ ] Evidência: relatório E2E com URL/ambiente mascarados quando necessário.</li>
-<li>[ ] Commit esperado: <code>test(entrega): adicionar fluxo e2e</code>.</li>
-<li>[ ] <strong>T03.3 — Definir política de imagem</strong></li>
-<li>[ ] Registrar Trivy, bloqueio CRITICAL/HIGH com correção disponível e exceção versionada, justificada, com dono e validade máxima de 30 dias.</li>
-<li>[ ] Teste: imagem com achado de teste falha a política.</li>
-<li>[ ] Evidência: decisão, relatório de scan e retenção de digest.</li>
-<li>[ ] Commit esperado: <code>docs(entrega): definir politica de imagens</code>.</li>
-<li>[ ] <strong>T03.4 — Criar pipeline de promoção</strong></li>
-<li>[ ] Configurar, após acesso Azure, identidade OIDC federada de menor privilégio, tags por commit/digest e Environment <code>production</code> com aprovação manual.</li>
-<li>[ ] Teste: dry-run/candidato bloqueado sem aprovação e deploy autorizado em ambiente definido.</li>
-<li>[ ] Evidência: logs sem segredos, SHA/digest e revisão Azure.</li>
+<li>[x] <strong>T03.1 — Cobrir limites de integração</strong></li>
+<li>[x] Criar fixtures isoladas para nginx/API, PostgreSQL e Qdrant. <em>(<code>tests/integration/test_delivery_boundaries.py</code> usa FastAPI/LLM fake, PostgreSQL mockado no limite do driver e Qdrant local em memória.)</em></li>
+<li>[x] Teste: sucesso e indisponibilidade de cada limite, incluindo proxy SSE. <em>(O contrato nginx exige proxy HTTP/1.1, <code>proxy_buffering off</code>, cache desativado e streaming em chunks; falhas de API, PostgreSQL e Qdrant permanecem distinguíveis.)</em></li>
+<li>[x] Evidência: saída do teste e contratos exercitados. <em>(32 testes direcionados aprovados, incluindo os 5 limites de integração e regressão completa do retriever.)</em></li>
+<li>[x] Commit esperado: <code>test(entrega): cobrir limites de integracao</code>.</li>
+<li>[x] <strong>T03.2 — Automatizar fluxo E2E</strong></li>
+<li>[x] Implementar cenário demo login → chat → feedback → insights sem registrar token/senha. <em>(<code>frontend/src/__tests__/demo-flow.e2e.test.tsx</code> percorre a UI com serviços determinísticos e exporta apenas método/rota.)</em></li>
+<li>[x] Teste: fluxo completo e mensagem de falha útil quando serviço dependente cair. <em>(O cenário cobre sucesso via SSE, avaliação positiva, cards/recentes e indisponibilidade 503 com fallback para <code>/chat</code>.)</em></li>
+<li>[x] Evidência: relatório E2E com URL/ambiente mascarados quando necessário. <em>(O job <code>frontend</code> publica <code>frontend-e2e-evidence</code>; o relatório não contém corpo, senha ou JWT.)</em></li>
+<li>[x] Commit esperado: <code>test(entrega): adicionar fluxo e2e</code>.</li>
+<li>[x] <strong>T03.3 — Definir política de imagem</strong></li>
+<li>[x] Registrar Trivy, bloqueio CRITICAL/HIGH com correção disponível e exceção versionada, justificada, com dono e validade máxima de 30 dias. <em>(<code>src/delivery/image_policy_v1.json</code> fixa a política e inicia sem exceções.)</em></li>
+<li>[x] Teste: imagem com achado de teste falha a política. <em>(<code>tests/unit/test_image_policy.py</code> cobre HIGH/CRITICAL corrigível, achado sem correção, exceções e digest inválido.)</em></li>
+<li>[x] Evidência: decisão, relatório de scan e retenção de digest. <em>(O CI publica os relatórios sintéticos pass/block com digest imutável; o primeiro relatório Trivy de imagem real permanece para T03.4.)</em></li>
+<li>[x] Commit esperado: <code>docs(entrega): definir politica de imagens</code>.</li>
+<li>[~] <strong>T03.4 — Criar pipeline de promoção</strong></li>
+<li>[x] Configurar identidade OIDC federada de menor privilégio, tags por commit/digest e Environment <code>production</code>. <em>(O contrato versionado usa apenas variáveis e <code>id-token: write</code>; a proteção disponível no repositório foi aplicada sem segredo persistente.)</em></li>
+<li>[~] Teste: contrato local garante execução manual em <code>main</code>, gate <code>production</code>, scan e política antes do push; o deploy autorizado hospedado depende de push, que não foi solicitado.</li>
+<li>[~] Evidência: o workflow gera artefato com SHA, digests e referências anteriores; logs e revisão Azure reais dependem da primeira execução hospedada.</li>
 <li>[ ] Commit esperado: <code>ci(entrega): automatizar promocao azure</code>.</li>
 <li>[ ] <strong>T03.5 — Exercitar rollback</strong></li>
 <li>[ ] Escrever e executar runbook com revisão/digest anterior conhecido.</li>
@@ -1765,8 +1767,8 @@ de <code>/health</code> e do fluxo autenticado e registrar resultado.</p>
 <tr>
 <td>E2E</td>
 <td>Login, chat, feedback e insights.</td>
-<td>Sim, após T03.2</td>
-<td>Runner definido no repositório, com dados demo.</td>
+<td>Sim</td>
+<td>Vitest <code>demo-flow.e2e.test.tsx</code>, dados demo e serviços fake; relatório sanitizado no CI.</td>
 </tr>
 <tr>
 <td>CI</td>
@@ -1801,17 +1803,17 @@ de <code>/health</code> e do fluxo autenticado e registrar resultado.</p>
 <tr>
 <td>G1 — Especificação</td>
 <td>Concluído</td>
-<td>Este documento define Trivy, OIDC, aprovação e rollback; acesso Azure bloqueia apenas aplicação/experimento dependente.</td>
+<td>Este documento define Trivy, OIDC, aprovação e rollback; a execução hospedada e o experimento operacional permanecem separados.</td>
 </tr>
 <tr>
 <td>G2 — Implementação</td>
-<td>Não iniciado</td>
-<td>Commits T03.1–T03.5.</td>
+<td>Em andamento</td>
+<td>T03.1–T03.3 concluídas; T03.4 implementada localmente e T03.5 permanece.</td>
 </tr>
 <tr>
 <td>G3 — Verificação</td>
-<td>Não iniciado</td>
-<td>Testes, scan e artefatos de pipeline verdes.</td>
+<td>Em andamento</td>
+<td>Limites, E2E, política e contrato da promoção possuem autoensaios; scan real, promoção e execução pública permanecem.</td>
 </tr>
 <tr>
 <td>G4 — Operação</td>

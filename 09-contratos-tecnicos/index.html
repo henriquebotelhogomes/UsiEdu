@@ -1601,6 +1601,24 @@ interfaces; o PRD prevalece para comportamento.</p>
 <td>Retorna histórico da sessão (T7.4): 404 se inexistente, 403 se pertence a outro usuário</td>
 </tr>
 <tr>
+<td>POST</td>
+<td><code>/feedback</code></td>
+<td>sim</td>
+<td>Registra avaliação <code>up</code>/<code>down</code> de uma resposta</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/feedback/stats</code></td>
+<td>sim</td>
+<td>Retorna totais e taxa agregada de satisfação</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/feedback/recent?limit={1..100}</code></td>
+<td>sim</td>
+<td>Retorna os feedbacks mais recentes sem expor <code>message_id</code></td>
+</tr>
+<tr>
 <td>GET</td>
 <td><code>/health</code></td>
 <td>não</td>
@@ -1653,6 +1671,38 @@ interfaces; o PRD prevalece para comportamento.</p>
 <span class="k">class</span><span class="w"> </span><span class="nc">ChatHistoryResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatHistoryMessage</span><span class="p">]</span>  <span class="c1"># agentes/fontes omitidos: só texto</span>
+
+
+<span class="c1"># feedback</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FeedbackRequest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">message_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># run_id recebido no evento SSE meta</span>
+    <span class="n">rating</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;up&quot;</span><span class="p">,</span> <span class="s2">&quot;down&quot;</span><span class="p">]</span>
+    <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># máximo de 500 caracteres</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FeedbackResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ok&quot;</span>
+    <span class="n">feedback_id</span><span class="p">:</span> <span class="nb">int</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FeedbackStats</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">total</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">up</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">down</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">satisfaction</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># up / total em [0, 1]; zero quando total = 0</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FeedbackRecentItem</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">rating</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;up&quot;</span><span class="p">,</span> <span class="s2">&quot;down&quot;</span><span class="p">]</span>
+    <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">profile</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># ISO 8601</span>
+    <span class="n">message_ref</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># primeiros 8 hex de sha256(message_id)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FeedbackRecentResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FeedbackRecentItem</span><span class="p">]</span>  <span class="c1"># mais recentes primeiro</span>
 </code></pre></div>
 <h3 id="221-eventos-sse-do-post-chatstream-t73">2.2.1 Eventos SSE do <code>POST /chat/stream</code> (T7.3)<a class="headerlink" href="#221-eventos-sse-do-post-chatstream-t73" title="Permanent link">&para;</a></h3>
 <p>Linhas <code>data: {json}\n\n</code> com o tipo no campo <code>event</code>:</p>
