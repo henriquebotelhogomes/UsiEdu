@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T03.1 concluída; T03.2–T03.5 não iniciadas |
+| Estado | Em andamento — T03.1–T03.2 concluídas; T03.3–T03.5 não iniciadas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/`, `.github/workflows/ci.yml`, `.github/workflows/docs.yml`, Dockerfiles e `docker-compose.yml` |
@@ -77,13 +77,11 @@ execução que exige acesso Azure.
 ## 6. Plano técnico
 
 Os testes devem partir dos contratos REST documentados: login, `/chat` ou
-`/chat/stream` e `/health`. Antes de automatizar feedback ou `/insights`,
-T03.1/T03.2 devem reconciliar seus contratos com `docs/09-contratos-tecnicos.md`
-ou registrar uma especificação complementar; não devem alegar que
-`/feedback`, `/feedback/stats` ou `/feedback/recent` já são contratos técnicos
-atuais. O banco de teste não pode usar o PostgreSQL público nem dados reais;
-Qdrant deve ser isolado. O teste frontend/proxy deve verificar que SSE não
-recebe buffering, sem depender de LLM externo.
+`/chat/stream` e `/health`. antes de automatizar feedback ou `/insights`. T03.2 reconciliou
+`/feedback`, `/feedback/stats` e `/feedback/recent` em
+`docs/09-contratos-tecnicos.md`. O banco de teste não pode usar o PostgreSQL
+público nem dados reais; Qdrant deve ser isolado. O teste frontend/proxy deve
+verificar que SSE não recebe buffering, sem depender de LLM externo.
 
 O workflow futuro deverá separar validação de build, scan, publicação e
 produção. O deploy recebe tag/digest imutável, nunca segredo no YAML ou log,
@@ -99,11 +97,11 @@ de `/health` e do fluxo autenticado e registrar resultado.
   - [x] Teste: sucesso e indisponibilidade de cada limite, incluindo proxy SSE. *(O contrato nginx exige proxy HTTP/1.1, `proxy_buffering off`, cache desativado e streaming em chunks; falhas de API, PostgreSQL e Qdrant permanecem distinguíveis.)*
   - [x] Evidência: saída do teste e contratos exercitados. *(32 testes direcionados aprovados, incluindo os 5 limites de integração e regressão completa do retriever.)*
   - [x] Commit esperado: `test(entrega): cobrir limites de integracao`.
-- [ ] **T03.2 — Automatizar fluxo E2E**
-  - [ ] Implementar cenário demo login → chat → feedback → insights sem registrar token/senha.
-  - [ ] Teste: fluxo completo e mensagem de falha útil quando serviço dependente cair.
-  - [ ] Evidência: relatório E2E com URL/ambiente mascarados quando necessário.
-  - [ ] Commit esperado: `test(entrega): adicionar fluxo e2e`.
+- [x] **T03.2 — Automatizar fluxo E2E**
+  - [x] Implementar cenário demo login → chat → feedback → insights sem registrar token/senha. *(`frontend/src/__tests__/demo-flow.e2e.test.tsx` percorre a UI com serviços determinísticos e exporta apenas método/rota.)*
+  - [x] Teste: fluxo completo e mensagem de falha útil quando serviço dependente cair. *(O cenário cobre sucesso via SSE, avaliação positiva, cards/recentes e indisponibilidade 503 com fallback para `/chat`.)*
+  - [x] Evidência: relatório E2E com URL/ambiente mascarados quando necessário. *(O job `frontend` publica `frontend-e2e-evidence`; o relatório não contém corpo, senha ou JWT.)*
+  - [x] Commit esperado: `test(entrega): adicionar fluxo e2e`.
 - [ ] **T03.3 — Definir política de imagem**
   - [ ] Registrar Trivy, bloqueio CRITICAL/HIGH com correção disponível e exceção versionada, justificada, com dono e validade máxima de 30 dias.
   - [ ] Teste: imagem com achado de teste falha a política.
@@ -126,7 +124,7 @@ de `/health` e do fluxo autenticado e registrar resultado.
 |---|---|---|---|
 | Unitária | Validação de tag, seleção de digest e scripts de deploy. | Sim | Testes direcionados sem Azure. |
 | Integração | nginx/API, API/PostgreSQL, API/Qdrant e SSE. | Sim | Pytest/compose em serviços isolados. |
-| E2E | Login, chat, feedback e insights. | Sim, após T03.2 | Runner definido no repositório, com dados demo. |
+| E2E | Login, chat, feedback e insights. | Sim | Vitest `demo-flow.e2e.test.tsx`, dados demo e serviços fake; relatório sanitizado no CI. |
 | CI | Build, lint, pytest, E2E permitido, scan e promoção. | Sim | Artefatos do GitHub Actions. |
 | Azure | Candidato aprovado e rollback. | Manual/automatizado após decisão | Revisão, digest, `/health` e E2E público. |
 
@@ -138,8 +136,8 @@ de `/health` e do fluxo autenticado e registrar resultado.
 |---|---|---|
 | G0 — Baseline | Concluído | Workflows, Bicep e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Trivy, OIDC, aprovação e rollback; acesso Azure bloqueia apenas aplicação/experimento dependente. |
-| G2 — Implementação | Em andamento | T03.1 concluída; T03.2–T03.5 permanecem. |
-| G3 — Verificação | Em andamento | Limites nginx/API, PostgreSQL e Qdrant possuem testes locais; E2E, scan e pipeline permanecem. |
+| G2 — Implementação | Em andamento | T03.1–T03.2 concluídas; T03.3–T03.5 permanecem. |
+| G3 — Verificação | Em andamento | Limites e E2E local possuem testes; scan, promoção e execução pública permanecem. |
 | G4 — Operação | Não iniciado | Deploy aprovado e rollback exercitado em Azure. |
 | G5 — Encerramento | Não iniciado | Checklists legados reconciliados com evidência. |
 
