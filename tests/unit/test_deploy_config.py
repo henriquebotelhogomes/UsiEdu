@@ -114,6 +114,15 @@ def test_api_dockerfile_copies_package_before_installing_it() -> None:
     assert dockerfile.index("COPY src/ ./src/") < dockerfile.index("pip install --no-cache-dir .")
 
 
+def test_api_image_installs_trivy_remediated_python_dependencies() -> None:
+    """A imagem da API não deve reintroduzir achados HIGH corrigíveis do Trivy."""
+    dockerfile = Path("Dockerfile.api").read_text(encoding="utf-8")
+    pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
+
+    assert "setuptools>=78.1.1" in dockerfile
+    assert '"msgpack>=1.2.1"' in pyproject
+
+
 def test_hatchling_build_includes_src_package() -> None:
     """A imagem instala o projeto a partir de src/, não de um pacote inexistente usiedu/."""
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
