@@ -60,6 +60,11 @@ def test_candidate_is_sha_tagged_scanned_and_policy_gated_before_push() -> None:
     assert "${{ github.sha }}" in text
     assert ":latest" not in text.lower()
     assert scan_actions == {"aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25"}
+    assert all(
+        step["with"].get("cache") == "false"
+        for step in steps
+        if step.get("name") in {"Scan API candidate", "Scan frontend candidate"}
+    )
     assert "Scan API candidate" in step_names
     assert "Scan frontend candidate" in step_names
     assert "Enforce image policy" in step_names
@@ -89,10 +94,10 @@ def test_deploy_records_previous_and_new_digest_references() -> None:
     assert "if: always()" in text
 
 
-def test_documentation_does_not_claim_hosted_execution_before_push() -> None:
+def test_documentation_records_hosted_execution_gate() -> None:
     document = DOC_PATH.read_text(encoding="utf-8")
 
     assert "- [~] **T03.4 — Criar pipeline de promoção**" in document
     assert "identidade OIDC e Environment `production` configurados" in document
-    assert "execução hospedada depende de push" in document
+    assert "a execução hospedada bloqueou a promoção antes do push" in document
     assert "repo:henriquebotelhogomes@43866427/UsiEdu@1324468469:environment:production" in document

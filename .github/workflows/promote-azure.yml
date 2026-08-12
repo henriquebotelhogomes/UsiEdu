@@ -52,6 +52,7 @@ jobs:
           format: json
           output: artifacts/trivy-api.json
           exit-code: "0"
+          cache: "false"
 
       - name: Scan frontend candidate
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -60,6 +61,7 @@ jobs:
           format: json
           output: artifacts/trivy-frontend.json
           exit-code: "0"
+          cache: "false"
 
       - name: Enforce image policy
         shell: bash
