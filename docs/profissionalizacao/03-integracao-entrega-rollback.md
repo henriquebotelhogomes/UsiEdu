@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T03.1–T03.3 concluídas; T03.4 implementada localmente; T03.5 não iniciada |
+| Estado | Em andamento — T03.1–T03.3 concluídas; T03.4 teve execução hospedada bloqueada antes do push; T03.5 não iniciada |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/`, `.github/workflows/ci.yml`, `.github/workflows/docs.yml`, Dockerfiles e `docker-compose.yml` |
@@ -30,8 +30,8 @@ Disponibilizar uma entrega rastreável do commit ao Azure: cada candidato deve
 ter imagens identificadas por commit imutável, testes de integração e E2E
 definidos, aprovação explícita antes do ambiente público e procedimento
 verificado de retorno à revisão anterior. A política provisória usa OIDC
-federado, GitHub Environment `production` e Trivy; permanecem pendentes a
-execução hospedada e o experimento de rollback.
+federado, GitHub Environment `production` e Trivy; a execução hospedada
+bloqueou a promoção antes do push e o experimento de rollback permanece pendente.
 
 ## 3. Escopo e não escopo
 
@@ -69,7 +69,7 @@ execução hospedada e o experimento de rollback.
 | Decisão tomada | Azure Container Apps, ACR e Bicep são a base vigente. | `infra/azure/`. | Reutilizar sem alterar topologia nesta iniciativa. |
 | Decisão tomada | API e Qdrant permanecem internos; frontend é a origem pública. | `main.bicep` e P0. | E2E deve usar a origem pública, não expor API. |
 | Decisão aplicada | GitHub→Azure usa OIDC federado, menor privilégio e Environment `production` com aprovação manual; credencial Azure persistente não pode ser secret. | Aplicação Entra `usiedu-github-production`, subject com IDs estáveis `repo:henriquebotelhogomes@43866427/UsiEdu@1324468469:environment:production` e aprovador do repositório. | `AcrPush` está limitado a `usieduacr650206`; `Container Apps Contributor`, limitado individualmente a `usiedu-api` e `usiedu-frontend`. |
-| Decisão provisória | Trivy é o scanner; CRITICAL e HIGH com correção disponível bloqueiam. Exceção é versionada, justificada, tem dono e vence em no máximo 30 dias. | Política `image-promotion-v1` e autoensaio sintético versionados; revisar após o primeiro relatório real e a política de exceção aplicada. | Scan/publicação reais aguardam a primeira execução hospedada de T03.4; o autoensaio não é apresentado como scan de produção. |
+| Decisão provisória | Trivy é o scanner; CRITICAL e HIGH com correção disponível bloqueiam. Exceção é versionada, justificada, tem dono e vence em no máximo 30 dias. | Política `image-promotion-v1`, autoensaio sintético e scan real versionados; o cache de análise fica desabilitado para cada candidato. | A execução hospedada bloqueou antes do push ao reportar versões antigas incompatíveis com o log de build; a repetição com análise sem cache é necessária antes de qualquer publicação. |
 | Gate explícito de execução | `activeRevisionsMode: Single` é factual no Bicep, mas a reversão operacional só vale após experimento Azure. | Exige uma revisão/digest anterior validada e uma janela controlada. | Antes de automatizar, escrever/executar runbook no modo Single, preservar digest e evidenciar retorno em T03.5. |
 | Risco | Teste E2E consumir LLM, sofrer cold start ou rate limit. | API escala a zero e tem limites. | Usar ambiente/dados demo controlados e registrar custo/tempo. |
 | Risco | Tag mutável publicar código diferente do validado. | `v1` é default atual. | Promover somente digest produzido pelo candidato aprovado. |
@@ -113,9 +113,9 @@ de `/health` e do fluxo autenticado e registrar resultado.
   - [x] Commit esperado: `docs(entrega): definir politica de imagens`.
 - [~] **T03.4 — Criar pipeline de promoção**
   - [x] Configurar identidade OIDC federada de menor privilégio, tags por commit/digest e Environment `production`. *(O contrato versionado usa apenas variáveis e `id-token: write`; a proteção disponível no repositório foi aplicada sem segredo persistente.)*
-  - [~] Teste: contrato local garante execução manual em `main`, gate `production`, scan e política antes do push; o deploy autorizado hospedado depende de push, que não foi solicitado.
-  - [~] Evidência: o workflow gera artefato com SHA, digests e referências anteriores; logs e revisão Azure reais dependem da primeira execução hospedada.
-  - [ ] Commit esperado: `ci(entrega): automatizar promocao azure`.
+  - [~] Teste: contrato local garante execução manual em `main`, gate `production`, scan e política antes do push, com cache do Trivy desabilitado para cada candidato.
+  - [~] Evidência: a execução hospedada bloqueou a promoção antes do push; o build registrou `msgpack 1.2.1` e `setuptools 84.0.0`, enquanto o relatório Trivy listou versões antigas. A nova execução sem cache deverá confirmar o relatório da imagem recém-construída.
+  - [x] Commit: `ci(entrega): automatizar promocao azure`.
 - [ ] **T03.5 — Exercitar rollback**
   - [ ] Escrever e executar runbook com revisão/digest anterior conhecido.
   - [ ] Teste: retorno controlado seguido de health e fluxo E2E.
@@ -140,8 +140,8 @@ de `/health` e do fluxo autenticado e registrar resultado.
 |---|---|---|
 | G0 — Baseline | Concluído | Workflows, Bicep e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Trivy, OIDC, aprovação e rollback; a execução hospedada e o experimento operacional permanecem separados. |
-| G2 — Implementação | Em andamento | T03.1–T03.3 concluídas; T03.4 implementada localmente e T03.5 permanece. |
-| G3 — Verificação | Em andamento | Limites, E2E, política e contrato da promoção possuem autoensaios; scan real, promoção e execução pública permanecem. |
+| G2 — Implementação | Em andamento | T03.1–T03.3 concluídas; T03.4 está versionada e T03.5 permanece. |
+| G3 — Verificação | Em andamento | Limites, E2E, política e contrato da promoção possuem autoensaios; o scan real bloqueou antes do push e requer repetição sem cache antes da promoção. |
 | G4 — Operação | Não iniciado | Deploy aprovado e rollback exercitado em Azure. |
 | G5 — Encerramento | Não iniciado | Checklists legados reconciliados com evidência. |
 
