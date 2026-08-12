@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial; T02.3–T02.4 concluídas; T02.5 não iniciada |
+| Estado | Em andamento — T02.1/T02.1b concluídas; T02.2 parcial; T02.3–T02.5 concluídas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `src/evaluation/relatorio_ragas.md`, `src/evaluation/dataset.jsonl`, `knowledge_base/manifest.json` |
@@ -141,11 +141,12 @@ dataset, não altera o JSONL atual.
   - [x] Teste: regressão simulada falha e melhora dentro do limiar aprovado passa. *(`tests/unit/test_rag_regression_gate.py` também rejeita proveniência, recorte ou mecanismo divergentes.)*
   - [x] Evidência: artefato de CI com dataset, manifest, scores e decisão. *(O job `quality` publica `rag-regression-evidence`; os fixtures versionados são marcados `gate_self_test` e não alegam avaliação real.)*
   - [x] Commit esperado: `test(rag): adicionar gate de regressao`.
-- [ ] **T02.5 — Comparar juízes**
-  - [ ] Preparar e, com credencial autorizada, rodar DeepSeek V4 Flash versus Kimi K2.7 Code no mesmo dataset/recorte, três vezes, temperatura 0 quando suportada e até US$ 5 no total.
-  - [ ] Teste: validação de configuração impede comparar datasets ou recortes distintos.
-  - [ ] Evidência: tabela de comparação e decisão de manutenção/troca.
-  - [ ] Commit esperado: `docs(rag): comparar juizes de avaliacao`.
+- [x] **T02.5 — Comparar juízes**
+  - [x] Preparar e, com credencial autorizada, rodar DeepSeek V4 Flash versus Kimi K2.7 Code no mesmo dataset/recorte, três vezes, temperatura 0 quando suportada e até US$ 5 no total. *(O Console Go rejeitou `temperature=0` para ambos com `only 1 is allowed`; a execução registra temperatura solicitada 0 e temperatura efetiva 1.)*
+  - [x] Teste: validação de configuração impede comparar datasets ou recortes distintos. *(`tests/unit/test_judge_comparison.py` valida hashes, 17 subperguntas, 102 registros, schema, repetições e custo.)*
+  - [x] Evidência: tabela de comparação e decisão de manutenção/troca. *(`src/evaluation/judge_comparison/2026-08-11/`: custo equivalente estimado US$ 0,319520; Kimi pontuou mais alto em faithfulness e answer relevancy, mas custou mais e variou mais nessas métricas.)*
+  - [x] Decisão: manter provisoriamente o DeepSeek V4 Flash; sem calibração humana, score maior não prova maior correção e não justifica a troca pelo juiz mais caro.
+  - [x] Commit esperado: `docs(rag): comparar juizes de avaliacao`.
 
 ## 8. Estratégia de testes e validação
 
@@ -163,9 +164,9 @@ dataset, não altera o JSONL atual.
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
 | G0 — Baseline | Concluído | O histórico permanece como legado incompleto e imutável; o baseline auditável de 11/08/2026 é a nova referência, com commit, dataset, manifest, configuração, respostas, fontes, erros, duração, tokens, custo e hashes versionados. |
-| G1 — Especificação | Concluído | Este documento e a decisão provisória definem o recorte e o protocolo; o acesso autorizado ao provedor bloqueia apenas a execução externa de T02.5. |
-| G2 — Implementação | Em andamento | T02.1–T02.4 possuem commits e testes; T02.5 permanece. |
-| G3 — Verificação | Em andamento | Gate executável localmente e conectado ao CI; a primeira execução hospedada depende do próximo push/PR. |
+| G1 — Especificação | Concluído | Este documento e a decisão provisória definem recorte, gate e protocolo comparativo; a execução externa de T02.5 foi realizada com acesso autorizado. |
+| G2 — Implementação | Concluído | T02.1–T02.5 possuem implementação, evidência e testes; T02.2 permanece parcial apenas na cobertura factual. |
+| G3 — Verificação | Em andamento | Gate e comparação foram executados localmente; a primeira execução hospedada do gate depende do próximo push/PR. |
 | G4 — Operação | Não iniciado | Ingestão Azure e avaliação pós-deploy, se corpus mudar. |
 | G5 — Encerramento | Não iniciado | Checklists legados atualizados apenas com evidência. |
 

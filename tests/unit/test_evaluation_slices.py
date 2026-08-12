@@ -245,8 +245,9 @@ def test_documentation_preserves_t02_3_after_t02_4_completion() -> None:
         encoding="utf-8"
     )
 
-    assert "T02.2 parcial; T02.3–T02.4 concluídas; T02.5 não iniciada" in document
+    assert "T02.2 parcial; T02.3–T02.5 concluídas" in document
     assert "- [x] **T02.3 — Definir recortes" in document
     assert "`src/evaluation/recortes_avaliacao_v1.json`" in document
     assert "`src/evaluation/evidencia_recortes_t02_3.json`" in document
     assert "- [x] **T02.4 — Criar regressão automatizada**" in document
+    assert "- [x] **T02.5 — Comparar juízes**" in document

@@ -1,0 +1,141 @@
+{
+  "budget_usd": 5.0,
+  "comparison_id": "judge-comparison-2026-08-11",
+  "decision": "maintain_economic_pending_human_calibration",
+  "divergence": {
+    "answer_relevancy": {
+      "absolute": 0.14411764705882346,
+      "signed_strong_minus_economic": 0.14411764705882346
+    },
+    "context_precision": {
+      "absolute": 0.00392156862745098,
+      "signed_strong_minus_economic": 0.00392156862745098
+    },
+    "context_recall": {
+      "absolute": 0.009803921568627472,
+      "signed_strong_minus_economic": -0.009803921568627472
+    },
+    "faithfulness": {
+      "absolute": 0.20980392156862748,
+      "signed_strong_minus_economic": 0.20980392156862748
+    }
+  },
+  "estimated_cost_usd": 0.31951975,
+  "input_fingerprint": {
+    "dataset_git_blob_sha1": "67933038582591b4009f9b2aba1286bf85a4ada3",
+    "effective_temperature": 1,
+    "manifest_git_blob_sha1": "1f16ac3fb74603b3a96a510024a35ae64aa63306",
+    "prompt_version": "rubric-judge-v1",
+    "repetitions": 3,
+    "requested_temperature": 0,
+    "score_mechanism": "rubric_llm_judge_v1",
+    "slice_contract_git_blob_sha1": "3d4805ad67e6614dd5be4baab08aa4dd2d90370d",
+    "source_records_sha256": "7b689f67dd881677eca65440473eb656f2e07981f3b33770929f261091a64fea",
+    "temperature_zero_supported": false
+  },
+  "judges": {
+    "economic": {
+      "aggregate_scores": {
+        "answer_relevancy": 0.42352941176470593,
+        "context_precision": 0.058823529411764705,
+        "context_recall": 0.17647058823529413,
+        "faithfulness": 0.4411764705882353
+      },
+      "estimated_cost_usd": 0.013625850000000002,
+      "model": "deepseek-v4-flash",
+      "usage": {
+        "input_tokens": 59445,
+        "output_tokens": 67605,
+        "total_tokens": 127050
+      }
+    },
+    "strong": {
+      "aggregate_scores": {
+        "answer_relevancy": 0.5676470588235294,
+        "context_precision": 0.06274509803921569,
+        "context_recall": 0.16666666666666666,
+        "faithfulness": 0.6509803921568628
+      },
+      "estimated_cost_usd": 0.3058939,
+      "model": "kimi-k2.7-code",
+      "usage": {
+        "input_tokens": 62322,
+        "output_tokens": 61672,
+        "total_tokens": 123994
+      }
+    }
+  },
+  "record_count": 102,
+  "schema_version": "1.0.0",
+  "stability": {
+    "economic": {
+      "answer_relevancy": {
+        "range": 0.02352941176470591,
+        "repetition_means": [
+          0.4235294117647059,
+          0.43529411764705883,
+          0.4117647058823529
+        ]
+      },
+      "context_precision": {
+        "range": 0.0,
+        "repetition_means": [
+          0.058823529411764705,
+          0.058823529411764705,
+          0.058823529411764705
+        ]
+      },
+      "context_recall": {
+        "range": 0.0,
+        "repetition_means": [
+          0.17647058823529413,
+          0.17647058823529413,
+          0.17647058823529413
+        ]
+      },
+      "faithfulness": {
+        "range": 0.09999999999999998,
+        "repetition_means": [
+          0.4588235294117647,
+          0.38235294117647056,
+          0.48235294117647054
+        ]
+      }
+    },
+    "strong": {
+      "answer_relevancy": {
+        "range": 0.055882352941176494,
+        "repetition_means": [
+          0.5352941176470588,
+          0.5911764705882353,
+          0.5764705882352942
+        ]
+      },
+      "context_precision": {
+        "range": 0.011764705882352955,
+        "repetition_means": [
+          0.058823529411764705,
+          0.07058823529411766,
+          0.058823529411764705
+        ]
+      },
+      "context_recall": {
+        "range": 0.02941176470588236,
+        "repetition_means": [
+          0.14705882352941177,
+          0.17647058823529413,
+          0.17647058823529413
+        ]
+      },
+      "faithfulness": {
+        "range": 0.1588235294117648,
+        "repetition_means": [
+          0.6352941176470589,
+          0.7382352941176471,
+          0.5794117647058823
+        ]
+      }
+    }
+  },
+  "subquestion_count": 17
+}
