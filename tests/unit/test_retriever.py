@@ -214,9 +214,10 @@ class TestBuildBM25Index:
         results = retriever._bm25_search("feriados calendário")
         assert results and results[0][0] == "id-1"
 
-    def test_scroll_com_falha_nao_derruba(self, retriever, mock_qdrant):
+    def test_scroll_com_falha_expoe_indisponibilidade(self, retriever, mock_qdrant):
         mock_qdrant.scroll.side_effect = RuntimeError("Qdrant fora do ar")
-        retriever.build_bm25_index()
+        with pytest.raises(RuntimeError, match="Qdrant fora do ar"):
+            retriever.build_bm25_index()
         assert retriever._bm25_index is None
 
     def test_colecao_vazia_nao_cria_indice(self, retriever, mock_qdrant):

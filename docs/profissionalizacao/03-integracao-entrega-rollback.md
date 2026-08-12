@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Planejado — especificado, não iniciado |
+| Estado | Em andamento — T03.1 concluída; T03.2–T03.5 não iniciadas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/`, `.github/workflows/ci.yml`, `.github/workflows/docs.yml`, Dockerfiles e `docker-compose.yml` |
@@ -94,11 +94,11 @@ de `/health` e do fluxo autenticado e registrar resultado.
 
 ## 7. Tarefas e microtarefas
 
-- [ ] **T03.1 — Cobrir limites de integração**
-  - [ ] Criar fixtures isoladas para nginx/API, PostgreSQL e Qdrant.
-  - [ ] Teste: sucesso e indisponibilidade de cada limite, incluindo proxy SSE.
-  - [ ] Evidência: saída do teste e contratos exercitados.
-  - [ ] Commit esperado: `test(entrega): cobrir limites de integracao`.
+- [x] **T03.1 — Cobrir limites de integração**
+  - [x] Criar fixtures isoladas para nginx/API, PostgreSQL e Qdrant. *(`tests/integration/test_delivery_boundaries.py` usa FastAPI/LLM fake, PostgreSQL mockado no limite do driver e Qdrant local em memória.)*
+  - [x] Teste: sucesso e indisponibilidade de cada limite, incluindo proxy SSE. *(O contrato nginx exige proxy HTTP/1.1, `proxy_buffering off`, cache desativado e streaming em chunks; falhas de API, PostgreSQL e Qdrant permanecem distinguíveis.)*
+  - [x] Evidência: saída do teste e contratos exercitados. *(32 testes direcionados aprovados, incluindo os 5 limites de integração e regressão completa do retriever.)*
+  - [x] Commit esperado: `test(entrega): cobrir limites de integracao`.
 - [ ] **T03.2 — Automatizar fluxo E2E**
   - [ ] Implementar cenário demo login → chat → feedback → insights sem registrar token/senha.
   - [ ] Teste: fluxo completo e mensagem de falha útil quando serviço dependente cair.
@@ -138,8 +138,8 @@ de `/health` e do fluxo autenticado e registrar resultado.
 |---|---|---|
 | G0 — Baseline | Concluído | Workflows, Bicep e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Trivy, OIDC, aprovação e rollback; acesso Azure bloqueia apenas aplicação/experimento dependente. |
-| G2 — Implementação | Não iniciado | Commits T03.1–T03.5. |
-| G3 — Verificação | Não iniciado | Testes, scan e artefatos de pipeline verdes. |
+| G2 — Implementação | Em andamento | T03.1 concluída; T03.2–T03.5 permanecem. |
+| G3 — Verificação | Em andamento | Limites nginx/API, PostgreSQL e Qdrant possuem testes locais; E2E, scan e pipeline permanecem. |
 | G4 — Operação | Não iniciado | Deploy aprovado e rollback exercitado em Azure. |
 | G5 — Encerramento | Não iniciado | Checklists legados reconciliados com evidência. |
 

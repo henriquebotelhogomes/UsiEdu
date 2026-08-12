@@ -189,16 +189,12 @@ class HybridRetriever:
     def build_bm25_index(self) -> None:
         """Constrói índice BM25 a partir dos documentos no Qdrant."""
 
-        try:
-            all_points, _ = self.client.scroll(
-                collection_name=self.collection_name,
-                limit=10000,
-                with_payload=True,
-                with_vectors=False,
-            )
-        except Exception:
-            logger.warning("Não foi possível construir índice BM25 (coleção vazia?).")
-            return
+        all_points, _ = self.client.scroll(
+            collection_name=self.collection_name,
+            limit=10000,
+            with_payload=True,
+            with_vectors=False,
+        )
 
         if not all_points:
             return
