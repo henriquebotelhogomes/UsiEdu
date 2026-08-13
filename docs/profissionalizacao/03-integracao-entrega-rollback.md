@@ -84,15 +84,18 @@ público nem dados reais; Qdrant deve ser isolado. O teste frontend/proxy deve
 verificar que SSE não recebe buffering, sem depender de LLM externo.
 
 O workflow `.github/workflows/promote-azure.yml` separa build, scan, política,
-publicação e
-produção. O deploy recebe tag/digest imutável, nunca segredo no YAML ou log,
-autentica por OIDC federado e usa Environment `production` com aprovação
-manual. A identidade OIDC e Environment `production` configurados dão suporte
-ao contrato, mas a execução hospedada depende de push autorizado para `main`;
-ela ainda não foi alegada nem exercitada. O runbook no modo Single deve
-preservar e identificar a
-revisão/digest anterior validada, retornar a ela sem reconstrução, fazer smoke
-de `/health` e do fluxo autenticado e registrar resultado.
+publicação e produção. O deploy recebe tag/digest imutável, nunca segredo no
+YAML ou log, autentica por OIDC federado e usa Environment `production` com
+aprovação manual. A promoção hospedada `31624834815` foi concluída por digest.
+
+O runbook `.github/workflows/rollback-azure.yml` é manual, só pode executar em
+`main` e requer nova aprovação de `production`. Os únicos alvos são os digests
+imutáveis informados no dispatch; antes de alterar as Container Apps, o
+workflow confirma que ambos existem no ACR e registra imagens e revisões atuais.
+Ele não reconstrói imagens, não executa ingestão e não altera PostgreSQL ou
+Qdrant. Após atualizar as duas imagens no modo Single, registra `/health` e o
+fluxo demo autenticado login → chat → feedback → dados de `/insights`, sem
+persistir JWT, resposta ou identificadores na evidência.
 
 ## 7. Tarefas e microtarefas
 
