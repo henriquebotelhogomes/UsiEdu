@@ -2,7 +2,7 @@
 
 > Documento vivo para registrar e detalhar os ajustes que elevam o UsiEdu de
 > portfólio técnico e piloto público a uma solução mais próxima de produção.
-> Atualizado em 11/08/2026.
+> Atualizado em 12/08/2026.
 
 ## Como usar este plano
 
@@ -106,10 +106,12 @@ limites entre serviços e tornar a entrega repetível.
 
 ## Prioridade 1 — Seguranca e continuidade operacional
 
-- [ ] Migrar segredos para Azure Key Vault + Managed Identity e retirar ACR
-  admin somente após migração validada.
-- [ ] Impedir geração involuntária de um novo `JWT_SECRET` em cada deploy;
-  documentar rotação de chaves e impacto em sessões.
+- [x] Migrar segredos para Azure Key Vault + Managed Identity e retirar ACR
+  admin após migração validada. *(execução aprovada `31659709461`: API,
+  frontend e job usam a identidade runtime; o health passou sem expor valores.)*
+- [x] Impedir geração involuntária de um novo `JWT_SECRET` em cada deploy;
+  documentar rotação de chaves e impacto em sessões. *(o bootstrap exige JWT
+  explícito; rotação é operação separada e aprovada em Key Vault.)*
 - [ ] Revisar dados pessoais enviados a logs e LangSmith, com política de
   retenção, minimização e anonimização.
 - [ ] Manter o piloto em conta demo/dados sintéticos até política, canal formal

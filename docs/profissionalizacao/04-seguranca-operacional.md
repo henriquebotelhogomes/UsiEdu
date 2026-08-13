@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T04.1 concluída; T04.2–T04.5 pendentes |
+| Estado | Em andamento — T04.1–T04.2 concluídas; T04.3–T04.5 pendentes |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/main.bicep`, `infra/azure/deploy.ps1`, `src/security/guardrails.py`, `src/observability/` |
 | Documentos normativos | `PLANO_PROFISSIONALIZACAO.md`; `PRD.v2.md` RF2-09–11 e T9.4; `docs/03-rag-e-infraestrutura.md` §§ 7, 10 e 11; `docs/04-piloto-e-roadmap.md` §§ 5 e 7; `docs/07-prd-requisitos.md` RNF-05–06; `docs/08-plano-execucao.md` T9.1–T9.4; `docs/09-contratos-tecnicos.md` §§ 2–3 |
 | Checklists legados afetados | `docs/08-plano-execucao.md` T9.4; `docs/04-piloto-e-roadmap.md` § 5; `docs/07-prd-requisitos.md` § 7. Não alterar status nesta especificação. |
-| Atualizado em | 2026-08-11 |
+| Atualizado em | 2026-08-12 |
 
 ## 1. Contexto e evidências
 
@@ -109,13 +109,12 @@ o caminho de deploy, workflows OIDC, configurações locais e módulos de API,
 feedback, cache e tracing.
 
 O diagnóstico é rastreável e preserva os gates: a migração Key Vault/Managed
-Identity e a retirada do ACR admin seguem pendentes de validação Azure; a
-minimização de payloads LangSmith, política pública e usuários externos seguem
-bloqueados pelo gate legal; o restore isolado segue para T04.4. Como proteção
-imediata, o formatter JSON mascara recursivamente campos de segredo antes de
-serializar logs. O inventário também registra que os fallbacks locais de JWT
-devem ser removidos ou tornados explícitos em T04.2, sem confundir esse
-diagnóstico com uma migração já executada.
+Identity e a retirada do ACR admin foram validadas na execução aprovada
+`31659709461`; a minimização de payloads LangSmith, política pública e usuários
+externos seguem bloqueados pelo gate legal; o restore isolado segue para T04.4.
+Como proteção imediata, o formatter JSON mascara recursivamente campos de
+segredo antes de serializar logs. O bootstrap manual agora exige JWT explícito,
+evitando gerar uma chave que invalidaria sessões em um deploy normal.
 
 ### Runbook T04.2
 
@@ -123,19 +122,31 @@ diagnóstico com uma migração já executada.
 Key Vault com RBAC, uma identidade atribuída pelo usuário e somente os papéis
 `AcrPull` e `Key Vault Secrets User` para o runtime. O deployment principal do
 workflow recebe `Key Vault Secrets Officer` no cofre e `Container Apps
-Contributor` apenas no ambiente gerenciado. O ACR recebe `Contributor` somente
-no recurso do registry, pois é o menor papel built-in disponível para desativar
-o admin após o smoke; esses papéis permitem copiar os valores ativos e atribuir
-a identidade sem os registrar.
+Contributor` apenas no ambiente gerenciado, além de `Container Apps Jobs
+Contributor` somente no job de ingestão. O ACR recebe `Contributor` somente no
+recurso do registry, pois é o menor papel built-in disponível para desativar o
+admin após o smoke; esses papéis permitem copiar os valores ativos e atribuir a
+identidade sem os registrar.
 
 Após aplicar essa fundação e configurar as referências não secretas de cofre e
 identidade como variáveis de Actions, o workflow manual
 `.github/workflows/migrate-azure-secrets.yml` exige `main` e aprovação do
 Environment `production`. Ele lê os segredos ativos em memória, preserva o
 mesmo JWT, grava as versões no Key Vault, muda API/frontend para pull com
-identidade e referências `keyvaultref`, reinicia a revisão da API, executa
-health público e só então desativa o ACR admin. O artefato contém
-identificadores de execução, cofre e identidade, nunca valores de segredo.
+identidade e referências `keyvaultref`, configura também o job de ingestão,
+reinicia a revisão da API, executa health público e só então desativa o ACR
+admin. A extensão beta de Container Apps pode retornar erro após atribuir uma
+identidade ao job; o runbook só continua após consultar o ARM e confirmar a
+identidade, mantendo falhas reais bloqueantes. O artefato contém identificadores
+de execução, cofre e identidade, nunca valores de segredo.
+
+A execução aprovada `31659709461` concluiu a migração, o reinício, o smoke e a
+desativação do ACR admin. A verificação posterior confirmou a identidade de
+runtime e o registry autenticado por identidade na API, frontend e job; nenhuma
+das três configurações mantém `registry-password`; o ACR permanece com admin
+desativado; e `/health` retornou `status: ok`. O artefato sanitizado da execução
+registra somente o SHA, o ID da execução, o cofre e a identidade. Valores de
+segredo não foram lidos para evidência.
 
 Rotação é uma operação separada e aprovada: publicar uma nova versão no Key
 Vault, atualizar uma única referência, validar login e health e manter a versão
@@ -149,11 +160,11 @@ para a versão anterior; nenhum segredo é impresso em logs ou evidência.
   - [x] Teste: busca automatizada detecta segredo simulado e valida mascaramento de log. *(`tests/unit/test_operational_hygiene.py` cobre atribuições simuladas, campos recursivos e o formatter JSON.)*
   - [x] Evidência: inventário classificado e revisão de campos enviados. *(Os campos sensíveis são substituídos por `[REDACTED]` antes da serialização; os gates de Key Vault/MI, privacidade e restore permanecem rastreados no inventário.)*
   - [x] Commit: `docs(seguranca): inventariar superficie operacional`.
-- [ ] **T04.2 — Definir gestão de segredos e JWT**
-  - [ ] Registrar migração para Key Vault/Managed Identity, menor privilégio, rotação, contingência e retirada de ACR admin após validação.
-  - [ ] Teste: deploy sem rotação preserva JWT; rotação controlada invalida apenas conforme política.
-  - [ ] Evidência: runbook sem valores, permissões e logs de teste mascarados.
-  - [ ] Commit esperado: `sec(operacao): gerir segredos e jwt`.
+- [x] **T04.2 — Definir gestão de segredos e JWT**
+  - [x] Registrar migração para Key Vault/Managed Identity, menor privilégio, rotação, contingência e retirada de ACR admin após validação.
+  - [x] Teste: o contrato determinístico exige que o bootstrap receba JWT explícito, a promoção só atualize imagens e o runbook preserve o valor ativo; rotação continua operação separada e aprovada.
+  - [x] Evidência: execução `31659709461`, artefato sanitizado, referências Key Vault/MI e health público aprovados; nenhum valor foi registrado.
+  - [x] Commit: `fix(azure): impedir jwt automatico`.
 - [ ] **T04.3 — Formalizar dados e privacidade**
   - [ ] Aplicar a restrição demo/sintética e inventariar minimização; publicar política somente após controlador, canal formal e retenção aprovados.
   - [ ] Teste: payload sintético não aparece em campos proibidos de log/trace.
@@ -187,9 +198,9 @@ para a versão anterior; nenhum segredo é impresso em logs ou evidência.
 |---|---|---|
 | G0 — Baseline | Concluído | Bicep, deploy e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Key Vault/MI, RPO/RTO, alertas e gate legal; acesso Azure, fato jurídico e orçamento concreto bloqueiam somente as execuções dependentes. |
-| G2 — Implementação | Em andamento | T04.1 concluída; T04.2–T04.5 permanecem. |
-| G3 — Verificação | Em andamento | T04.1 cobre detecção de segredo simulado e mascaramento de logs; JWT, restore e alertas permanecem. |
-| G4 — Operação | Não iniciado | Exercícios Azure e alertas aprovados. |
+| G2 — Implementação | Em andamento | T04.1–T04.2 concluídas; T04.3–T04.5 permanecem. |
+| G3 — Verificação | Em andamento | T04.1 cobre detecção de segredo simulado e mascaramento; T04.2 cobre migração, JWT sem rotação, health e ACR; restore e alertas permanecem. |
+| G4 — Operação | Em andamento | Migração Azure aprovada e validada; exercícios de recuperação e alertas permanecem. |
 | G5 — Encerramento | Não iniciado | Evidências e checklists legados reconciliados. |
 
 Reversão de secret store/identidade deve preservar o segredo ativo até uma
