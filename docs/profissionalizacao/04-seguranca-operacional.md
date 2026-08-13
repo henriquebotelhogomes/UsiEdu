@@ -168,13 +168,17 @@ snapshot identificado.
 
 Os templates `infra/azure/recovery-source-access.bicep` e
 `infra/azure/recovery-target-access.bicep` separam os escopos mínimos: `Reader`
-no PostgreSQL de origem, `Storage Account Contributor` e `Storage Account Key
-Operator Service Role` apenas na conta que hospeda Qdrant, e `Contributor`
-somente no grupo isolado. O último papel não é concedido no grupo de produção.
-Na data desta preparação, o grupo isolado e esses papéis ainda não existem; por
-isso não houve restore, consulta SQL autenticada, verificação de coleção nem
-aceite de RPO/RTO. A T04.4 permanece pendente até uma execução protegida gerar
-essa evidência.
+foi substituído pelo papel customizado `UsiEdu PostgreSQL Restore Source
+Operator`, com somente `read` e `write` de `flexibleServers`, atribuído apenas
+ao servidor de origem. O Azure exige `write` no recurso vinculado durante o
+restore, como evidenciado pelo run protegido `31729077464`; o primeiro run
+falhou antes de criar recursos por essa autorização ausente e a limpeza
+confirmou que o grupo isolado e os shares de recuperação continuaram vazios.
+`Storage Account Contributor` e `Storage Account Key Operator Service Role`
+ficam apenas na conta que hospeda Qdrant, e `Contributor` somente no grupo
+isolado. O último papel não é concedido no grupo de produção. A T04.4
+permanece pendente até uma execução protegida gerar a evidência de restore,
+consulta SQL autenticada, verificação de coleção e comparação RPO/RTO.
 
 ## 7. Tarefas e microtarefas
 
