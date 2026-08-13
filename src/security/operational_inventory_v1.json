@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "scope": "T04.1",
+  "classification_rules": {
+    "secret": "Value must never be committed, logged, copied into evidence, or passed through an insecure pipeline parameter.",
+    "restricted_demo_data": "Demo-only operational data may be processed for the pilot but must not be expanded to personal data or external users.",
+    "operational_metadata": "Revision, timestamp, status, route, aggregate count, and opaque trace identifier are permitted when required for operation."
+  },
+  "assets": [
+    {
+      "id": "runtime-secrets",
+      "classification": "secret",
+      "purpose": "Authenticate JWTs, access the LLM provider, LangSmith, the container registry, and PostgreSQL.",
+      "evidence_paths": [
+        ".env.example",
+        "infra/azure/main.bicep",
+        "infra/azure/deploy.ps1",
+        "src/api/auth.py",
+        "src/llm/provider.py"
+      ],
+      "storage_or_flow": "The current Azure baseline receives secure deployment parameters and exposes them to Container Apps through secret references. Local configuration reads environment variables.",
+      "logging_policy": "Prohibited; JSON logging redacts sensitive field names recursively.",
+      "status": "Key Vault and Managed Identity migration remains pending for T04.2."
+    },
+    {
+      "id": "telemetry",
+      "classification": "restricted_demo_data",
+      "purpose": "Correlate API, guardrail, cache, and LangSmith operational events.",
+      "evidence_paths": [
+        "src/observability/logging.py",
+        "src/observability/tracing.py",
+        "src/api/chat.py",
+        "src/api/feedback.py",
+        "src/security/guardrails.py"
+      ],
+      "storage_or_flow": "JSON logs contain operational metadata and LangSmith receives tracing and feedback associations. Requests, answers, credentials, JWTs, and personal identifiers must not be added to new telemetry fields.",
+      "logging_policy": "Only operational metadata is permitted; sensitive keys are redacted before JSON serialization.",
+      "status": "LangSmith payload minimization is subject to the T04.3 legal gate."
+    },
+    {
+      "id": "persistent-state",
+      "classification": "restricted_demo_data",
+      "purpose": "Persist chat checkpoints, feedback, cache entries, and the Qdrant knowledge index.",
+      "evidence_paths": [
+        "src/storage/database.py",
+        "src/api/main.py",
+        "src/api/feedback.py",
+        "src/rag/cache.py",
+        "infra/azure/main.bicep",
+        "docker-compose.yml"
+      ],
+      "storage_or_flow": "The published pilot uses PostgreSQL for transactional state and Azure Files for Qdrant; local fallbacks use SQLite and Docker volumes.",
+      "logging_policy": "Database URLs and credentials are secrets; aggregate state health may be logged without record content.",
+      "status": "Isolated backup and restore evidence remains pending for T04.4."
+    },
+    {
+      "id": "deployment-permissions",
+      "classification": "operational_metadata",
+      "purpose": "Build, deploy, roll back, and access Azure resources.",
+      "evidence_paths": [
+        ".github/workflows/promote-azure.yml",
+        ".github/workflows/rollback-azure.yml",
+        "infra/azure/registry.bicep",
+        "infra/azure/main.bicep"
+      ],
+      "storage_or_flow": "Promotion and rollback use GitHub OIDC with the protected production Environment. The legacy Bicep deployment path still relies on registry credentials.",
+      "logging_policy": "Workflow evidence contains immutable image references, revisions, health, and sanitized smoke status only.",
+      "status": "Removing ACR admin dependency requires validated managed identity and least-privilege RBAC in T04.2."
+    }
+  ],
+  "gates": [
+    {
+      "id": "legal-privacy",
+      "condition": "No identified controller, formal channel, approved policy, or retention period.",
+      "effect": "Restrict the pilot to demo accounts and synthetic data; do not publish a privacy policy or admit external users."
+    },
+    {
+      "id": "azure-identity",
+      "condition": "Managed identity and Key Vault access have not been validated.",
+      "effect": "Do not remove the active secret path or ACR admin dependency."
+    }
+  ]
+}
