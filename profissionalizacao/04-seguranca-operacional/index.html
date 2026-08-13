@@ -1808,8 +1808,9 @@ diagnóstico com uma migração já executada.</p>
 <p><code>infra/azure/security-foundation.bicep</code> cria, sem parâmetros de segredo, um
 Key Vault com RBAC, uma identidade atribuída pelo usuário e somente os papéis
 <code>AcrPull</code> e <code>Key Vault Secrets User</code> para o runtime. O deployment principal do
-workflow recebe apenas <code>Key Vault Secrets Officer</code> no cofre, para copiar os
-valores ativos sem os registrar.</p>
+workflow recebe <code>Key Vault Secrets Officer</code> no cofre e <code>Container Apps
+Contributor</code> apenas no ambiente gerenciado, para copiar os valores ativos e
+atribuir a identidade sem os registrar.</p>
 <p>Após aplicar essa fundação e configurar as referências não secretas de cofre e
 identidade como variáveis de Actions, o workflow manual
 <code>.github/workflows/migrate-azure-secrets.yml</code> exige <code>main</code> e aprovação do
