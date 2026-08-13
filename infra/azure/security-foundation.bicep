@@ -10,6 +10,9 @@ param registryName string
 @description('Object ID da identidade OIDC que executa a migracao protegida.')
 param deploymentPrincipalId string
 
+@description('Nome do ambiente gerenciado usado pelas Container Apps existentes.')
+param managedEnvironmentName string
+
 param location string = resourceGroup().location
 
 var acrPullRoleDefinitionId = subscriptionResourceId(
@@ -23,6 +26,10 @@ var keyVaultSecretsUserRoleDefinitionId = subscriptionResourceId(
 var keyVaultSecretsOfficerRoleDefinitionId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
+)
+var containerAppsContributorRoleDefinitionId = subscriptionResourceId(
+  'Microsoft.Authorization/roleDefinitions',
+  '358470bc-b998-42bd-ab17-a7e34c199c0f'
 )
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
@@ -47,6 +54,10 @@ resource runtimeIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-
 
 resource registry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
   name: registryName
+}
+
+resource managedEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
+  name: managedEnvironmentName
 }
 
 resource runtimeAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -76,6 +87,16 @@ resource deploymentKeyVaultSecretsOfficer 'Microsoft.Authorization/roleAssignmen
     principalId: deploymentPrincipalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: keyVaultSecretsOfficerRoleDefinitionId
+  }
+}
+
+resource deploymentManagedEnvironmentContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(managedEnvironment.id, deploymentPrincipalId, containerAppsContributorRoleDefinitionId)
+  scope: managedEnvironment
+  properties: {
+    principalId: deploymentPrincipalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: containerAppsContributorRoleDefinitionId
   }
 }
 

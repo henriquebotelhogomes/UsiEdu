@@ -88,5 +88,6 @@ def test_security_foundation_uses_rbac_key_vault_and_least_privilege_identity() 
     assert "7f951dda-4ed3-4680-a7ca-43fe172d538d" in template  # AcrPull
     assert "4633458b-17de-408a-b874-0445c86b69e6" in template  # Key Vault Secrets User
     assert "b86a8fe4-44ce-4948-aee5-eccb2c155cd7" in template  # Key Vault Secrets Officer
+    assert "358470bc-b998-42bd-ab17-a7e34c199c0f" in template  # Container Apps Contributor
     assert "@secure()" not in template
     assert "param jwtSecret" not in template
