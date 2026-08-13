@@ -1,0 +1,196 @@
+name: Exercise Azure recovery
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      RECOVERY_RESOURCE_GROUP: ${{ vars.AZURE_RECOVERY_RESOURCE_GROUP }}
+      SOURCE_POSTGRES_SERVER: ${{ vars.AZURE_POSTGRES_SERVER }}
+      RECOVERY_POSTGRES_SERVER: ${{ vars.AZURE_RECOVERY_POSTGRES_SERVER }}
+      STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+      SOURCE_SHARE: qdrant
+    steps:
+      - name: Checkout approved runbook
+        uses: actions/checkout@v4
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate isolated recovery prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$RECOVERY_RESOURCE_GROUP"
+          test -n "$RECOVERY_POSTGRES_SERVER"
+          test -n "$STORAGE_ACCOUNT"
+          test "$RECOVERY_RESOURCE_GROUP" != "$RESOURCE_GROUP"
+          test "$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"
+          az group show --name "$RECOVERY_RESOURCE_GROUP" --output none
+          az postgres flexible-server show --resource-group "$RESOURCE_GROUP" \
+            --name "$SOURCE_POSTGRES_SERVER" --output none
+          az storage account show --resource-group "$RESOURCE_GROUP" \
+            --name "$STORAGE_ACCOUNT" --output none
+          az storage share-rm show --resource-group "$RESOURCE_GROUP" \
+            --storage-account "$STORAGE_ACCOUNT" --name "$SOURCE_SHARE" --output none
+
+      - name: Restore isolated PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"
+          RESTORE_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          az postgres flexible-server restore \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --name "$RECOVERY_POSTGRES_SERVER" \
+            --source-server "/subscriptions/${{ vars.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.DBforPostgreSQL/flexibleServers/${SOURCE_POSTGRES_SERVER}" \
+            --yes \
+            --output none
+          RESTORE_COMPLETED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          {
+            echo "RESTORE_STARTED_AT=$RESTORE_STARTED_AT"
+            echo "RESTORE_COMPLETED_AT=$RESTORE_COMPLETED_AT"
+          } >> "$GITHUB_ENV"
+
+      - name: Snapshot and clone Qdrant share
+        shell: bash
+        run: |
+          set -euo pipefail
+          STORAGE_KEY=$(az storage account keys list \
+            --resource-group "$RESOURCE_GROUP" \
+            --account-name "$STORAGE_ACCOUNT" \
+            --query '[0].value' -o tsv)
+          QDRANT_SNAPSHOT=$(az storage share snapshot \
+            --account-name "$STORAGE_ACCOUNT" \
+            --account-key "$STORAGE_KEY" \
+            --name "$SOURCE_SHARE" \
+            --query snapshot -o tsv)
+          RECOVERY_SHARE="qdrant-recovery-${GITHUB_RUN_ID}"
+          SOURCE_SAS=$(az storage share generate-sas \
+            --account-name "$STORAGE_ACCOUNT" \
+            --account-key "$STORAGE_KEY" \
+            --name "$SOURCE_SHARE" \
+            --permissions rl \
+            --expiry "$(date -u -d '+1 hour' +%Y-%m-%dT%H:%MZ)" \
+            --https-only -o tsv)
+          az storage share create \
+            --account-name "$STORAGE_ACCOUNT" \
+            --account-key "$STORAGE_KEY" \
+            --name "$RECOVERY_SHARE" \
+            --output none
+          az storage file copy start-batch \
+            --source-uri "https://${STORAGE_ACCOUNT}.file.core.windows.net/${SOURCE_SHARE}?sharesnapshot=${QDRANT_SNAPSHOT}&${SOURCE_SAS}" \
+            --destination-share "$RECOVERY_SHARE" \
+            --account-name "$STORAGE_ACCOUNT" \
+            --account-key "$STORAGE_KEY" \
+            --output none
+          {
+            echo "QDRANT_SNAPSHOT=$QDRANT_SNAPSHOT"
+            echo "RECOVERY_SHARE=$RECOVERY_SHARE"
+          } >> "$GITHUB_ENV"
+
+      - name: Validate recovered resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          az postgres flexible-server show \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --name "$RECOVERY_POSTGRES_SERVER" \
+            --query '{name:name,version:version,state:state}' -o json \
+            > artifacts/recovered-postgres.json
+          STORAGE_KEY=$(az storage account keys list \
+            --resource-group "$RESOURCE_GROUP" \
+            --account-name "$STORAGE_ACCOUNT" \
+            --query '[0].value' -o tsv)
+          az storage share show \
+            --account-name "$STORAGE_ACCOUNT" \
+            --account-key "$STORAGE_KEY" \
+            --name "$RECOVERY_SHARE" \
+            --query '{name:name,quota:quota}' -o json \
+            > artifacts/recovered-qdrant-share.json
+          jq -e --arg server "$RECOVERY_POSTGRES_SERVER" \
+            '.name == $server and .state == "Ready"' \
+            artifacts/recovered-postgres.json > /dev/null
+          jq -e --arg share "$RECOVERY_SHARE" \
+            '.name == $share' artifacts/recovered-qdrant-share.json > /dev/null
+
+      - name: Write recovery evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -n \
+            --arg github_sha "$GITHUB_SHA" \
+            --arg workflow_run "$GITHUB_RUN_ID" \
+            --arg source_postgres_server "$SOURCE_POSTGRES_SERVER" \
+            --arg recovery_postgres_server "$RECOVERY_POSTGRES_SERVER" \
+            --arg source_share "$SOURCE_SHARE" \
+            --arg recovery_share "${RECOVERY_SHARE:-}" \
+            --arg qdrant_snapshot "${QDRANT_SNAPSHOT:-}" \
+            --arg restore_started_at "${RESTORE_STARTED_AT:-}" \
+            --arg restore_completed_at "${RESTORE_COMPLETED_AT:-}" \
+            '{
+              schema_version: "1.0.0",
+              github_sha: $github_sha,
+              workflow_run: $workflow_run,
+              source_postgres_server: $source_postgres_server,
+              recovery_postgres_server: $recovery_postgres_server,
+              source_share: $source_share,
+              recovery_share: $recovery_share,
+              qdrant_snapshot: $qdrant_snapshot,
+              restore_started_at: $restore_started_at,
+              restore_completed_at: $restore_completed_at,
+              rpo_target_hours: 24,
+              rto_target_hours: 4
+            }' > artifacts/recovery-evidence.json
+
+      - name: Upload recovery evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-recovery-evidence
+          path: artifacts/
+          if-no-files-found: error
+
+      - name: Clean up isolated recovery resources
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"
+          if az postgres flexible-server show --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --name "$RECOVERY_POSTGRES_SERVER" --output none 2>/dev/null; then
+            az postgres flexible-server delete --resource-group "$RECOVERY_RESOURCE_GROUP" \
+              --name "$RECOVERY_POSTGRES_SERVER" --yes --output none
+          fi
+          if [ -n "${RECOVERY_SHARE:-}" ]; then
+            az storage share-rm delete --resource-group "$RESOURCE_GROUP" \
+              --storage-account "$STORAGE_ACCOUNT" --name "$RECOVERY_SHARE" \
+              --yes --output none
+          fi
+          if [ -n "${QDRANT_SNAPSHOT:-}" ]; then
+            az storage share-rm delete --resource-group "$RESOURCE_GROUP" \
+              --storage-account "$STORAGE_ACCOUNT" --name "$SOURCE_SHARE" \
+              --snapshot "$QDRANT_SNAPSHOT" --yes --output none
+          fi

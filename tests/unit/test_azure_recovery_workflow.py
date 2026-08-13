@@ -1,0 +1,80 @@
+"""Contrato estático do exercício isolado de recuperação T04.4."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).parent.parent.parent
+WORKFLOW_PATH = ROOT / ".github" / "workflows" / "exercise-azure-recovery.yml"
+
+
+def _workflow() -> tuple[str, dict]:
+    text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    return text, yaml.safe_load(text)
+
+
+def test_recovery_is_manual_main_only_and_production_protected() -> None:
+    text, workflow = _workflow()
+    job = workflow["jobs"]["recover"]
+
+    assert set(workflow["on"]) == {"workflow_dispatch"}
+    assert job["if"] == "github.ref == 'refs/heads/main'"
+    assert job["environment"] == "production"
+    assert workflow["permissions"] == {"contents": "read", "id-token": "write"}
+    assert "${{ secrets." not in text.lower()
+
+
+def test_recovery_requires_an_isolated_postgresql_target_and_share_clone() -> None:
+    _, workflow = _workflow()
+    job = workflow["jobs"]["recover"]
+    steps = job["steps"]
+    restore = next(step for step in steps if step["name"] == "Restore isolated PostgreSQL")
+    qdrant = next(step for step in steps if step["name"] == "Snapshot and clone Qdrant share")
+
+    assert job["env"]["RECOVERY_RESOURCE_GROUP"] == ("${{ vars.AZURE_RECOVERY_RESOURCE_GROUP }}")
+    assert job["env"]["RECOVERY_POSTGRES_SERVER"] == ("${{ vars.AZURE_RECOVERY_POSTGRES_SERVER }}")
+    assert "az postgres flexible-server restore" in restore["run"]
+    assert '--resource-group "$RECOVERY_RESOURCE_GROUP"' in restore["run"]
+    assert '--name "$RECOVERY_POSTGRES_SERVER"' in restore["run"]
+    assert '"$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"' in restore["run"]
+    assert "az storage share snapshot" in qdrant["run"]
+    assert "az storage share create" in qdrant["run"]
+    assert "az storage file copy start-batch" in qdrant["run"]
+    assert 'RECOVERY_SHARE="qdrant-recovery-${GITHUB_RUN_ID}"' in qdrant["run"]
+
+
+def test_recovery_validates_without_printing_credentials_or_persisted_content() -> None:
+    text, workflow = _workflow()
+    steps = workflow["jobs"]["recover"]["steps"]
+    validation = next(step for step in steps if step["name"] == "Validate recovered resources")
+    evidence = next(step for step in steps if step["name"] == "Write recovery evidence")
+
+    assert "az postgres flexible-server show" in validation["run"]
+    assert "az storage share show" in validation["run"]
+    assert "az storage file list" not in text
+    assert "az postgres flexible-server db" not in text
+    assert "az storage account keys list" in text
+    assert "--output none" in text
+    assert "STORAGE_KEY" not in evidence["run"]
+    assert "RECOVERY_POSTGRES_SERVER" in evidence["run"]
+    assert "RECOVERY_SHARE" in evidence["run"]
+    assert "Upload recovery evidence" in [step["name"] for step in steps]
+
+
+def test_recovery_records_rpo_rto_measurement_and_never_deletes_production() -> None:
+    text, workflow = _workflow()
+    steps = workflow["jobs"]["recover"]["steps"]
+    evidence = next(step for step in steps if step["name"] == "Write recovery evidence")
+    cleanup = next(step for step in steps if step["name"] == "Clean up isolated recovery resources")
+
+    assert "rpo_target_hours" in evidence["run"]
+    assert "rto_target_hours" in evidence["run"]
+    assert "restore_started_at" in evidence["run"]
+    assert "restore_completed_at" in evidence["run"]
+    assert '--resource-group "$RECOVERY_RESOURCE_GROUP"' in cleanup["run"]
+    assert '"$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"' in cleanup["run"]
+    assert "SOURCE_POSTGRES_SERVER" not in cleanup["run"].replace(
+        '"$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"', ""
+    )
