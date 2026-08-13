@@ -123,17 +123,19 @@ diagnóstico com uma migração já executada.
 Key Vault com RBAC, uma identidade atribuída pelo usuário e somente os papéis
 `AcrPull` e `Key Vault Secrets User` para o runtime. O deployment principal do
 workflow recebe `Key Vault Secrets Officer` no cofre e `Container Apps
-Contributor` apenas no ambiente gerenciado, para copiar os valores ativos e
-atribuir a identidade sem os registrar.
+Contributor` apenas no ambiente gerenciado. O ACR recebe `Contributor` somente
+no recurso do registry, pois é o menor papel built-in disponível para desativar
+o admin após o smoke; esses papéis permitem copiar os valores ativos e atribuir
+a identidade sem os registrar.
 
 Após aplicar essa fundação e configurar as referências não secretas de cofre e
 identidade como variáveis de Actions, o workflow manual
 `.github/workflows/migrate-azure-secrets.yml` exige `main` e aprovação do
 Environment `production`. Ele lê os segredos ativos em memória, preserva o
 mesmo JWT, grava as versões no Key Vault, muda API/frontend para pull com
-identidade e referências `keyvaultref`, executa health público e só então
-desativa o ACR admin. O artefato contém identificadores de execução, cofre e
-identidade, nunca valores de segredo.
+identidade e referências `keyvaultref`, reinicia a revisão da API, executa
+health público e só então desativa o ACR admin. O artefato contém
+identificadores de execução, cofre e identidade, nunca valores de segredo.
 
 Rotação é uma operação separada e aprovada: publicar uma nova versão no Key
 Vault, atualizar uma única referência, validar login e health e manter a versão
