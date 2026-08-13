@@ -153,6 +153,29 @@ Vault, atualizar uma única referência, validar login e health e manter a vers�
 anterior durante a janela de reversão. Se a validação falhar, a referência volta
 para a versão anterior; nenhum segredo é impresso em logs ou evidência.
 
+### Preparação T04.4
+
+O workflow manual `.github/workflows/exercise-azure-recovery.yml` só executa
+em `main`, exige o Environment `production` e falha antes de alterar recursos
+se o grupo de recuperação não for diferente de `rg-usiedu`, se o servidor
+restaurado não tiver nome distinto da origem ou se algum recurso de origem não
+existir. Ele restaura PostgreSQL para um servidor efêmero no grupo isolado e
+cria um snapshot do share `qdrant` para copiá-lo a um share efêmero, sem listar
+arquivos, conteúdo de coleções, dados de banco ou credenciais. A evidência
+sanitizada registra somente identificadores, timestamps e as metas provisórias
+RPO 24 h/RTO 4 h; a limpeza só aponta para os recursos efêmeros e para o
+snapshot identificado.
+
+Os templates `infra/azure/recovery-source-access.bicep` e
+`infra/azure/recovery-target-access.bicep` separam os escopos mínimos: `Reader`
+no PostgreSQL de origem, `Storage Account Contributor` e `Storage Account Key
+Operator Service Role` apenas na conta que hospeda Qdrant, e `Contributor`
+somente no grupo isolado. O último papel não é concedido no grupo de produção.
+Na data desta preparação, o grupo isolado e esses papéis ainda não existem; por
+isso não houve restore, consulta SQL autenticada, verificação de coleção nem
+aceite de RPO/RTO. A T04.4 permanece pendente até uma execução protegida gerar
+essa evidência.
+
 ## 7. Tarefas e microtarefas
 
 - [x] **T04.1 — Inventariar superfície operacional**
