@@ -77,16 +77,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          QDRANT_SNAPSHOT=$(az storage share-rm snapshot \
+            --resource-group "$RESOURCE_GROUP" \
+            --storage-account "$STORAGE_ACCOUNT" \
+            --name "$SOURCE_SHARE" \
+            --query properties.shareSnapshot -o tsv)
+          RECOVERY_SHARE="qdrant-recovery-${GITHUB_RUN_ID}"
+          {
+            echo "QDRANT_SNAPSHOT=$QDRANT_SNAPSHOT"
+            echo "RECOVERY_SHARE=$RECOVERY_SHARE"
+          } >> "$GITHUB_ENV"
           STORAGE_KEY=$(az storage account keys list \
             --resource-group "$RESOURCE_GROUP" \
             --account-name "$STORAGE_ACCOUNT" \
             --query '[0].value' -o tsv)
-          QDRANT_SNAPSHOT=$(az storage share snapshot \
-            --account-name "$STORAGE_ACCOUNT" \
-            --account-key "$STORAGE_KEY" \
-            --name "$SOURCE_SHARE" \
-            --query snapshot -o tsv)
-          RECOVERY_SHARE="qdrant-recovery-${GITHUB_RUN_ID}"
           SOURCE_SAS=$(az storage share generate-sas \
             --account-name "$STORAGE_ACCOUNT" \
             --account-key "$STORAGE_KEY" \
@@ -105,10 +109,6 @@ jobs:
             --account-name "$STORAGE_ACCOUNT" \
             --account-key "$STORAGE_KEY" \
             --output none
-          {
-            echo "QDRANT_SNAPSHOT=$QDRANT_SNAPSHOT"
-            echo "RECOVERY_SHARE=$RECOVERY_SHARE"
-          } >> "$GITHUB_ENV"
 
       - name: Validate recovered resources
         shell: bash

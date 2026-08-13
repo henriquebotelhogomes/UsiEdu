@@ -174,6 +174,13 @@ ao servidor de origem. O Azure exige `write` no recurso vinculado durante o
 restore, como evidenciado pelo run protegido `31729077464`; o primeiro run
 falhou antes de criar recursos por essa autorização ausente e a limpeza
 confirmou que o grupo isolado e os shares de recuperação continuaram vazios.
+No segundo run protegido, `31730271262`, o restore PostgreSQL isolado concluiu
+em 7 min 9 s e foi removido pela limpeza; o snapshot de Qdrant pelo plano de
+dados falhou com `Incorrect padding` antes da cópia. O share efêmero criado
+antes da falha foi removido manualmente e o grupo isolado voltou a ficar vazio.
+O runbook passou a usar o snapshot pelo plano de controle e registra os
+identificadores do snapshot e do clone antes da cópia, para que a limpeza
+também os alcance se a operação falhar.
 `Storage Account Contributor` e `Storage Account Key Operator Service Role`
 ficam apenas na conta que hospeda Qdrant, e `Contributor` somente no grupo
 isolado. O último papel não é concedido no grupo de produção. A T04.4
