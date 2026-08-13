@@ -117,6 +117,28 @@ serializar logs. O inventário também registra que os fallbacks locais de JWT
 devem ser removidos ou tornados explícitos em T04.2, sem confundir esse
 diagnóstico com uma migração já executada.
 
+### Runbook T04.2
+
+`infra/azure/security-foundation.bicep` cria, sem parâmetros de segredo, um
+Key Vault com RBAC, uma identidade atribuída pelo usuário e somente os papéis
+`AcrPull` e `Key Vault Secrets User` para o runtime. O deployment principal do
+workflow recebe apenas `Key Vault Secrets Officer` no cofre, para copiar os
+valores ativos sem os registrar.
+
+Após aplicar essa fundação e configurar as referências não secretas de cofre e
+identidade como variáveis de Actions, o workflow manual
+`.github/workflows/migrate-azure-secrets.yml` exige `main` e aprovação do
+Environment `production`. Ele lê os segredos ativos em memória, preserva o
+mesmo JWT, grava as versões no Key Vault, muda API/frontend para pull com
+identidade e referências `keyvaultref`, executa health público e só então
+desativa o ACR admin. O artefato contém identificadores de execução, cofre e
+identidade, nunca valores de segredo.
+
+Rotação é uma operação separada e aprovada: publicar uma nova versão no Key
+Vault, atualizar uma única referência, validar login e health e manter a versão
+anterior durante a janela de reversão. Se a validação falhar, a referência volta
+para a versão anterior; nenhum segredo é impresso em logs ou evidência.
+
 ## 7. Tarefas e microtarefas
 
 - [x] **T04.1 — Inventariar superfície operacional**
