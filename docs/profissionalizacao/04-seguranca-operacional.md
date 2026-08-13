@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T04.1–T04.2 concluídas; T04.3–T04.5 pendentes |
+| Estado | Em andamento — T04.1–T04.3 concluídas; T04.4–T04.5 pendentes |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/main.bicep`, `infra/azure/deploy.ps1`, `src/security/guardrails.py`, `src/observability/` |
@@ -165,11 +165,11 @@ para a versão anterior; nenhum segredo é impresso em logs ou evidência.
   - [x] Teste: o contrato determinístico exige que o bootstrap receba JWT explícito, a promoção só atualize imagens e o runbook preserve o valor ativo; rotação continua operação separada e aprovada.
   - [x] Evidência: execução `31659709461`, artefato sanitizado, referências Key Vault/MI e health público aprovados; nenhum valor foi registrado.
   - [x] Commit: `fix(azure): impedir jwt automatico`.
-- [ ] **T04.3 — Formalizar dados e privacidade**
-  - [ ] Aplicar a restrição demo/sintética e inventariar minimização; publicar política somente após controlador, canal formal e retenção aprovados.
-  - [ ] Teste: payload sintético não aparece em campos proibidos de log/trace.
-  - [ ] Evidência: política aprovada e relatório de revisão.
-  - [ ] Commit esperado: `docs(seguranca): definir privacidade do piloto`.
+- [x] **T04.3 — Formalizar dados e privacidade**
+  - [x] Aplicar a restrição demo/sintética e inventariar minimização; política pública, controlador, canal formal, retenção e usuários externos permanecem bloqueados até fatos aprovados.
+  - [x] Teste: payload sintético e identificadores não aparecem em campos proibidos de log/trace; o cliente LangSmith e o feedback ocultam conteúdo.
+  - [x] Evidência: execução aprovada `31661521278` confirmou as quatro flags de ocultação e health `ok`; o artefato sanitizado não contém payload, resposta, identificador pessoal ou segredo.
+  - [x] Commit: `fix(privacidade): minimizar telemetria externa`.
 - [ ] **T04.4 — Exercitar recuperação**
   - [ ] Criar runbooks de backup/restore isolados para PostgreSQL e Qdrant.
   - [ ] Teste: restore controlado, consulta de banco, coleção e smoke RAG.
@@ -198,9 +198,9 @@ para a versão anterior; nenhum segredo é impresso em logs ou evidência.
 |---|---|---|
 | G0 — Baseline | Concluído | Bicep, deploy e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Key Vault/MI, RPO/RTO, alertas e gate legal; acesso Azure, fato jurídico e orçamento concreto bloqueiam somente as execuções dependentes. |
-| G2 — Implementação | Em andamento | T04.1–T04.2 concluídas; T04.3–T04.5 permanecem. |
-| G3 — Verificação | Em andamento | T04.1 cobre detecção de segredo simulado e mascaramento; T04.2 cobre migração, JWT sem rotação, health e ACR; restore e alertas permanecem. |
-| G4 — Operação | Em andamento | Migração Azure aprovada e validada; exercícios de recuperação e alertas permanecem. |
+| G2 — Implementação | Em andamento | T04.1–T04.3 concluídas; T04.4–T04.5 permanecem. |
+| G3 — Verificação | Em andamento | T04.1 cobre mascaramento; T04.2 cobre migração, JWT, health e ACR; T04.3 cobre logs e tracing minimizados; restore e alertas permanecem. |
+| G4 — Operação | Em andamento | Migração e minimização Azure aprovadas e validadas; exercícios de recuperação e alertas permanecem. |
 | G5 — Encerramento | Não iniciado | Evidências e checklists legados reconciliados. |
 
 Reversão de secret store/identidade deve preservar o segredo ativo até uma
@@ -210,7 +210,7 @@ procedimento aprovado: validar em cópia isolada primeiro.
 
 ### Definition of Done
 
-- [ ] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.
+- [x] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.
 - [ ] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.
 - [ ] Alertas aprovados foram disparados de modo controlado.
 - [ ] Nenhum segredo ou PII foi introduzido em código, documentação ou evidência.
