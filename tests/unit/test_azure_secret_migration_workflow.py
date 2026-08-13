@@ -55,10 +55,14 @@ def test_migration_uses_user_assigned_identity_and_preserves_jwt() -> None:
     assert "az containerapp identity assign" in migration["run"]
     assert '--user-assigned "$RUNTIME_IDENTITY_ID"' in migration["run"]
     assert "az containerapp registry set" in migration["run"]
+    assert "az containerapp job identity assign" in migration["run"]
+    assert "az containerapp job registry set" in migration["run"]
+    assert "az containerapp secret remove" in migration["run"]
+    assert "az containerapp job secret remove" in migration["run"]
     assert "identityref:${RUNTIME_IDENTITY_ID}" in migration["run"]
     assert "keyvaultref:" in migration["run"]
     assert "jwt-secret" in migration["run"]
-    assert "registry-password" not in migration["run"]
+    assert migration["run"].count("registry-password") == 3
     disable_admin = next(step for step in steps if step["name"] == "Disable legacy ACR admin")
     assert "az acr update" in disable_admin["run"]
     assert "--admin-enabled false" in disable_admin["run"]
