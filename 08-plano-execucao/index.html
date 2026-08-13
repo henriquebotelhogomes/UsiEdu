@@ -1712,7 +1712,7 @@ Regra de ouro: <strong>uma sprint não começa sem a anterior concluída</strong
 <li>[x] Testes: 25 em <code>tests/unit/test_guardrails.py</code> (detecção parametrizada, validação de saída, separação de chunks, ingestão com auditoria, endpoints /chat e /chat/stream, LangSmith espião/falha) — incl. usuário staff, pois o intent institucional só aciona o agente documental para esse perfil</li>
 <li>[x] Política documentada em <code>docs/03-rag-e-infraestrutura.md</code> (seção 10)</li>
 <li>[x] Teste manual: pergunta com injeção → 200 com resposta cordial + log JSON <code>guardrail_triggered=true, origem=entrada, padroes=[ignorar_instrucoes, revelar_system_prompt]</code></li>
-<li>[~] <strong>T9.4 — Deploy público em nuvem</strong> <em>(P0 de validação em andamento; o baseline confirmou o provisionamento atual, mas o aceite HTTPS ainda não foi executado nesta rodada.)</em></li>
+<li>[x] <strong>T9.4 — Deploy público em nuvem</strong> <em>(P0 e a profissionalização de entrega foram concluídas: promoção protegida e rollback por digest foram exercitados no Azure, com o run <code>31653959274</code>.)</em></li>
 <li>[x] <code>infra/azure/registry.bicep</code>, <code>main.bicep</code> e <code>deploy.ps1</code>: ACR Basic, ambiente Container Apps, frontend externo, API/Qdrant internos, Azure Files para Qdrant, PostgreSQL gerenciado para estado transacional e job manual de ingestão.</li>
 <li>[x] Secrets/env vars de produção documentados e declarados: <code>JWT_SECRET</code>, <code>OPENCODE_*</code>, <code>LANGSMITH_*</code>/<code>LANGCHAIN_*</code>, <code>QDRANT_URL</code>, SQLite, cache, rate limit e CORS.</li>
 <li>[x] <code>scripts/ingest_knowledge_base.py</code> para o job de seed; imagem da API passa a incluir <code>scripts/</code>.</li>
