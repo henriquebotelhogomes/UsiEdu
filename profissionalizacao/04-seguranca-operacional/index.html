@@ -1133,6 +1133,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="6. Plano técnico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inventario-t041" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inventário T04.1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runbook-t042" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runbook T04.2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1442,6 +1470,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="6. Plano técnico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inventario-t041" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inventário T04.1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runbook-t042" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runbook T04.2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1536,7 +1592,7 @@
 <tbody>
 <tr>
 <td>Estado</td>
-<td>Planejado — especificado, não iniciado</td>
+<td>Em andamento — T04.1 concluída; T04.2–T04.5 pendentes</td>
 </tr>
 <tr>
 <td>Prioridade</td>
@@ -1734,13 +1790,45 @@ antes de qualquer retorno. O exercício compara o tempo observado com RPO 24 h
 e RTO 4 h. Alertas precisam usar métricas/logs realmente disponíveis no Azure,
 GitHub issue/Action e Azure Monitor; nenhum e-mail, Teams ou orçamento é
 presumido.</p>
+<h3 id="inventario-t041">Inventário T04.1<a class="headerlink" href="#inventario-t041" title="Permanent link">&para;</a></h3>
+<p>O inventário versionado em <code>src/security/operational_inventory_v1.json</code> registra
+quatro superfícies classificadas sem valores: segredos runtime, telemetria,
+estado persistente e permissões de entrega. Ele referencia a configuração Bicep,
+o caminho de deploy, workflows OIDC, configurações locais e módulos de API,
+feedback, cache e tracing.</p>
+<p>O diagnóstico é rastreável e preserva os gates: a migração Key Vault/Managed
+Identity e a retirada do ACR admin seguem pendentes de validação Azure; a
+minimização de payloads LangSmith, política pública e usuários externos seguem
+bloqueados pelo gate legal; o restore isolado segue para T04.4. Como proteção
+imediata, o formatter JSON mascara recursivamente campos de segredo antes de
+serializar logs. O inventário também registra que os fallbacks locais de JWT
+devem ser removidos ou tornados explícitos em T04.2, sem confundir esse
+diagnóstico com uma migração já executada.</p>
+<h3 id="runbook-t042">Runbook T04.2<a class="headerlink" href="#runbook-t042" title="Permanent link">&para;</a></h3>
+<p><code>infra/azure/security-foundation.bicep</code> cria, sem parâmetros de segredo, um
+Key Vault com RBAC, uma identidade atribuída pelo usuário e somente os papéis
+<code>AcrPull</code> e <code>Key Vault Secrets User</code> para o runtime. O deployment principal do
+workflow recebe apenas <code>Key Vault Secrets Officer</code> no cofre, para copiar os
+valores ativos sem os registrar.</p>
+<p>Após aplicar essa fundação e configurar as referências não secretas de cofre e
+identidade como variáveis de Actions, o workflow manual
+<code>.github/workflows/migrate-azure-secrets.yml</code> exige <code>main</code> e aprovação do
+Environment <code>production</code>. Ele lê os segredos ativos em memória, preserva o
+mesmo JWT, grava as versões no Key Vault, muda API/frontend para pull com
+identidade e referências <code>keyvaultref</code>, executa health público e só então
+desativa o ACR admin. O artefato contém identificadores de execução, cofre e
+identidade, nunca valores de segredo.</p>
+<p>Rotação é uma operação separada e aprovada: publicar uma nova versão no Key
+Vault, atualizar uma única referência, validar login e health e manter a versão
+anterior durante a janela de reversão. Se a validação falhar, a referência volta
+para a versão anterior; nenhum segredo é impresso em logs ou evidência.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] <strong>T04.1 — Inventariar superfície operacional</strong></li>
-<li>[ ] Mapear segredos, fluxos de dados, logs, LangSmith, persistência e permissões sem valores.</li>
-<li>[ ] Teste: busca automatizada detecta segredo simulado e valida mascaramento de log.</li>
-<li>[ ] Evidência: inventário classificado e revisão de campos enviados.</li>
-<li>[ ] Commit esperado: <code>docs(seguranca): inventariar superficie operacional</code>.</li>
+<li>[x] <strong>T04.1 — Inventariar superfície operacional</strong></li>
+<li>[x] Mapear segredos, fluxos de dados, logs, LangSmith, persistência e permissões sem valores. <em>(<code>src/security/operational_inventory_v1.json</code> classifica as quatro superfícies e referencia cada caminho técnico sem registrar valores.)</em></li>
+<li>[x] Teste: busca automatizada detecta segredo simulado e valida mascaramento de log. <em>(<code>tests/unit/test_operational_hygiene.py</code> cobre atribuições simuladas, campos recursivos e o formatter JSON.)</em></li>
+<li>[x] Evidência: inventário classificado e revisão de campos enviados. <em>(Os campos sensíveis são substituídos por <code>[REDACTED]</code> antes da serialização; os gates de Key Vault/MI, privacidade e restore permanecem rastreados no inventário.)</em></li>
+<li>[x] Commit: <code>docs(seguranca): inventariar superficie operacional</code>.</li>
 <li>[ ] <strong>T04.2 — Definir gestão de segredos e JWT</strong></li>
 <li>[ ] Registrar migração para Key Vault/Managed Identity, menor privilégio, rotação, contingência e retirada de ACR admin após validação.</li>
 <li>[ ] Teste: deploy sem rotação preserva JWT; rotação controlada invalida apenas conforme política.</li>
@@ -1822,13 +1910,13 @@ presumido.</p>
 </tr>
 <tr>
 <td>G2 — Implementação</td>
-<td>Não iniciado</td>
-<td>Commits T04.1–T04.5.</td>
+<td>Em andamento</td>
+<td>T04.1 concluída; T04.2–T04.5 permanecem.</td>
 </tr>
 <tr>
 <td>G3 — Verificação</td>
-<td>Não iniciado</td>
-<td>Testes de mascaramento, JWT, restore e alertas.</td>
+<td>Em andamento</td>
+<td>T04.1 cobre detecção de segredo simulado e mascaramento de logs; JWT, restore e alertas permanecem.</td>
 </tr>
 <tr>
 <td>G4 — Operação</td>
