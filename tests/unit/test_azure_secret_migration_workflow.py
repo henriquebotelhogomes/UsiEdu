@@ -40,6 +40,11 @@ def test_migration_copies_active_values_without_printing_them() -> None:
     assert names.index("Validate secret migration prerequisites") < names.index(
         "Migrate active secrets"
     )
+    prerequisites = next(
+        step for step in steps if step["name"] == "Validate secret migration prerequisites"
+    )
+    assert "az identity show" in prerequisites["run"]
+    assert "az role assignment list" not in prerequisites["run"]
 
 
 def test_migration_uses_user_assigned_identity_and_preserves_jwt() -> None:
