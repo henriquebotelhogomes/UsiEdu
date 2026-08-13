@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Planejado — especificado, não iniciado |
+| Estado | Em andamento — T04.1 concluída; T04.2–T04.5 pendentes |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/main.bicep`, `infra/azure/deploy.ps1`, `src/security/guardrails.py`, `src/observability/` |
@@ -100,13 +100,52 @@ e RTO 4 h. Alertas precisam usar métricas/logs realmente disponíveis no Azure,
 GitHub issue/Action e Azure Monitor; nenhum e-mail, Teams ou orçamento é
 presumido.
 
+### Inventário T04.1
+
+O inventário versionado em `src/security/operational_inventory_v1.json` registra
+quatro superfícies classificadas sem valores: segredos runtime, telemetria,
+estado persistente e permissões de entrega. Ele referencia a configuração Bicep,
+o caminho de deploy, workflows OIDC, configurações locais e módulos de API,
+feedback, cache e tracing.
+
+O diagnóstico é rastreável e preserva os gates: a migração Key Vault/Managed
+Identity e a retirada do ACR admin seguem pendentes de validação Azure; a
+minimização de payloads LangSmith, política pública e usuários externos seguem
+bloqueados pelo gate legal; o restore isolado segue para T04.4. Como proteção
+imediata, o formatter JSON mascara recursivamente campos de segredo antes de
+serializar logs. O inventário também registra que os fallbacks locais de JWT
+devem ser removidos ou tornados explícitos em T04.2, sem confundir esse
+diagnóstico com uma migração já executada.
+
+### Runbook T04.2
+
+`infra/azure/security-foundation.bicep` cria, sem parâmetros de segredo, um
+Key Vault com RBAC, uma identidade atribuída pelo usuário e somente os papéis
+`AcrPull` e `Key Vault Secrets User` para o runtime. O deployment principal do
+workflow recebe apenas `Key Vault Secrets Officer` no cofre, para copiar os
+valores ativos sem os registrar.
+
+Após aplicar essa fundação e configurar as referências não secretas de cofre e
+identidade como variáveis de Actions, o workflow manual
+`.github/workflows/migrate-azure-secrets.yml` exige `main` e aprovação do
+Environment `production`. Ele lê os segredos ativos em memória, preserva o
+mesmo JWT, grava as versões no Key Vault, muda API/frontend para pull com
+identidade e referências `keyvaultref`, executa health público e só então
+desativa o ACR admin. O artefato contém identificadores de execução, cofre e
+identidade, nunca valores de segredo.
+
+Rotação é uma operação separada e aprovada: publicar uma nova versão no Key
+Vault, atualizar uma única referência, validar login e health e manter a versão
+anterior durante a janela de reversão. Se a validação falhar, a referência volta
+para a versão anterior; nenhum segredo é impresso em logs ou evidência.
+
 ## 7. Tarefas e microtarefas
 
-- [ ] **T04.1 — Inventariar superfície operacional**
-  - [ ] Mapear segredos, fluxos de dados, logs, LangSmith, persistência e permissões sem valores.
-  - [ ] Teste: busca automatizada detecta segredo simulado e valida mascaramento de log.
-  - [ ] Evidência: inventário classificado e revisão de campos enviados.
-  - [ ] Commit esperado: `docs(seguranca): inventariar superficie operacional`.
+- [x] **T04.1 — Inventariar superfície operacional**
+  - [x] Mapear segredos, fluxos de dados, logs, LangSmith, persistência e permissões sem valores. *(`src/security/operational_inventory_v1.json` classifica as quatro superfícies e referencia cada caminho técnico sem registrar valores.)*
+  - [x] Teste: busca automatizada detecta segredo simulado e valida mascaramento de log. *(`tests/unit/test_operational_hygiene.py` cobre atribuições simuladas, campos recursivos e o formatter JSON.)*
+  - [x] Evidência: inventário classificado e revisão de campos enviados. *(Os campos sensíveis são substituídos por `[REDACTED]` antes da serialização; os gates de Key Vault/MI, privacidade e restore permanecem rastreados no inventário.)*
+  - [x] Commit: `docs(seguranca): inventariar superficie operacional`.
 - [ ] **T04.2 — Definir gestão de segredos e JWT**
   - [ ] Registrar migração para Key Vault/Managed Identity, menor privilégio, rotação, contingência e retirada de ACR admin após validação.
   - [ ] Teste: deploy sem rotação preserva JWT; rotação controlada invalida apenas conforme política.
@@ -145,8 +184,8 @@ presumido.
 |---|---|---|
 | G0 — Baseline | Concluído | Bicep, deploy e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Key Vault/MI, RPO/RTO, alertas e gate legal; acesso Azure, fato jurídico e orçamento concreto bloqueiam somente as execuções dependentes. |
-| G2 — Implementação | Não iniciado | Commits T04.1–T04.5. |
-| G3 — Verificação | Não iniciado | Testes de mascaramento, JWT, restore e alertas. |
+| G2 — Implementação | Em andamento | T04.1 concluída; T04.2–T04.5 permanecem. |
+| G3 — Verificação | Em andamento | T04.1 cobre detecção de segredo simulado e mascaramento de logs; JWT, restore e alertas permanecem. |
 | G4 — Operação | Não iniciado | Exercícios Azure e alertas aprovados. |
 | G5 — Encerramento | Não iniciado | Evidências e checklists legados reconciliados. |
 

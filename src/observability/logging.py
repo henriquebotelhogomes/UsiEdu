@@ -10,6 +10,8 @@ import logging
 import uuid
 from typing import Any
 
+from src.security.operational_hygiene import redact_sensitive_fields
+
 TRACE_ID_CTX_KEY = "trace_id"
 
 
@@ -61,7 +63,7 @@ class JSONFormatter(logging.Formatter):
             ):
                 log_entry[key] = value
 
-        return json.dumps(log_entry, ensure_ascii=False)
+        return json.dumps(redact_sensitive_fields(log_entry), ensure_ascii=False)
 
 
 def generate_trace_id() -> str:
