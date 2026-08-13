@@ -13,6 +13,9 @@ param deploymentPrincipalId string
 @description('Nome do ambiente gerenciado usado pelas Container Apps existentes.')
 param managedEnvironmentName string
 
+@description('Nome do job de ingestao existente.')
+param ingestJobName string
+
 param location string = resourceGroup().location
 
 var acrPullRoleDefinitionId = subscriptionResourceId(
@@ -34,6 +37,10 @@ var containerAppsContributorRoleDefinitionId = subscriptionResourceId(
 var contributorRoleDefinitionId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   'b24988ac-6180-42a0-ab88-20f7382dd24c'
+)
+var containerAppsJobsContributorRoleDefinitionId = subscriptionResourceId(
+  'Microsoft.Authorization/roleDefinitions',
+  '4e3d2b60-56ae-4dc6-a233-09c8e5a82e68'
 )
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
@@ -62,6 +69,10 @@ resource registry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing =
 
 resource managedEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
   name: managedEnvironmentName
+}
+
+resource ingestJob 'Microsoft.App/jobs@2024-03-01' existing = {
+  name: ingestJobName
 }
 
 resource runtimeAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -111,6 +122,16 @@ resource deploymentRegistryContributor 'Microsoft.Authorization/roleAssignments@
     principalId: deploymentPrincipalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: contributorRoleDefinitionId
+  }
+}
+
+resource deploymentIngestJobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(ingestJob.id, deploymentPrincipalId, containerAppsJobsContributorRoleDefinitionId)
+  scope: ingestJob
+  properties: {
+    principalId: deploymentPrincipalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: containerAppsJobsContributorRoleDefinitionId
   }
 }
 
