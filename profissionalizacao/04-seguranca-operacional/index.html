@@ -1592,7 +1592,7 @@
 <tbody>
 <tr>
 <td>Estado</td>
-<td>Em andamento — T04.1–T04.2 concluídas; T04.3–T04.5 pendentes</td>
+<td>Em andamento — T04.1–T04.3 concluídas; T04.4–T04.5 pendentes</td>
 </tr>
 <tr>
 <td>Prioridade</td>
@@ -1847,11 +1847,11 @@ para a versão anterior; nenhum segredo é impresso em logs ou evidência.</p>
 <li>[x] Teste: o contrato determinístico exige que o bootstrap receba JWT explícito, a promoção só atualize imagens e o runbook preserve o valor ativo; rotação continua operação separada e aprovada.</li>
 <li>[x] Evidência: execução <code>31659709461</code>, artefato sanitizado, referências Key Vault/MI e health público aprovados; nenhum valor foi registrado.</li>
 <li>[x] Commit: <code>fix(azure): impedir jwt automatico</code>.</li>
-<li>[ ] <strong>T04.3 — Formalizar dados e privacidade</strong></li>
-<li>[ ] Aplicar a restrição demo/sintética e inventariar minimização; publicar política somente após controlador, canal formal e retenção aprovados.</li>
-<li>[ ] Teste: payload sintético não aparece em campos proibidos de log/trace.</li>
-<li>[ ] Evidência: política aprovada e relatório de revisão.</li>
-<li>[ ] Commit esperado: <code>docs(seguranca): definir privacidade do piloto</code>.</li>
+<li>[x] <strong>T04.3 — Formalizar dados e privacidade</strong></li>
+<li>[x] Aplicar a restrição demo/sintética e inventariar minimização; política pública, controlador, canal formal, retenção e usuários externos permanecem bloqueados até fatos aprovados.</li>
+<li>[x] Teste: payload sintético e identificadores não aparecem em campos proibidos de log/trace; o cliente LangSmith e o feedback ocultam conteúdo.</li>
+<li>[x] Evidência: execução aprovada <code>31661521278</code> confirmou as quatro flags de ocultação e health <code>ok</code>; o artefato sanitizado não contém payload, resposta, identificador pessoal ou segredo.</li>
+<li>[x] Commit: <code>fix(privacidade): minimizar telemetria externa</code>.</li>
 <li>[ ] <strong>T04.4 — Exercitar recuperação</strong></li>
 <li>[ ] Criar runbooks de backup/restore isolados para PostgreSQL e Qdrant.</li>
 <li>[ ] Teste: restore controlado, consulta de banco, coleção e smoke RAG.</li>
@@ -1924,17 +1924,17 @@ para a versão anterior; nenhum segredo é impresso em logs ou evidência.</p>
 <tr>
 <td>G2 — Implementação</td>
 <td>Em andamento</td>
-<td>T04.1–T04.2 concluídas; T04.3–T04.5 permanecem.</td>
+<td>T04.1–T04.3 concluídas; T04.4–T04.5 permanecem.</td>
 </tr>
 <tr>
 <td>G3 — Verificação</td>
 <td>Em andamento</td>
-<td>T04.1 cobre detecção de segredo simulado e mascaramento; T04.2 cobre migração, JWT sem rotação, health e ACR; restore e alertas permanecem.</td>
+<td>T04.1 cobre mascaramento; T04.2 cobre migração, JWT, health e ACR; T04.3 cobre logs e tracing minimizados; restore e alertas permanecem.</td>
 </tr>
 <tr>
 <td>G4 — Operação</td>
 <td>Em andamento</td>
-<td>Migração Azure aprovada e validada; exercícios de recuperação e alertas permanecem.</td>
+<td>Migração e minimização Azure aprovadas e validadas; exercícios de recuperação e alertas permanecem.</td>
 </tr>
 <tr>
 <td>G5 — Encerramento</td>
@@ -1949,7 +1949,7 @@ aceitar a chave anterior. Restores nunca são revertidos sobre produção sem
 procedimento aprovado: validar em cópia isolada primeiro.</p>
 <h3 id="definition-of-done">Definition of Done<a class="headerlink" href="#definition-of-done" title="Permanent link">&para;</a></h3>
 <ul>
-<li>[ ] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.</li>
+<li>[x] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.</li>
 <li>[ ] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.</li>
 <li>[ ] Alertas aprovados foram disparados de modo controlado.</li>
 <li>[ ] Nenhum segredo ou PII foi introduzido em código, documentação ou evidência.</li>
