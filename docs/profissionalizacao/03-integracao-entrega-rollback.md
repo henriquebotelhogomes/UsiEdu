@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T03.1–T03.4 concluídas; T03.5 não iniciada |
+| Estado | Concluído — T03.1–T03.5 concluídas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/`, `.github/workflows/ci.yml`, `.github/workflows/docs.yml`, Dockerfiles e `docker-compose.yml` |
@@ -30,8 +30,8 @@ Disponibilizar uma entrega rastreável do commit ao Azure: cada candidato deve
 ter imagens identificadas por commit imutável, testes de integração e E2E
 definidos, aprovação explícita antes do ambiente público e procedimento
 verificado de retorno à revisão anterior. A política provisória usa OIDC
-federado, GitHub Environment `production` e Trivy; a promoção hospedada foi
-concluída por digest e o experimento de rollback permanece pendente.
+federado, GitHub Environment `production` e Trivy; a promoção hospedada e o
+experimento de rollback foram concluídos por digest.
 
 ## 3. Escopo e não escopo
 
@@ -119,11 +119,11 @@ persistir JWT, resposta ou identificadores na evidência.
   - [x] Teste: contrato local garante execução manual em `main`, gate `production`, scan e política antes do push, com cache de análise em memória para cada candidato.
   - [x] Evidência: a execução `31624834815` aprovou os scans e a política, publicou os candidatos do commit `8620214da767ca8ced3af33d3e8fa913bc548bd8` e implantou `usiedu-api@sha256:f7964947f31fc338b7244335dd8851e65ff4e07382e95b3b20f319d607126303` e `usiedu-frontend@sha256:152fbad038f3defc0965102352e6eb73037dd1e20e3085539d221c58b692c9a3`. O smoke público retornou `{"status":"ok","version":"0.2.0","cache_hits":0,"cache_misses":0}`.
   - [x] Commit: `ci(entrega): automatizar promocao azure`.
-- [ ] **T03.5 — Exercitar rollback**
-  - [ ] Escrever e executar runbook com revisão/digest anterior conhecido.
-  - [ ] Teste: retorno controlado seguido de health e fluxo E2E.
-  - [ ] Evidência: antes/depois de tráfego, revisão e smoke test.
-  - [ ] Commit esperado: `docs(entrega): registrar rollback azure`.
+- [x] **T03.5 — Exercitar rollback**
+  - [x] Escrever e executar runbook com revisão/digest anterior conhecido. *(`.github/workflows/rollback-azure.yml` é manual, limitado a `main`, protegido pelo Environment `production` e valida os manifestos no ACR antes de alterar as Container Apps.)*
+  - [x] Teste: retorno controlado seguido de health e fluxo E2E. *(Os contratos locais cobrem a proibição de build/push, OIDC, ordem de captura/deploy/smoke e a sequência demo login → chat → feedback → insights; o run hospedado repetiu health e o smoke autenticado.)*
+  - [x] Evidência: antes/depois de tráfego, revisão e smoke test. *(O run `31653959274` retornou de `usiedu-api@sha256:f7964947f31fc338b7244335dd8851e65ff4e07382e95b3b20f319d607126303` para `usiedu-api@sha256:60330163618ba489df7758e12fe48c8bc03d66d05c0b4f907fed22cdbb3c0836` na revisão `usiedu-api--0000015`, e de `usiedu-frontend@sha256:152fbad038f3defc0965102352e6eb73037dd1e20e3085539d221c58b692c9a3` para `usiedu-frontend@sha256:10bcc0e316848fc4567aa7286152c7b2be2d894acd4894be05f903ed48d18498` na revisão `usiedu-frontend--0000010`. O artefato `azure-rollback-evidence` registrou o baseline, `/health` e o smoke sanitizado; o workflow não reconstruiu/publicou imagens, não executou ingestão e não alterou PostgreSQL ou Qdrant.)*
+  - [x] Commit: `docs(entrega): registrar rollback azure`.
 
 ## 8. Estratégia de testes e validação
 
@@ -143,9 +143,9 @@ persistir JWT, resposta ou identificadores na evidência.
 |---|---|---|
 | G0 — Baseline | Concluído | Workflows, Bicep e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Trivy, OIDC, aprovação e rollback; a execução hospedada e o experimento operacional permanecem separados. |
-| G2 — Implementação | Concluído | T03.1–T03.4 estão concluídas; T03.5 permanece. |
-| G3 — Verificação | Concluído para T03.4 | Limites, E2E, política e contrato possuem autoensaios; o scan real e o smoke público da promoção `31624834815` passaram. |
-| G4 — Operação | Em andamento | Deploy aprovado por digest concluído; rollback exercitado permanece pendente em T03.5. |
+| G2 — Implementação | Concluído | T03.1–T03.5 estão concluídas. |
+| G3 — Verificação | Concluído | Limites, E2E, política e contratos possuem autoensaios; os runs `31624834815` (promoção) e `31653959274` (rollback) passaram os scans e smokes previstos. |
+| G4 — Operação | Concluído | Deploy e rollback aprovados por digest foram exercitados no Azure; o último retorno ativou as revisões API `0000015` e frontend `0000010`. |
 | G5 — Encerramento | Não iniciado | Checklists legados reconciliados com evidência. |
 
 Rollback deve reutilizar imagem por digest/revisão anterior, não reconstruir ou
@@ -154,8 +154,8 @@ ser necessárias, exigem plano próprio de compatibilidade e restauração.
 
 ### Definition of Done
 
-- [ ] Testes de integração e E2E aprovados no nível definido.
+- [x] Testes de integração e E2E aprovados no nível definido.
 - [x] Imagens imutáveis, Trivy, exceções temporárias auditáveis e aprovação pública operando sem expor segredos ou credenciais Azure persistentes.
-- [ ] Deploy e rollback Azure reproduzidos com evidência de revisão/digest.
-- [ ] CI, runbook e documentação atualizados.
-- [ ] Checklists legados mudaram apenas no commit da evidência correspondente.
+- [x] Deploy e rollback Azure reproduzidos com evidência de revisão/digest.
+- [x] CI, runbook e documentação atualizados.
+- [x] Checklists legados mudaram apenas no commit da evidência correspondente.

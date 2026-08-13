@@ -262,7 +262,7 @@ Sprint 0 (fundação) ──► Sprint 1 (RAG) ──► Sprint 2 (orquestraçã
   - [x] Testes: 25 em `tests/unit/test_guardrails.py` (detecção parametrizada, validação de saída, separação de chunks, ingestão com auditoria, endpoints /chat e /chat/stream, LangSmith espião/falha) — incl. usuário staff, pois o intent institucional só aciona o agente documental para esse perfil
   - [x] Política documentada em `docs/03-rag-e-infraestrutura.md` (seção 10)
   - [x] Teste manual: pergunta com injeção → 200 com resposta cordial + log JSON `guardrail_triggered=true, origem=entrada, padroes=[ignorar_instrucoes, revelar_system_prompt]`
-- [~] **T9.4 — Deploy público em nuvem** *(P0 de validação em andamento; o baseline confirmou o provisionamento atual, mas o aceite HTTPS ainda não foi executado nesta rodada.)*
+- [x] **T9.4 — Deploy público em nuvem** *(P0 e a profissionalização de entrega foram concluídas: promoção protegida e rollback por digest foram exercitados no Azure, com o run `31653959274`.)*
   - [x] `infra/azure/registry.bicep`, `main.bicep` e `deploy.ps1`: ACR Basic, ambiente Container Apps, frontend externo, API/Qdrant internos, Azure Files para Qdrant, PostgreSQL gerenciado para estado transacional e job manual de ingestão.
   - [x] Secrets/env vars de produção documentados e declarados: `JWT_SECRET`, `OPENCODE_*`, `LANGSMITH_*`/`LANGCHAIN_*`, `QDRANT_URL`, SQLite, cache, rate limit e CORS.
   - [x] `scripts/ingest_knowledge_base.py` para o job de seed; imagem da API passa a incluir `scripts/`.
