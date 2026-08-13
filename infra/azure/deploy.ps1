@@ -70,8 +70,7 @@ $registryCredentials = az acr credential show --name $registryName --query '{use
 if (-not $OpenCodeApiKey) { $OpenCodeApiKey = Read-RequiredSecret 'OPENCODE_GO_API_KEY' }
 if (-not $LangSmithApiKey) { $LangSmithApiKey = Read-RequiredSecret 'LANGSMITH_API_KEY' }
 if (-not $JwtSecret) {
-    $JwtSecret = python -c "import secrets; print(secrets.token_urlsafe(32))"
-    Write-Host 'JWT_SECRET gerado para este deploy. Guarde-o em um gerenciador de segredos.' -ForegroundColor Yellow
+    throw 'JWT_SECRET deve ser fornecido explicitamente. Para producao, use o Key Vault e o runbook de migracao.'
 }
 if (-not $PostgresAdminPassword) {
     $PostgresAdminPassword = python -c "import secrets; print(secrets.token_urlsafe(32))"

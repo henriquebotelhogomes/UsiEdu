@@ -9,6 +9,7 @@ import yaml
 ROOT = Path(__file__).parent.parent.parent
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "migrate-azure-secrets.yml"
 FOUNDATION_PATH = ROOT / "infra" / "azure" / "security-foundation.bicep"
+DEPLOY_SCRIPT_PATH = ROOT / "infra" / "azure" / "deploy.ps1"
 
 
 def _workflow() -> tuple[str, dict]:
@@ -108,3 +109,10 @@ def test_security_foundation_uses_rbac_key_vault_and_least_privilege_identity() 
     assert "4e3d2b60-56ae-4dc6-a233-09c8e5a82e68" in template  # Container Apps Jobs Contributor
     assert "@secure()" not in template
     assert "param jwtSecret" not in template
+
+
+def test_manual_azure_deploy_requires_an_explicit_jwt_secret() -> None:
+    script = DEPLOY_SCRIPT_PATH.read_text(encoding="utf-8")
+
+    assert "$JwtSecret = python -c" not in script
+    assert "JWT_SECRET deve ser fornecido explicitamente" in script
