@@ -61,12 +61,20 @@ jobs:
           set -euo pipefail
           test "$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"
           RESTORE_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          az postgres flexible-server restore \
-            --resource-group "$RECOVERY_RESOURCE_GROUP" \
-            --name "$RECOVERY_POSTGRES_SERVER" \
-            --source-server "/subscriptions/${{ vars.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.DBforPostgreSQL/flexibleServers/${SOURCE_POSTGRES_SERVER}" \
-            --yes \
-            --output none
+          for attempt in 1 2; do
+            if az postgres flexible-server restore \
+              --resource-group "$RECOVERY_RESOURCE_GROUP" \
+              --name "$RECOVERY_POSTGRES_SERVER" \
+              --source-server "/subscriptions/${{ vars.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.DBforPostgreSQL/flexibleServers/${SOURCE_POSTGRES_SERVER}" \
+              --yes \
+              --output none; then
+              break
+            fi
+            if test "$attempt" -eq 2; then
+              exit 1
+            fi
+            sleep 30
+          done
           RESTORE_COMPLETED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           {
             echo "RESTORE_STARTED_AT=$RESTORE_STARTED_AT"
@@ -179,8 +187,10 @@ jobs:
         run: |
           set -euo pipefail
           test "$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"
-          if az postgres flexible-server show --resource-group "$RECOVERY_RESOURCE_GROUP" \
-            --name "$RECOVERY_POSTGRES_SERVER" --output none 2>/dev/null; then
+          RECOVERY_SERVER_EXISTS=$(az postgres flexible-server list \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --query "[?name=='${RECOVERY_POSTGRES_SERVER}'].name | [0]" -o tsv)
+          if [ -n "$RECOVERY_SERVER_EXISTS" ]; then
             az postgres flexible-server delete --resource-group "$RECOVERY_RESOURCE_GROUP" \
               --name "$RECOVERY_POSTGRES_SERVER" --yes --output none
           fi

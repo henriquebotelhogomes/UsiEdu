@@ -81,6 +81,19 @@ def test_recovery_records_rpo_rto_measurement_and_never_deletes_production() -> 
     assert "restore_completed_at" in evidence["run"]
     assert '--resource-group "$RECOVERY_RESOURCE_GROUP"' in cleanup["run"]
     assert '"$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"' in cleanup["run"]
+    assert "az postgres flexible-server list" in cleanup["run"]
+    assert "az postgres flexible-server show" not in cleanup["run"]
     assert "SOURCE_POSTGRES_SERVER" not in cleanup["run"].replace(
         '"$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"', ""
     )
+
+
+def test_recovery_retries_only_one_transient_postgresql_restore_failure() -> None:
+    _, workflow = _workflow()
+    steps = workflow["jobs"]["recover"]["steps"]
+    restore = next(step for step in steps if step["name"] == "Restore isolated PostgreSQL")
+
+    assert "for attempt in 1 2" in restore["run"]
+    assert 'test "$attempt" -eq 2' in restore["run"]
+    assert "sleep 30" in restore["run"]
+    assert restore["run"].count("az postgres flexible-server restore") == 1

@@ -181,6 +181,12 @@ antes da falha foi removido manualmente e o grupo isolado voltou a ficar vazio.
 O runbook passou a usar o snapshot pelo plano de controle e registra os
 identificadores do snapshot e do clone antes da cópia, para que a limpeza
 também os alcance se a operação falhar.
+O terceiro run protegido, `31731678159`, recebeu `InternalServerError` do
+provedor PostgreSQL após aguardar a operação, sem criar o servidor de
+recuperação; o grupo isolado e os snapshots permaneceram vazios. O runbook
+agora executa no máximo uma nova tentativa após 30 segundos para essa operação
+transitória e consulta a lista de servidores antes da limpeza, evitando que
+`ResourceNotFound` de uma criação inexistente torne o cleanup falso-negativo.
 `Storage Account Contributor` e `Storage Account Key Operator Service Role`
 ficam apenas na conta que hospeda Qdrant, e `Contributor` somente no grupo
 isolado. O último papel não é concedido no grupo de produção. A T04.4
