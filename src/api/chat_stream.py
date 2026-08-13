@@ -93,25 +93,17 @@ async def chat_stream(
     padroes_entrada = detect_injection(payload.message)
     if padroes_entrada:
         config["metadata"]["flagged"] = True
-        config["metadata"]["injection_patterns"] = padroes_entrada
         logger.warning(
             "Pergunta sinalizada pelo guardrail (observada, não bloqueada)",
             extra={
                 "guardrail_triggered": True,
                 "origem": "entrada",
-                "padroes": padroes_entrada,
-                "session_id": payload.session_id,
             },
         )
 
     logger.info(
         "Chat stream request received",
-        extra={
-            "profile": current_user["profile"],
-            "user": current_user["email"],
-            "session_id": payload.session_id,
-            "message_length": len(payload.message),
-        },
+        extra={},
     )
 
     # Cache semântico (T9.2): hit dispensa o grafo; stream sintético com o
@@ -142,7 +134,7 @@ async def chat_stream(
 
         logger.info(
             "Chat stream served from cache",
-            extra={"session_id": payload.session_id, "exact": hit["exact"], "cache_hit": True},
+            extra={"exact": hit["exact"], "cache_hit": True},
         )
         return StreamingResponse(
             cached_stream(),
@@ -183,9 +175,7 @@ async def chat_stream(
             validacao = validate_answer(texto_final)
             guardrail_disparado = not validacao.safe
             if guardrail_disparado:
-                log_guardrail(
-                    run_id, validacao.reasons, origem="chat_stream", session_id=payload.session_id
-                )
+                log_guardrail(run_id, validacao.reasons, origem="chat_stream")
                 registrar_guardrail_langsmith(run_id, validacao.reasons)
                 texto_final = RESPOSTA_SEGURA_PADRAO
 

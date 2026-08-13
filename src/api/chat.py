@@ -94,10 +94,6 @@ async def chat(
         "Chat request received",
         extra={
             TRACE_ID_CTX_KEY: trace_id,
-            "profile": current_user["profile"],
-            "user": current_user["email"],
-            "session_id": payload.session_id,
-            "message_length": len(payload.message),
         },
     )
 
@@ -115,7 +111,6 @@ async def chat(
             "Chat served from cache",
             extra={
                 TRACE_ID_CTX_KEY: trace_id,
-                "session_id": payload.session_id,
                 "exact": hit["exact"],
                 "cache_hit": True,
             },
@@ -143,15 +138,12 @@ async def chat(
     padroes_entrada = detect_injection(payload.message)
     if padroes_entrada:
         config["metadata"]["flagged"] = True
-        config["metadata"]["injection_patterns"] = padroes_entrada
         logger.warning(
             "Pergunta sinalizada pelo guardrail (observada, não bloqueada)",
             extra={
                 TRACE_ID_CTX_KEY: trace_id,
                 "guardrail_triggered": True,
                 "origem": "entrada",
-                "padroes": padroes_entrada,
-                "session_id": payload.session_id,
             },
         )
 
@@ -183,7 +175,7 @@ async def chat(
     validacao = validate_answer(answer)
     guardrail_disparado = not validacao.safe
     if guardrail_disparado:
-        log_guardrail(run_id, validacao.reasons, origem="chat", session_id=payload.session_id)
+        log_guardrail(run_id, validacao.reasons, origem="chat")
         registrar_guardrail_langsmith(run_id, validacao.reasons)
         answer = RESPOSTA_SEGURA_PADRAO
 
@@ -254,7 +246,7 @@ async def chat_history(
 
     logger.info(
         "Chat history served",
-        extra={"session_id": session_id, "user": current_user["email"], "count": len(messages)},
+        extra={"count": len(messages)},
     )
 
     return ChatHistoryResponse(session_id=session_id, messages=messages)
