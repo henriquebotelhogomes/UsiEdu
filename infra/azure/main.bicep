@@ -299,6 +299,14 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: 'true'
             }
             {
+              name: 'LANGSMITH_HIDE_INPUTS'
+              value: 'true'
+            }
+            {
+              name: 'LANGSMITH_HIDE_OUTPUTS'
+              value: 'true'
+            }
+            {
               name: 'LANGSMITH_API_KEY'
               secretRef: 'langsmith-api-key'
             }
@@ -308,6 +316,14 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'LANGCHAIN_TRACING_V2'
+              value: 'true'
+            }
+            {
+              name: 'LANGCHAIN_HIDE_INPUTS'
+              value: 'true'
+            }
+            {
+              name: 'LANGCHAIN_HIDE_OUTPUTS'
               value: 'true'
             }
             {

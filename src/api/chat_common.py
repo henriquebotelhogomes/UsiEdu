@@ -46,11 +46,7 @@ def build_run_config(current_user: dict, session_id: str, run_id: uuid.UUID) -> 
     return {
         "run_id": run_id,
         "metadata": {
-            "message_id": str(run_id),
-            "session_id": session_id,
-            # Associa a thread ao usuário (T7.4): gravado nos metadados do
-            # checkpoint a cada escrita; usado na validação de posse do histórico.
-            "user_email": current_user["email"],
+            "telemetry_scope": "demo_minimized",
         },
         "configurable": {
             "thread_id": session_id,

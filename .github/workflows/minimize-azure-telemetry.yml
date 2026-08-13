@@ -1,0 +1,83 @@
+name: Minimize Azure telemetry
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  minimize:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      API_APP: ${{ vars.AZURE_API_APP }}
+      FRONTEND_APP: ${{ vars.AZURE_FRONTEND_APP }}
+    steps:
+      - name: Checkout approved runbook
+        uses: actions/checkout@v4
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Hide LangSmith inputs and outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          az containerapp update --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
+            --set-env-vars LANGSMITH_HIDE_INPUTS=true LANGSMITH_HIDE_OUTPUTS=true \
+              LANGCHAIN_HIDE_INPUTS=true LANGCHAIN_HIDE_OUTPUTS=true --output none
+          az containerapp show --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
+            --query "properties.template.containers[0].env[?starts_with(name, 'LANGSMITH_HIDE_') || starts_with(name, 'LANGCHAIN_HIDE_')].{name:name,value:value}" \
+            -o json > artifacts/tracing-minimization.json
+          jq -e '
+            length == 4 and
+            all(.[]; .value == "true")
+          ' artifacts/tracing-minimization.json > /dev/null
+
+      - name: Smoke test minimized telemetry deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          FRONTEND_FQDN=$(az containerapp show --resource-group "$RESOURCE_GROUP" \
+            --name "$FRONTEND_APP" --query properties.configuration.ingress.fqdn -o tsv)
+          curl --fail --silent --show-error --retry 12 --retry-delay 10 \
+            "https://$FRONTEND_FQDN/health" > artifacts/health.json
+
+      - name: Write minimization evidence
+        if: always()
+        shell: bash
+        run: |
+          jq -n \
+            --arg github_sha "$GITHUB_SHA" \
+            --arg workflow_run "$GITHUB_RUN_ID" \
+            --arg api_app "$API_APP" \
+            '{
+              schema_version: "1.0.0",
+              github_sha: $github_sha,
+              workflow_run: $workflow_run,
+              api_app: $api_app,
+              policy: "langsmith_inputs_outputs_hidden"
+            }' > artifacts/telemetry-minimization-evidence.json
+
+      - name: Upload minimization evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-telemetry-minimization-evidence
+          path: artifacts/
+          if-no-files-found: error

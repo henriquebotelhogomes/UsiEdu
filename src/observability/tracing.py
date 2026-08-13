@@ -41,7 +41,7 @@ def get_langsmith_client() -> LangSmithClient | None:
         return None
 
     try:
-        _client = LangSmithClient()
+        _client = LangSmithClient(hide_inputs=True, hide_outputs=True)
         return _client
     except Exception:
         _client = None
