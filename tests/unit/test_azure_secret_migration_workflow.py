@@ -59,8 +59,9 @@ def test_migration_uses_user_assigned_identity_and_preserves_jwt() -> None:
     assert "keyvaultref:" in migration["run"]
     assert "jwt-secret" in migration["run"]
     assert "registry-password" not in migration["run"]
-    assert "az acr update" in text
-    assert "--admin-enabled false" in text
+    disable_admin = next(step for step in steps if step["name"] == "Disable legacy ACR admin")
+    assert "az acr update" in disable_admin["run"]
+    assert "--admin-enabled false" in disable_admin["run"]
 
 
 def test_migration_writes_sanitized_evidence_and_smoke_tests_result() -> None:
@@ -69,8 +70,15 @@ def test_migration_writes_sanitized_evidence_and_smoke_tests_result() -> None:
     names = [step["name"] for step in steps]
 
     assert "Smoke test migrated deployment" in names
+    assert "Restart migrated API revision" in names
+    assert "Disable legacy ACR admin" in names
     assert "Write migration evidence" in names
     assert "Upload migration evidence" in names
+    assert names.index("Migrate active secrets") < names.index("Restart migrated API revision")
+    assert names.index("Restart migrated API revision") < names.index(
+        "Smoke test migrated deployment"
+    )
+    assert names.index("Smoke test migrated deployment") < names.index("Disable legacy ACR admin")
     assert (
         "jwt"
         not in next(
@@ -89,5 +97,6 @@ def test_security_foundation_uses_rbac_key_vault_and_least_privilege_identity() 
     assert "4633458b-17de-408a-b874-0445c86b69e6" in template  # Key Vault Secrets User
     assert "b86a8fe4-44ce-4948-aee5-eccb2c155cd7" in template  # Key Vault Secrets Officer
     assert "358470bc-b998-42bd-ab17-a7e34c199c0f" in template  # Container Apps Contributor
+    assert "b24988ac-6180-42a0-ab88-20f7382dd24c" in template  # Contributor on ACR
     assert "@secure()" not in template
     assert "param jwtSecret" not in template

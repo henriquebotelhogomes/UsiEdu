@@ -31,6 +31,10 @@ var containerAppsContributorRoleDefinitionId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   '358470bc-b998-42bd-ab17-a7e34c199c0f'
 )
+var contributorRoleDefinitionId = subscriptionResourceId(
+  'Microsoft.Authorization/roleDefinitions',
+  'b24988ac-6180-42a0-ab88-20f7382dd24c'
+)
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
@@ -97,6 +101,16 @@ resource deploymentManagedEnvironmentContributor 'Microsoft.Authorization/roleAs
     principalId: deploymentPrincipalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: containerAppsContributorRoleDefinitionId
+  }
+}
+
+resource deploymentRegistryContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(registry.id, deploymentPrincipalId, contributorRoleDefinitionId)
+  scope: registry
+  properties: {
+    principalId: deploymentPrincipalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: contributorRoleDefinitionId
   }
 }
 
