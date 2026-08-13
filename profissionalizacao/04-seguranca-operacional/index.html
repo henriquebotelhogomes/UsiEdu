@@ -1158,6 +1158,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#preparacao-t044" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparação T04.4
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1489,6 +1500,17 @@
     <span class="md-ellipsis">
       
         Runbook T04.2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preparacao-t044" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparação T04.4
       
     </span>
   </a>
@@ -1835,6 +1857,26 @@ segredo não foram lidos para evidência.</p>
 Vault, atualizar uma única referência, validar login e health e manter a versão
 anterior durante a janela de reversão. Se a validação falhar, a referência volta
 para a versão anterior; nenhum segredo é impresso em logs ou evidência.</p>
+<h3 id="preparacao-t044">Preparação T04.4<a class="headerlink" href="#preparacao-t044" title="Permanent link">&para;</a></h3>
+<p>O workflow manual <code>.github/workflows/exercise-azure-recovery.yml</code> só executa
+em <code>main</code>, exige o Environment <code>production</code> e falha antes de alterar recursos
+se o grupo de recuperação não for diferente de <code>rg-usiedu</code>, se o servidor
+restaurado não tiver nome distinto da origem ou se algum recurso de origem não
+existir. Ele restaura PostgreSQL para um servidor efêmero no grupo isolado e
+cria um snapshot do share <code>qdrant</code> para copiá-lo a um share efêmero, sem listar
+arquivos, conteúdo de coleções, dados de banco ou credenciais. A evidência
+sanitizada registra somente identificadores, timestamps e as metas provisórias
+RPO 24 h/RTO 4 h; a limpeza só aponta para os recursos efêmeros e para o
+snapshot identificado.</p>
+<p>Os templates <code>infra/azure/recovery-source-access.bicep</code> e
+<code>infra/azure/recovery-target-access.bicep</code> separam os escopos mínimos: <code>Reader</code>
+no PostgreSQL de origem, <code>Storage Account Contributor</code> e <code>Storage Account Key
+Operator Service Role</code> apenas na conta que hospeda Qdrant, e <code>Contributor</code>
+somente no grupo isolado. O último papel não é concedido no grupo de produção.
+Na data desta preparação, o grupo isolado e esses papéis ainda não existem; por
+isso não houve restore, consulta SQL autenticada, verificação de coleção nem
+aceite de RPO/RTO. A T04.4 permanece pendente até uma execução protegida gerar
+essa evidência.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[x] <strong>T04.1 — Inventariar superfície operacional</strong></li>
