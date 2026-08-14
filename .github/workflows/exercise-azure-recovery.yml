@@ -99,13 +99,10 @@ jobs:
             --resource-group "$RESOURCE_GROUP" \
             --account-name "$STORAGE_ACCOUNT" \
             --query '[0].value' -o tsv)
-          SOURCE_SAS=$(az storage share generate-sas \
-            --account-name "$STORAGE_ACCOUNT" \
-            --account-key "$STORAGE_KEY" \
-            --name "$SOURCE_SHARE" \
-            --permissions rl \
-            --expiry "$(date -u -d '+1 hour' +%Y-%m-%dT%H:%MZ)" \
-            --https-only -o tsv)
+          python -m pip install --quiet azure-storage-file-share==12.23.0
+          SOURCE_SAS=$(STORAGE_ACCOUNT="$STORAGE_ACCOUNT" \
+            STORAGE_KEY="$STORAGE_KEY" \
+            python -c 'import os; from datetime import datetime, timedelta, timezone; from azure.storage.fileshare import AccountSasPermissions, ResourceTypes, Services, generate_account_sas; print(generate_account_sas(account_name=os.environ["STORAGE_ACCOUNT"], account_key=os.environ["STORAGE_KEY"], resource_types=ResourceTypes(container=True, object=True), permission=AccountSasPermissions(read=True, list=True), expiry=datetime.now(timezone.utc) + timedelta(hours=1), services=Services(fileshare=True), protocol="https"))')
           az storage share create \
             --account-name "$STORAGE_ACCOUNT" \
             --account-key "$STORAGE_KEY" \
