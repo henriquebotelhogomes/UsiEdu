@@ -99,21 +99,24 @@ jobs:
             --resource-group "$RESOURCE_GROUP" \
             --account-name "$STORAGE_ACCOUNT" \
             --query '[0].value' -o tsv)
+          command -v azcopy > /dev/null
           python -m pip install --quiet azure-storage-file-share==12.23.0
           SOURCE_SAS=$(STORAGE_ACCOUNT="$STORAGE_ACCOUNT" \
             STORAGE_KEY="$STORAGE_KEY" \
             python -c 'import os; from datetime import datetime, timedelta, timezone; from azure.storage.fileshare import AccountSasPermissions, ResourceTypes, Services, generate_account_sas; print(generate_account_sas(account_name=os.environ["STORAGE_ACCOUNT"], account_key=os.environ["STORAGE_KEY"], resource_types=ResourceTypes(container=True, object=True), permission=AccountSasPermissions(read=True, list=True), expiry=datetime.now(timezone.utc) + timedelta(hours=1), services=Services(fileshare=True), protocol="https"))')
+          DESTINATION_SAS=$(STORAGE_ACCOUNT="$STORAGE_ACCOUNT" \
+            STORAGE_KEY="$STORAGE_KEY" \
+            python -c 'import os; from datetime import datetime, timedelta, timezone; from azure.storage.fileshare import AccountSasPermissions, ResourceTypes, Services, generate_account_sas; print(generate_account_sas(account_name=os.environ["STORAGE_ACCOUNT"], account_key=os.environ["STORAGE_KEY"], resource_types=ResourceTypes(container=True, object=True), permission=AccountSasPermissions(write=True, create=True, list=True), expiry=datetime.now(timezone.utc) + timedelta(hours=1), services=Services(fileshare=True), protocol="https"))')
           az storage share create \
             --account-name "$STORAGE_ACCOUNT" \
             --account-key "$STORAGE_KEY" \
             --name "$RECOVERY_SHARE" \
             --output none
-          az storage file copy start-batch \
-            --source-uri "https://${STORAGE_ACCOUNT}.file.core.windows.net/${SOURCE_SHARE}?sharesnapshot=${QDRANT_SNAPSHOT}&${SOURCE_SAS}" \
-            --destination-share "$RECOVERY_SHARE" \
-            --account-name "$STORAGE_ACCOUNT" \
-            --account-key "$STORAGE_KEY" \
-            --output none
+          azcopy copy \
+            "https://${STORAGE_ACCOUNT}.file.core.windows.net/${SOURCE_SHARE}?sharesnapshot=${QDRANT_SNAPSHOT}&${SOURCE_SAS}" \
+            "https://${STORAGE_ACCOUNT}.file.core.windows.net/${RECOVERY_SHARE}?${DESTINATION_SAS}" \
+            --recursive=true \
+            --log-level=ERROR
 
       - name: Validate recovered resources
         shell: bash

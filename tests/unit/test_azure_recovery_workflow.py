@@ -47,18 +47,26 @@ def test_recovery_requires_an_isolated_postgresql_target_and_share_clone() -> No
     assert "Services(fileshare=True)" in qdrant["run"]
     assert "ResourceTypes(container=True, object=True)" in qdrant["run"]
     assert "AccountSasPermissions(read=True, list=True)" in qdrant["run"]
+    assert "AccountSasPermissions(write=True, create=True, list=True)" in qdrant["run"]
     assert (
         '"https://${STORAGE_ACCOUNT}.file.core.windows.net/${SOURCE_SHARE}?sharesnapshot=${QDRANT_SNAPSHOT}&${SOURCE_SAS}"'
         in qdrant["run"]
     )
+    assert (
+        '"https://${STORAGE_ACCOUNT}.file.core.windows.net/${RECOVERY_SHARE}?${DESTINATION_SAS}"'
+        in (qdrant["run"])
+    )
     assert "az storage share create" in qdrant["run"]
-    assert "az storage file copy start-batch" in qdrant["run"]
+    assert "command -v azcopy" in qdrant["run"]
+    assert "azcopy copy" in qdrant["run"]
+    assert "--recursive=true" in qdrant["run"]
+    assert "az storage file copy start-batch" not in qdrant["run"]
     assert 'RECOVERY_SHARE="qdrant-recovery-${GITHUB_RUN_ID}"' in qdrant["run"]
     assert qdrant["run"].index('echo "RECOVERY_SHARE=$RECOVERY_SHARE"') < qdrant["run"].index(
-        "az storage file copy start-batch"
+        "azcopy copy"
     )
     assert qdrant["run"].index('echo "QDRANT_SNAPSHOT=$QDRANT_SNAPSHOT"') < qdrant["run"].index(
-        "az storage file copy start-batch"
+        "azcopy copy"
     )
 
 
