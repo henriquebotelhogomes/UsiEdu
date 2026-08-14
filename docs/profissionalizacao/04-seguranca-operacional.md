@@ -194,6 +194,12 @@ o URI de cópia recebeu o parâmetro de snapshot vazio. A correção extrai
 explicitamente `snapshotTime`; o snapshot diagnóstico criado para confirmar o
 contrato foi removido e não ficaram servidores, clones ou snapshots
 temporários.
+No quinto run protegido, `31769690066`, o snapshot foi extraído corretamente,
+mas a SAS de share foi assinada para o share ativo e não permaneceu válida após
+adicionar `sharesnapshot` ao URI. O runbook passa a gerar em memória uma SAS de
+conta de uma hora, restrita ao serviço Files e às permissões de leitura/listagem
+de container/objeto, que não assina o URI e é compatível com o snapshot. A
+limpeza removeu o servidor, clone e snapshot efêmeros desse run.
 `Storage Account Contributor` e `Storage Account Key Operator Service Role`
 ficam apenas na conta que hospeda Qdrant, e `Contributor` somente no grupo
 isolado. O último papel não é concedido no grupo de produção. A T04.4

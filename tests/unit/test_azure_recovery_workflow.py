@@ -42,6 +42,15 @@ def test_recovery_requires_an_isolated_postgresql_target_and_share_clone() -> No
     assert "az storage share-rm snapshot" in qdrant["run"]
     assert "--query snapshotTime -o tsv" in qdrant["run"]
     assert "properties.shareSnapshot" not in qdrant["run"]
+    assert "azure-storage-file-share==12.23.0" in qdrant["run"]
+    assert "generate_account_sas" in qdrant["run"]
+    assert "Services(fileshare=True)" in qdrant["run"]
+    assert "ResourceTypes(container=True, object=True)" in qdrant["run"]
+    assert "AccountSasPermissions(read=True, list=True)" in qdrant["run"]
+    assert (
+        '"https://${STORAGE_ACCOUNT}.file.core.windows.net/${SOURCE_SHARE}?sharesnapshot=${QDRANT_SNAPSHOT}&${SOURCE_SAS}"'
+        in qdrant["run"]
+    )
     assert "az storage share create" in qdrant["run"]
     assert "az storage file copy start-batch" in qdrant["run"]
     assert 'RECOVERY_SHARE="qdrant-recovery-${GITHUB_RUN_ID}"' in qdrant["run"]
