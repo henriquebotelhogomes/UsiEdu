@@ -196,10 +196,14 @@ contrato foi removido e não ficaram servidores, clones ou snapshots
 temporários.
 No quinto run protegido, `31769690066`, o snapshot foi extraído corretamente,
 mas a SAS de share foi assinada para o share ativo e não permaneceu válida após
-adicionar `sharesnapshot` ao URI. O runbook passa a gerar em memória uma SAS de
-conta de uma hora, restrita ao serviço Files e às permissões de leitura/listagem
-de container/objeto, que não assina o URI e é compatível com o snapshot. A
-limpeza removeu o servidor, clone e snapshot efêmeros desse run.
+adicionar `sharesnapshot` ao URI. O sexto run protegido, `31770644006`, usou
+uma SAS de conta temporária, mas o subcomando `az storage file copy start-batch`
+continuou falhando no processamento da origem de snapshot. Dois snapshots
+temporários de runs anteriores foram identificados pelo plano de controle e
+removidos; o grupo isolado e os clones permaneceram vazios. O runbook agora usa
+AzCopy, que suporta cópia recursiva de snapshots, com SAS de conta separadas e
+temporárias: origem limitada a leitura/listagem e destino limitado a
+criação/escrita/listagem no serviço Files.
 `Storage Account Contributor` e `Storage Account Key Operator Service Role`
 ficam apenas na conta que hospeda Qdrant, e `Contributor` somente no grupo
 isolado. O último papel não é concedido no grupo de produção. A T04.4
