@@ -1889,6 +1889,13 @@ recuperação; o grupo isolado e os snapshots permaneceram vazios. O runbook
 agora executa no máximo uma nova tentativa após 30 segundos para essa operação
 transitória e consulta a lista de servidores antes da limpeza, evitando que
 <code>ResourceNotFound</code> de uma criação inexistente torne o cleanup falso-negativo.
+No quarto run protegido, <code>31733643718</code>, o restore PostgreSQL isolado foi
+concluído e limpo, mas o clone Qdrant falhou porque o comando preview
+<code>share-rm snapshot</code> retorna <code>snapshotTime</code>, não <code>properties.shareSnapshot</code>;
+o URI de cópia recebeu o parâmetro de snapshot vazio. A correção extrai
+explicitamente <code>snapshotTime</code>; o snapshot diagnóstico criado para confirmar o
+contrato foi removido e não ficaram servidores, clones ou snapshots
+temporários.
 <code>Storage Account Contributor</code> e <code>Storage Account Key Operator Service Role</code>
 ficam apenas na conta que hospeda Qdrant, e <code>Contributor</code> somente no grupo
 isolado. O último papel não é concedido no grupo de produção. A T04.4
