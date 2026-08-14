@@ -89,7 +89,7 @@ jobs:
             --resource-group "$RESOURCE_GROUP" \
             --storage-account "$STORAGE_ACCOUNT" \
             --name "$SOURCE_SHARE" \
-            --query properties.shareSnapshot -o tsv)
+            --query snapshotTime -o tsv)
           RECOVERY_SHARE="qdrant-recovery-${GITHUB_RUN_ID}"
           {
             echo "QDRANT_SNAPSHOT=$QDRANT_SNAPSHOT"
