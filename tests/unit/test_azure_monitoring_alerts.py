@@ -70,6 +70,8 @@ def test_alert_report_is_manual_protected_and_deduplicates_github_issues() -> No
     assert job["environment"] == "production"
     assert "azure/login@v2" in text
     assert "Microsoft.AlertsManagement/alerts" in text
+    assert "api-version=2019-03-01" in text
+    assert "2023-07-12-preview" not in text
     assert "usiedu-ingest-failed" in text
     assert "alertState" in text
     assert "gh issue list" in text
@@ -80,6 +82,7 @@ def test_alert_report_is_manual_protected_and_deduplicates_github_issues() -> No
     assert "webhook" not in text.lower()
     assert "teams" not in text.lower()
     assert "budget" not in text.lower()
+    assert "if-no-files-found: warn" in text
 
 
 def test_alert_deployment_is_manual_protected_and_uses_compiled_templates() -> None:
