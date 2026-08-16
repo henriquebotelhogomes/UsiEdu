@@ -17,11 +17,16 @@ def test_source_access_is_limited_to_restore_and_qdrant_clone_actions() -> None:
     assert "param deploymentPrincipalId string" in template
     assert "Microsoft.DBforPostgreSQL/flexibleServers" in template
     assert "Microsoft.Storage/storageAccounts" in template
+    assert "param keyVaultName string" in template
+    assert "Microsoft.KeyVault/vaults/secrets" in template
     assert "17d1049b-9a84-46fb-8f53-869881c3d3ab" in template  # Storage Account Contributor
     assert "81a9662b-bebf-436f-a333-f67b29880f12" in template  # Storage Account Key Operator
+    assert "4633458b-17de-408a-b874-0445c86b69e6" in template  # Key Vault Secrets User
     assert "postgresRestoreSourceRoleDefinitionId" in template
     assert "scope: postgresServer" in template
     assert template.count("scope: storageAccount") == 2
+    assert "scope: databaseUrlSecret" in template
+    assert "name: 'database-url'" in template
     assert "acdd72a7-3385-48ef-bd42-f606fba81ae7" not in template
     assert "b24988ac-6180-42a0-ab88-20f7382dd24c" not in template
     assert "targetScope = 'subscription'" in role_definition

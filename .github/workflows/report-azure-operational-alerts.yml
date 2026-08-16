@@ -1,0 +1,106 @@
+name: Report Azure operational alerts
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  report:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      GH_TOKEN: ${{ github.token }}
+      ALERT_LABEL: azure-operational-alert
+    steps:
+      - name: Checkout approved runbook
+        uses: actions/checkout@v4
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Query active approved alerts
+        shell: bash
+        run: |
+          set -euo pipefail
+          az rest --method get \
+            --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.AlertsManagement/alerts?api-version=2023-07-12-preview" \
+            > artifacts/azure-alerts.json
+          jq '
+            [
+              .value[]
+              | .properties.essentials
+              | select(.alertState == "New" or .alertState == "Acknowledged")
+              | select(
+                  .alertRule
+                  | endswith("/usiedu-containerapp-tracebacks")
+                    or endswith("/usiedu-ingest-failed")
+                    or endswith("/usiedu-postgresql-unavailable")
+                )
+              | {
+                  rule: (.alertRule | split("/") | last),
+                  severity: .severity,
+                  state: .alertState,
+                  fired_at: .startDateTime
+                }
+            ]
+          ' artifacts/azure-alerts.json > artifacts/active-approved-alerts.json
+
+      - name: Create or update deduplicated GitHub issues
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh label create "$ALERT_LABEL" --color 0e8a16 \
+            --description "Active Azure operational alert" --force
+
+          while IFS= read -r alert; do
+            rule=$(jq -r '.rule' <<< "$alert")
+            severity=$(jq -r '.severity' <<< "$alert")
+            state=$(jq -r '.state' <<< "$alert")
+            fired_at=$(jq -r '.fired_at' <<< "$alert")
+            title="[Azure] ${rule}"
+            body=$(jq -nr \
+              --arg rule "$rule" \
+              --arg severity "$severity" \
+              --arg state "$state" \
+              --arg fired_at "$fired_at" \
+              '{
+                rule: $rule,
+                severity: $severity,
+                state: $state,
+                fired_at: $fired_at
+              }')
+            issue_number=$(gh issue list --state open --label "$ALERT_LABEL" \
+              --search "\"${title}\" in:title" --json number --jq '.[0].number // empty')
+
+            if [[ -z "$issue_number" ]]; then
+              gh issue create --title "$title" --label "$ALERT_LABEL" --body "$body"
+            else
+              gh issue comment "$issue_number" --body "$body"
+            fi
+          done < <(jq -c '.[]' artifacts/active-approved-alerts.json)
+
+      - name: Upload sanitized alert evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-operational-alert-evidence
+          path: artifacts/active-approved-alerts.json
+          if-no-files-found: error

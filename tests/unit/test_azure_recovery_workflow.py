@@ -8,6 +8,7 @@ import yaml
 
 ROOT = Path(__file__).parent.parent.parent
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "exercise-azure-recovery.yml"
+QDRANT_VALIDATION_TEMPLATE_PATH = ROOT / "infra" / "azure" / "recovery-qdrant-validation.bicep"
 
 
 def _workflow() -> tuple[str, dict]:
@@ -74,15 +75,29 @@ def test_recovery_validates_without_printing_credentials_or_persisted_content() 
     text, workflow = _workflow()
     steps = workflow["jobs"]["recover"]["steps"]
     validation = next(step for step in steps if step["name"] == "Validate recovered resources")
+    postgresql = next(
+        step for step in steps if step["name"] == "Validate recovered PostgreSQL query"
+    )
     evidence = next(step for step in steps if step["name"] == "Write recovery evidence")
 
     assert "az postgres flexible-server show" in validation["run"]
     assert "az storage share show" in validation["run"]
+    job_env = workflow["jobs"]["recover"]["env"]
+    assert job_env["KEY_VAULT_NAME"] == "${{ vars.AZURE_KEY_VAULT_NAME }}"
+    assert "az postgres flexible-server firewall-rule create" in postgresql["run"]
+    assert '--resource-group "$RECOVERY_RESOURCE_GROUP"' in postgresql["run"]
+    assert "--name allow-azure-services" in postgresql["run"]
+    assert "az keyvault secret show" in postgresql["run"]
+    assert "--name database-url" in postgresql["run"]
+    assert "psycopg[binary]" in postgresql["run"]
+    assert "SELECT 1" in postgresql["run"]
     assert "az storage file list" not in text
     assert "az postgres flexible-server db" not in text
     assert "az storage account keys list" in text
     assert "--output none" in text
     assert "STORAGE_KEY" not in evidence["run"]
+    assert "DATABASE_URL" not in evidence["run"]
+    assert "postgresql_connectivity_validated" in evidence["run"]
     assert "RECOVERY_POSTGRES_SERVER" in evidence["run"]
     assert "RECOVERY_SHARE" in evidence["run"]
     assert "Upload recovery evidence" in [step["name"] for step in steps]
@@ -116,3 +131,33 @@ def test_recovery_retries_only_one_transient_postgresql_restore_failure() -> Non
     assert 'test "$attempt" -eq 2' in restore["run"]
     assert "sleep 30" in restore["run"]
     assert restore["run"].count("az postgres flexible-server restore") == 1
+
+
+def test_recovery_compares_qdrant_collections_without_exposing_names_or_content() -> None:
+    text, workflow = _workflow()
+    template = QDRANT_VALIDATION_TEMPLATE_PATH.read_text(encoding="utf-8")
+    steps = workflow["jobs"]["recover"]["steps"]
+    validation = next(
+        step for step in steps if step["name"] == "Validate recovered Qdrant collections"
+    )
+    evidence = next(step for step in steps if step["name"] == "Write recovery evidence")
+    cleanup = next(step for step in steps if step["name"] == "Clean up isolated recovery resources")
+
+    assert "AZURE_MANAGED_ENVIRONMENT" not in workflow["jobs"]["recover"]["env"]
+    assert "Microsoft.App/containerApps@2024-03-01" in template
+    assert "qdrant/qdrant:v1.14.1" in template
+    assert "name: 'validator'" in template
+    assert "SOURCE_QDRANT_URL" in template
+    assert "QDRANT_RECOVERY_VALIDATION=" in template
+    assert "collections_sha256" in template
+    assert "external: true" not in template
+    assert "az containerapp env storage set" in validation["run"]
+    assert "properties.managedEnvironmentId" in validation["run"]
+    assert "az deployment group create" in validation["run"]
+    assert "recovery-qdrant-validation.bicep" in validation["run"]
+    assert "az containerapp logs show" in validation["run"]
+    assert "qdrant_collections_validated" in evidence["run"]
+    assert "az containerapp delete" in cleanup["run"]
+    assert "az containerapp env storage remove" in cleanup["run"]
+    assert "az storage file list" not in text
+    assert "usiedu-qdrant" not in cleanup["run"]
