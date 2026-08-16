@@ -1973,6 +1973,14 @@ mais amplo <code>Azure Container Storage Contributor</code>, o papel customizado
 Container Apps Environment Storage Operator</code> adiciona somente <code>read</code>, <code>write</code>
 e <code>delete</code> ao mount do ambiente. O RPO/RTO e a integridade Qdrant continuam
 pendentes até o retry aprovado concluir.</p>
+<p>O retry protegido <code>31979082376</code> restaurou PostgreSQL e concluiu o snapshot e
+clone Qdrant, mas a consulta <code>SELECT 1</code> falhou antes da comparação Qdrant:
+após o restore, a asserção OIDC inicial havia expirado. O cleanup removeu o
+servidor, share, snapshot, mount e Container App efêmeros. O workflow renova a
+sessão OIDC imediatamente antes das validações autenticadas e um contrato
+estático exige essa renovação. Nenhuma evidência desse run permite aceitar
+RPO/RTO ou declarar T04.4 concluída; a comparação sanitizada de coleções ainda
+precisa ser executada em novo retry aprovado.</p>
 <h3 id="preparacao-t045">Preparação T04.5<a class="headerlink" href="#preparacao-t045" title="Permanent link">&para;</a></h3>
 <p>O inventário factual de observabilidade confirmou que o workspace
 <code>usiedu-logs</code> retém dados por 30 dias e que <code>ContainerAppConsoleLogs_CL</code> tem
