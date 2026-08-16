@@ -219,6 +219,38 @@ isolado. O último papel não é concedido no grupo de produção. A T04.4
 permanece pendente até uma execução protegida gerar a evidência de restore,
 consulta SQL autenticada, verificação de coleção e comparação RPO/RTO.
 
+### Preparação T04.5
+
+O inventário factual de observabilidade confirmou que o workspace
+`usiedu-logs` retém dados por 30 dias e que `ContainerAppConsoleLogs_CL` tem
+os campos `TimeGenerated`, `ContainerAppName_s`, `Stream_s` e `Log_s`. Em
+30 dias, a consulta de diagnóstico encontrou 17 janelas de cinco minutos com
+tracebacks em `stderr`, com máximo de oito por janela; nas 24 horas mais
+recentes não houve janela correspondente. O PostgreSQL expõe a métrica
+`is_db_alive`, que permaneceu em `1` nas amostras de cinco minutos das últimas
+24 horas. Não havia metric alerts, action groups nem orçamento Azure no grupo
+de recursos no momento da consulta.
+
+O job manual `usiedu-ingest` teve os reasons `BackoffLimitExceeded` (cinco
+eventos históricos) e `Completed` (três); o primeiro é o sinal factual de
+falha usado para o alerta de ingestão. `infra/azure/monitoring-alerts.bicep`
+prepara três alertas sem action group ou destino externo: traceback de
+Container Apps em `stderr` nos últimos cinco minutos, `BackoffLimitExceeded`
+do job de ingestão e `is_db_alive` médio abaixo de `1` por 15 minutos no
+PostgreSQL.
+`infra/azure/monitoring-access.bicep` limita a identidade OIDC a
+`Monitoring Contributor` no grupo de recursos e `Log Analytics Reader` no
+workspace; não concede `Contributor`. O workflow manual e protegido
+`.github/workflows/report-azure-operational-alerts.yml` consulta somente os
+dois alertas ativos aprovados via ARM, cria ou atualiza uma Issue GitHub
+deduplicada pelo rótulo `azure-operational-alert` e publica artefato contendo
+apenas regra, severidade, estado e timestamp.
+
+O alerta financeiro não foi criado: não existe orçamento factual nem limiar
+aprovado. Esta preparação não altera Azure nem conclui T04.5; a implantação
+protegida, a simulação controlada de API, ingestão e banco, e a evidência da
+Issue ainda são necessárias.
+
 ## 7. Tarefas e microtarefas
 
 - [x] **T04.1 — Inventariar superfície operacional**
