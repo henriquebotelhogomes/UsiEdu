@@ -75,6 +75,7 @@ def test_recovery_validates_without_printing_credentials_or_persisted_content() 
     text, workflow = _workflow()
     steps = workflow["jobs"]["recover"]["steps"]
     validation = next(step for step in steps if step["name"] == "Validate recovered resources")
+    renew_oidc = next(step for step in steps if step["name"] == "Renew Azure OIDC credentials")
     postgresql = next(
         step for step in steps if step["name"] == "Validate recovered PostgreSQL query"
     )
@@ -84,6 +85,13 @@ def test_recovery_validates_without_printing_credentials_or_persisted_content() 
     assert "az storage share show" in validation["run"]
     job_env = workflow["jobs"]["recover"]["env"]
     assert job_env["KEY_VAULT_NAME"] == "${{ vars.AZURE_KEY_VAULT_NAME }}"
+    assert renew_oidc["uses"] == "azure/login@v2"
+    assert renew_oidc["with"] == {
+        "client-id": "${{ vars.AZURE_CLIENT_ID }}",
+        "tenant-id": "${{ vars.AZURE_TENANT_ID }}",
+        "subscription-id": "${{ vars.AZURE_SUBSCRIPTION_ID }}",
+    }
+    assert steps.index(renew_oidc) < steps.index(postgresql)
     assert "az postgres flexible-server firewall-rule create" in postgresql["run"]
     assert '--resource-group "$RECOVERY_RESOURCE_GROUP"' in postgresql["run"]
     assert "--name allow-azure-services" in postgresql["run"]

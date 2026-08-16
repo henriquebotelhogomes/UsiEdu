@@ -145,6 +145,13 @@ jobs:
           jq -e --arg share "$RECOVERY_SHARE" \
             '.name == $share' artifacts/recovered-qdrant-share.json > /dev/null
 
+      - name: Renew Azure OIDC credentials
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
       - name: Validate recovered PostgreSQL query
         shell: bash
         run: |
