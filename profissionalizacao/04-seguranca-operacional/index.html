@@ -1961,6 +1961,18 @@ lista nomes, pontos, payloads ou arquivos. A configuração temporária de
 Azure Files no ambiente e o Container App no grupo de recuperação são
 removidos no cleanup. Essa preparação não é evidência de integridade até o
 workflow protegido concluir e publicar o artefato sanitizado.</p>
+<p>O run protegido <code>31922492862</code> restaurou PostgreSQL entre
+<code>2026-08-16T02:57:43Z</code> e <code>2026-08-16T03:03:56Z</code>, validou o servidor <code>Ready</code> e
+executou <code>SELECT 1</code> com sucesso, sem registrar a URL de conexão. O clone
+Qdrant e o snapshot também foram criados e removidos pelo cleanup; o grupo de
+recuperação, os shares temporários e os Container Apps efêmeros ficaram vazios
+após a falha. A validação runtime de Qdrant não iniciou porque o papel
+<code>Container Apps Contributor</code> não contém
+<code>microsoft.app/managedenvironments/storages/write</code>. Em vez do papel built-in
+mais amplo <code>Azure Container Storage Contributor</code>, o papel customizado <code>UsiEdu
+Container Apps Environment Storage Operator</code> adiciona somente <code>read</code>, <code>write</code>
+e <code>delete</code> ao mount do ambiente. O RPO/RTO e a integridade Qdrant continuam
+pendentes até o retry aprovado concluir.</p>
 <h3 id="preparacao-t045">Preparação T04.5<a class="headerlink" href="#preparacao-t045" title="Permanent link">&para;</a></h3>
 <p>O inventário factual de observabilidade confirmou que o workspace
 <code>usiedu-logs</code> retém dados por 30 dias e que <code>ContainerAppConsoleLogs_CL</code> tem
