@@ -10,6 +10,9 @@ param storageAccountName string
 @description('Nome do Key Vault que contém somente a URL de conexão a validar.')
 param keyVaultName string
 
+@description('Nome do ambiente gerenciado que monta o clone Qdrant efemero.')
+param managedEnvironmentName string
+
 var storageAccountContributorRoleDefinitionId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   '17d1049b-9a84-46fb-8f53-869881c3d3ab'
@@ -25,6 +28,10 @@ var postgresRestoreSourceRoleDefinitionId = subscriptionResourceId(
 var keyVaultSecretsUserRoleDefinitionId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   '4633458b-17de-408a-b874-0445c86b69e6'
+)
+var environmentStorageOperatorRoleDefinitionId = subscriptionResourceId(
+  'Microsoft.Authorization/roleDefinitions',
+  guid(subscription().id, 'usiedu-container-apps-environment-storage-operator')
 )
 
 resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' existing = {
@@ -42,6 +49,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
 resource databaseUrlSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' existing = {
   parent: keyVault
   name: 'database-url'
+}
+
+resource managedEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
+  name: managedEnvironmentName
 }
 
 resource deploymentPostgresRestoreSourceOperator 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -81,5 +92,15 @@ resource deploymentDatabaseUrlReader 'Microsoft.Authorization/roleAssignments@20
     principalId: deploymentPrincipalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: keyVaultSecretsUserRoleDefinitionId
+  }
+}
+
+resource deploymentEnvironmentStorageOperator 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(managedEnvironment.id, deploymentPrincipalId, environmentStorageOperatorRoleDefinitionId)
+  scope: managedEnvironment
+  properties: {
+    principalId: deploymentPrincipalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: environmentStorageOperatorRoleDefinitionId
   }
 }

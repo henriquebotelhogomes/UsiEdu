@@ -23,3 +23,25 @@ resource postgresRestoreSourceRole 'Microsoft.Authorization/roleDefinitions@2022
     assignableScopes: [resourceId('Microsoft.Resources/resourceGroups', sourceResourceGroupName)]
   }
 }
+
+resource environmentStorageOperatorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' = {
+  name: guid(subscription().id, 'usiedu-container-apps-environment-storage-operator')
+  properties: {
+    roleName: 'UsiEdu Container Apps Environment Storage Operator'
+    description: 'Permite somente gerenciar mounts Azure Files efemeros do ambiente gerenciado.'
+    type: 'CustomRole'
+    permissions: [
+      {
+        actions: [
+          'microsoft.app/managedenvironments/storages/read'
+          'microsoft.app/managedenvironments/storages/write'
+          'microsoft.app/managedenvironments/storages/delete'
+        ]
+        notActions: []
+        dataActions: []
+        notDataActions: []
+      }
+    ]
+    assignableScopes: [resourceId('Microsoft.Resources/resourceGroups', sourceResourceGroupName)]
+  }
+}
