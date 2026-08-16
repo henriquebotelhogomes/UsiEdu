@@ -230,6 +230,16 @@ conectividade. A regra temporária `allow-azure-services` existe somente no
 servidor recuperado e é removida junto com ele. A execução protegida e a
 verificação runtime das coleções Qdrant continuam necessárias.
 
+Para Qdrant, o workflow prepara o Container App efêmero definido em
+`infra/azure/recovery-qdrant-validation.bicep`: ele monta exclusivamente o
+share clonado, executa Qdrant com a mesma versão da origem e usa um sidecar no
+mesmo ambiente para comparar a API interna de coleções da origem e da cópia.
+O sidecar emite somente contagens e hashes SHA-256 dos nomes ordenados; não
+lista nomes, pontos, payloads ou arquivos. A configuração temporária de
+Azure Files no ambiente e o Container App no grupo de recuperação são
+removidos no cleanup. Essa preparação não é evidência de integridade até o
+workflow protegido concluir e publicar o artefato sanitizado.
+
 ### Preparação T04.5
 
 O inventário factual de observabilidade confirmou que o workspace

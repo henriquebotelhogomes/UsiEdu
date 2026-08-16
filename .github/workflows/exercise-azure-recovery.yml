@@ -194,6 +194,68 @@ jobs:
           unset DATABASE_URL
           echo "POSTGRES_CONNECTIVITY_VALIDATED=true" >> "$GITHUB_ENV"
 
+      - name: Validate recovered Qdrant collections
+        shell: bash
+        run: |
+          set -euo pipefail
+          RECOVERY_QDRANT_APP="qdrant-recovery-${GITHUB_RUN_ID}"
+          RECOVERY_QDRANT_STORAGE="qdrant-recovery-${GITHUB_RUN_ID}"
+          {
+            echo "RECOVERY_QDRANT_APP=$RECOVERY_QDRANT_APP"
+            echo "RECOVERY_QDRANT_STORAGE=$RECOVERY_QDRANT_STORAGE"
+          } >> "$GITHUB_ENV"
+          SOURCE_QDRANT_CONFIGURATION=$(az containerapp show --resource-group "$RESOURCE_GROUP" \
+            --name usiedu-qdrant \
+            --query '{fqdn:properties.configuration.ingress.fqdn,environment:properties.managedEnvironmentId}' \
+            -o json)
+          SOURCE_QDRANT_FQDN=$(jq -r '.fqdn' <<< "$SOURCE_QDRANT_CONFIGURATION")
+          MANAGED_ENVIRONMENT=$(jq -r '.environment | split("/") | last' <<< "$SOURCE_QDRANT_CONFIGURATION")
+          test -n "$SOURCE_QDRANT_FQDN"
+          test -n "$MANAGED_ENVIRONMENT"
+          echo "MANAGED_ENVIRONMENT=$MANAGED_ENVIRONMENT" >> "$GITHUB_ENV"
+          STORAGE_KEY=$(az storage account keys list \
+            --resource-group "$RESOURCE_GROUP" \
+            --account-name "$STORAGE_ACCOUNT" \
+            --query '[0].value' -o tsv)
+          az containerapp env storage set \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$MANAGED_ENVIRONMENT" \
+            --storage-name "$RECOVERY_QDRANT_STORAGE" \
+            --access-mode ReadWrite \
+            --azure-file-account-name "$STORAGE_ACCOUNT" \
+            --azure-file-account-key "$STORAGE_KEY" \
+            --azure-file-share-name "$RECOVERY_SHARE" \
+            --output none
+          echo "QDRANT_ENV_STORAGE_CONFIGURED=true" >> "$GITHUB_ENV"
+          az deployment group create \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --name "qdrant-recovery-validation-${GITHUB_RUN_ID}" \
+            --template-file infra/azure/recovery-qdrant-validation.bicep \
+            --parameters \
+              appName="$RECOVERY_QDRANT_APP" \
+              managedEnvironmentId="$(az containerapp env show --resource-group "$RESOURCE_GROUP" --name "$MANAGED_ENVIRONMENT" --query id -o tsv)" \
+              environmentStorageName="$RECOVERY_QDRANT_STORAGE" \
+              sourceQdrantFqdn="$SOURCE_QDRANT_FQDN" \
+            --output none
+          for attempt in $(seq 1 36); do
+            marker=$(az containerapp logs show --resource-group "$RECOVERY_RESOURCE_GROUP" \
+              --name "$RECOVERY_QDRANT_APP" --container validator --tail 100 --format text \
+              2>/dev/null | grep 'QDRANT_RECOVERY_VALIDATION=' | tail -n 1 || true)
+            if [ -n "$marker" ]; then
+              break
+            fi
+            sleep 10
+          done
+          test -n "${marker:-}"
+          printf '%s\n' "$marker" | sed 's/.*QDRANT_RECOVERY_VALIDATION=//' \
+            > artifacts/recovered-qdrant-runtime.json
+          jq -e '
+            .validated == true and
+            .source_collection_count == .recovery_collection_count and
+            .source_collections_sha256 == .recovery_collections_sha256
+          ' artifacts/recovered-qdrant-runtime.json > /dev/null
+          echo "QDRANT_COLLECTIONS_VALIDATED=true" >> "$GITHUB_ENV"
+
       - name: Write recovery evidence
         if: always()
         shell: bash
@@ -210,6 +272,7 @@ jobs:
             --arg restore_started_at "${RESTORE_STARTED_AT:-}" \
             --arg restore_completed_at "${RESTORE_COMPLETED_AT:-}" \
             --arg postgresql_connectivity_validated "${POSTGRES_CONNECTIVITY_VALIDATED:-false}" \
+            --arg qdrant_collections_validated "${QDRANT_COLLECTIONS_VALIDATED:-false}" \
             '{
               schema_version: "1.0.0",
               github_sha: $github_sha,
@@ -222,6 +285,7 @@ jobs:
               restore_started_at: $restore_started_at,
               restore_completed_at: $restore_completed_at,
               postgresql_connectivity_validated: ($postgresql_connectivity_validated == "true"),
+              qdrant_collections_validated: ($qdrant_collections_validated == "true"),
               rpo_target_hours: 24,
               rto_target_hours: 4
             }' > artifacts/recovery-evidence.json
@@ -240,6 +304,23 @@ jobs:
         run: |
           set -euo pipefail
           test "$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"
+          RECOVERY_QDRANT_APP_EXISTS=$(az containerapp list \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --query "[?name=='${RECOVERY_QDRANT_APP:-}'].name | [0]" -o tsv)
+          if [ -n "$RECOVERY_QDRANT_APP_EXISTS" ]; then
+            az containerapp delete --resource-group "$RECOVERY_RESOURCE_GROUP" \
+              --name "$RECOVERY_QDRANT_APP" --yes --output none
+          fi
+          if [ -n "${MANAGED_ENVIRONMENT:-}" ]; then
+            RECOVERY_QDRANT_STORAGE_EXISTS=$(az containerapp env storage list \
+              --resource-group "$RESOURCE_GROUP" --name "$MANAGED_ENVIRONMENT" \
+              --query "[?name=='${RECOVERY_QDRANT_STORAGE:-}'].name | [0]" -o tsv)
+            if [ "$RECOVERY_QDRANT_STORAGE_EXISTS" = "${RECOVERY_QDRANT_STORAGE:-}" ]; then
+              az containerapp env storage remove --resource-group "$RESOURCE_GROUP" \
+                --name "$MANAGED_ENVIRONMENT" --storage-name "$RECOVERY_QDRANT_STORAGE" \
+                --yes --output none
+            fi
+          fi
           RECOVERY_SERVER_EXISTS=$(az postgres flexible-server list \
             --resource-group "$RECOVERY_RESOURCE_GROUP" \
             --query "[?name=='${RECOVERY_POSTGRES_SERVER}'].name | [0]" -o tsv)
