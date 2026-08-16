@@ -1169,6 +1169,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#preparacao-t045" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparação T04.5
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1511,6 +1522,17 @@
     <span class="md-ellipsis">
       
         Preparação T04.4
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preparacao-t045" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparação T04.5
       
     </span>
   </a>
@@ -1920,6 +1942,56 @@ ficam apenas na conta que hospeda Qdrant, e <code>Contributor</code> somente no 
 isolado. O último papel não é concedido no grupo de produção. A T04.4
 permanece pendente até uma execução protegida gerar a evidência de restore,
 consulta SQL autenticada, verificação de coleção e comparação RPO/RTO.</p>
+<p>Em 2026-08-15, a leitura sanitizada do identificador do segredo
+<code>database-url</code> pelo principal OIDC foi negada com <code>ForbiddenByRbac</code>; portanto,
+nenhuma consulta autenticada foi simulada ou declarada como concluída.
+<code>infra/azure/recovery-source-access.bicep</code> passa a atribuir <code>Key Vault Secrets
+User</code> somente a esse secret, não ao cofre. Após o bootstrap administrativo
+dessa atribuição, o workflow recupera a URL apenas em memória, troca o host
+pela instância efêmera, executa <code>SELECT 1</code> e registra apenas o booleano de
+conectividade. A regra temporária <code>allow-azure-services</code> existe somente no
+servidor recuperado e é removida junto com ele. A execução protegida e a
+verificação runtime das coleções Qdrant continuam necessárias.</p>
+<p>Para Qdrant, o workflow prepara o Container App efêmero definido em
+<code>infra/azure/recovery-qdrant-validation.bicep</code>: ele monta exclusivamente o
+share clonado, executa Qdrant com a mesma versão da origem e usa um sidecar no
+mesmo ambiente para comparar a API interna de coleções da origem e da cópia.
+O sidecar emite somente contagens e hashes SHA-256 dos nomes ordenados; não
+lista nomes, pontos, payloads ou arquivos. A configuração temporária de
+Azure Files no ambiente e o Container App no grupo de recuperação são
+removidos no cleanup. Essa preparação não é evidência de integridade até o
+workflow protegido concluir e publicar o artefato sanitizado.</p>
+<h3 id="preparacao-t045">Preparação T04.5<a class="headerlink" href="#preparacao-t045" title="Permanent link">&para;</a></h3>
+<p>O inventário factual de observabilidade confirmou que o workspace
+<code>usiedu-logs</code> retém dados por 30 dias e que <code>ContainerAppConsoleLogs_CL</code> tem
+os campos <code>TimeGenerated</code>, <code>ContainerAppName_s</code>, <code>Stream_s</code> e <code>Log_s</code>. Em
+30 dias, a consulta de diagnóstico encontrou 17 janelas de cinco minutos com
+tracebacks em <code>stderr</code>, com máximo de oito por janela; nas 24 horas mais
+recentes não houve janela correspondente. O PostgreSQL expõe a métrica
+<code>is_db_alive</code>, que permaneceu em <code>1</code> nas amostras de cinco minutos das últimas
+24 horas. Não havia metric alerts, action groups nem orçamento Azure no grupo
+de recursos no momento da consulta.</p>
+<p>O job manual <code>usiedu-ingest</code> teve os reasons <code>BackoffLimitExceeded</code> (cinco
+eventos históricos) e <code>Completed</code> (três); o primeiro é o sinal factual de
+falha usado para o alerta de ingestão. <code>infra/azure/monitoring-alerts.bicep</code>
+prepara três alertas sem action group ou destino externo: traceback de
+Container Apps em <code>stderr</code> nos últimos cinco minutos, <code>BackoffLimitExceeded</code>
+do job de ingestão e <code>is_db_alive</code> médio abaixo de <code>1</code> por 15 minutos no
+PostgreSQL.
+<code>infra/azure/monitoring-access.bicep</code> limita a identidade OIDC a
+<code>Monitoring Contributor</code> no grupo de recursos e <code>Log Analytics Reader</code> no
+workspace; não concede <code>Contributor</code>. O workflow manual e protegido
+<code>.github/workflows/configure-azure-operational-alerts.yml</code> aplica e verifica
+os três recursos após o bootstrap administrativo de RBAC mínimo; a identidade
+OIDC não tenta atribuir privilégios a si mesma. O workflow manual e protegido
+<code>.github/workflows/report-azure-operational-alerts.yml</code> consulta somente os
+dois alertas ativos aprovados via ARM, cria ou atualiza uma Issue GitHub
+deduplicada pelo rótulo <code>azure-operational-alert</code> e publica artefato contendo
+apenas regra, severidade, estado e timestamp.</p>
+<p>O alerta financeiro não foi criado: não existe orçamento factual nem limiar
+aprovado. Esta preparação não altera Azure nem conclui T04.5; a implantação
+protegida, a simulação controlada de API, ingestão e banco, e a evidência da
+Issue ainda são necessárias.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[x] <strong>T04.1 — Inventariar superfície operacional</strong></li>
