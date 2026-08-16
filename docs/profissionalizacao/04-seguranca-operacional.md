@@ -204,6 +204,15 @@ removidos; o grupo isolado e os clones permaneceram vazios. O runbook agora usa
 AzCopy, que suporta cópia recursiva de snapshots, com SAS de conta separadas e
 temporárias: origem limitada a leitura/listagem e destino limitado a
 criação/escrita/listagem no serviço Files.
+O sétimo run protegido, `31771590396`, concluiu o restore PostgreSQL para
+`usiedu-pg-recovery-20260813` (PostgreSQL 16 em estado `Ready`), criou o clone
+`qdrant-recovery-31771590396` a partir do snapshot
+`2026-08-16T01:33:05.0000000Z`, validou a existência dos dois recursos e
+executou a limpeza. O workflow terminou em 8 min 22 s, abaixo do RTO provisório
+de 4 h; a evidência sanitizada registra início e fim do restore, sem chave,
+SAS, dados de banco ou arquivos do share. A consulta SQL autenticada e a
+verificação de coleção Qdrant ainda não foram executadas, portanto a evidência
+não permite aceitar RPO ou declarar T04.4 concluída.
 `Storage Account Contributor` e `Storage Account Key Operator Service Role`
 ficam apenas na conta que hospeda Qdrant, e `Contributor` somente no grupo
 isolado. O último papel não é concedido no grupo de produção. A T04.4
