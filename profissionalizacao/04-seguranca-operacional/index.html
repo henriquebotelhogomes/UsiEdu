@@ -1992,6 +1992,15 @@ apenas regra, severidade, estado e timestamp.</p>
 aprovado. Esta preparação não altera Azure nem conclui T04.5; a implantação
 protegida, a simulação controlada de API, ingestão e banco, e a evidência da
 Issue ainda são necessárias.</p>
+<p>O primeiro deploy protegido de alertas, <code>31921566440</code>, falhou sem criar regras
+porque a assinatura não estava registrada no provedor <code>Microsoft.Insights</code>.
+Após o registro administrativo único do provedor, o retry protegido
+<code>31921996765</code> criou e validou os três recursos. O primeiro relatório
+protegido, <code>31922153135</code>, revelou que a API <code>Microsoft.AlertsManagement/alerts</code>
+não aceita <code>2023-07-12-preview</code> nessa assinatura; a versão estável
+<code>2019-03-01</code> retornou uma lista vazia quando consultada localmente. O workflow
+passa a usar essa versão e não transforma a ausência de artefato em falha que
+mascare o erro primário.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[x] <strong>T04.1 — Inventariar superfície operacional</strong></li>
