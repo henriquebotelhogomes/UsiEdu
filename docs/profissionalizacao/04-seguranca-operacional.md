@@ -253,6 +253,15 @@ Container Apps Environment Storage Operator` adiciona somente `read`, `write`
 e `delete` ao mount do ambiente. O RPO/RTO e a integridade Qdrant continuam
 pendentes até o retry aprovado concluir.
 
+O retry protegido `31979082376` restaurou PostgreSQL e concluiu o snapshot e
+clone Qdrant, mas a consulta `SELECT 1` falhou antes da comparação Qdrant:
+após o restore, a asserção OIDC inicial havia expirado. O cleanup removeu o
+servidor, share, snapshot, mount e Container App efêmeros. O workflow renova a
+sessão OIDC imediatamente antes das validações autenticadas e um contrato
+estático exige essa renovação. Nenhuma evidência desse run permite aceitar
+RPO/RTO ou declarar T04.4 concluída; a comparação sanitizada de coleções ainda
+precisa ser executada em novo retry aprovado.
+
 ### Preparação T04.5
 
 O inventário factual de observabilidade confirmou que o workspace
