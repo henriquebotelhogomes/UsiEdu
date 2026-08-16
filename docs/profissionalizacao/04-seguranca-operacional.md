@@ -241,6 +241,9 @@ PostgreSQL.
 `infra/azure/monitoring-access.bicep` limita a identidade OIDC a
 `Monitoring Contributor` no grupo de recursos e `Log Analytics Reader` no
 workspace; não concede `Contributor`. O workflow manual e protegido
+`.github/workflows/configure-azure-operational-alerts.yml` aplica e verifica
+os três recursos após o bootstrap administrativo de RBAC mínimo; a identidade
+OIDC não tenta atribuir privilégios a si mesma. O workflow manual e protegido
 `.github/workflows/report-azure-operational-alerts.yml` consulta somente os
 dois alertas ativos aprovados via ARM, cria ou atualiza uma Issue GitHub
 deduplicada pelo rótulo `azure-operational-alert` e publica artefato contendo

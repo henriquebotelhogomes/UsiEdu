@@ -10,6 +10,7 @@ ROOT = Path(__file__).parent.parent.parent
 ALERTS_PATH = ROOT / "infra" / "azure" / "monitoring-alerts.bicep"
 ACCESS_PATH = ROOT / "infra" / "azure" / "monitoring-access.bicep"
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "report-azure-operational-alerts.yml"
+DEPLOY_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "configure-azure-operational-alerts.yml"
 
 
 def _workflow() -> tuple[str, dict]:
@@ -79,3 +80,21 @@ def test_alert_report_is_manual_protected_and_deduplicates_github_issues() -> No
     assert "webhook" not in text.lower()
     assert "teams" not in text.lower()
     assert "budget" not in text.lower()
+
+
+def test_alert_deployment_is_manual_protected_and_uses_compiled_templates() -> None:
+    text = DEPLOY_WORKFLOW_PATH.read_text(encoding="utf-8")
+    workflow = yaml.safe_load(text)
+    job = workflow["jobs"]["configure"]
+
+    assert set(workflow["on"]) == {"workflow_dispatch"}
+    assert workflow["permissions"] == {"contents": "read", "id-token": "write"}
+    assert job["if"] == "github.ref == 'refs/heads/main'"
+    assert job["environment"] == "production"
+    assert "azure/login@v2" in text
+    assert "infra/azure/monitoring-alerts.bicep" in text
+    assert "az deployment group create" in text
+    assert "az resource show" in text
+    assert '"${alert##*/}"' in text
+    assert "az monitor scheduled-query" not in text
+    assert "${{ secrets." not in text.lower()
