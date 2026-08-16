@@ -219,6 +219,17 @@ isolado. O último papel não é concedido no grupo de produção. A T04.4
 permanece pendente até uma execução protegida gerar a evidência de restore,
 consulta SQL autenticada, verificação de coleção e comparação RPO/RTO.
 
+Em 2026-08-15, a leitura sanitizada do identificador do segredo
+`database-url` pelo principal OIDC foi negada com `ForbiddenByRbac`; portanto,
+nenhuma consulta autenticada foi simulada ou declarada como concluída.
+`infra/azure/recovery-source-access.bicep` passa a atribuir `Key Vault Secrets
+User` somente a esse secret, não ao cofre. Após o bootstrap administrativo
+dessa atribuição, o workflow recupera a URL apenas em memória, troca o host
+pela instância efêmera, executa `SELECT 1` e registra apenas o booleano de
+conectividade. A regra temporária `allow-azure-services` existe somente no
+servidor recuperado e é removida junto com ele. A execução protegida e a
+verificação runtime das coleções Qdrant continuam necessárias.
+
 ### Preparação T04.5
 
 O inventário factual de observabilidade confirmou que o workspace

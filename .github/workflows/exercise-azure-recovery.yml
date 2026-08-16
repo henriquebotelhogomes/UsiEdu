@@ -23,6 +23,7 @@ jobs:
       SOURCE_POSTGRES_SERVER: ${{ vars.AZURE_POSTGRES_SERVER }}
       RECOVERY_POSTGRES_SERVER: ${{ vars.AZURE_RECOVERY_POSTGRES_SERVER }}
       STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+      KEY_VAULT_NAME: ${{ vars.AZURE_KEY_VAULT_NAME }}
       SOURCE_SHARE: qdrant
     steps:
       - name: Checkout approved runbook
@@ -45,6 +46,7 @@ jobs:
           test -n "$RECOVERY_RESOURCE_GROUP"
           test -n "$RECOVERY_POSTGRES_SERVER"
           test -n "$STORAGE_ACCOUNT"
+          test -n "$KEY_VAULT_NAME"
           test "$RECOVERY_RESOURCE_GROUP" != "$RESOURCE_GROUP"
           test "$RECOVERY_POSTGRES_SERVER" != "$SOURCE_POSTGRES_SERVER"
           az group show --name "$RECOVERY_RESOURCE_GROUP" --output none
@@ -143,6 +145,55 @@ jobs:
           jq -e --arg share "$RECOVERY_SHARE" \
             '.name == $share' artifacts/recovered-qdrant-share.json > /dev/null
 
+      - name: Validate recovered PostgreSQL query
+        shell: bash
+        run: |
+          set -euo pipefail
+          az postgres flexible-server firewall-rule create \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --server-name "$RECOVERY_POSTGRES_SERVER" \
+            --name allow-azure-services \
+            --start-ip-address 0.0.0.0 \
+            --end-ip-address 0.0.0.0 \
+            --output none
+          RECOVERY_POSTGRES_HOST=$(az postgres flexible-server show \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --name "$RECOVERY_POSTGRES_SERVER" \
+            --query fullyQualifiedDomainName -o tsv)
+          DATABASE_URL=$(az keyvault secret show \
+            --vault-name "$KEY_VAULT_NAME" \
+            --name database-url \
+            --query value -o tsv)
+          python -m pip install --quiet "psycopg[binary]"
+          DATABASE_URL="$DATABASE_URL" RECOVERY_POSTGRES_HOST="$RECOVERY_POSTGRES_HOST" \
+            python - <<'PY'
+          import os
+          from urllib.parse import urlsplit, urlunsplit
+
+          import psycopg
+
+          source_url = urlsplit(os.environ["DATABASE_URL"])
+          credentials, separator, _ = source_url.netloc.rpartition("@")
+          if source_url.scheme not in {"postgres", "postgresql"} or not separator:
+              raise SystemExit("database-url must be a PostgreSQL URL with credentials")
+
+          recovery_url = urlunsplit(
+              (
+                  source_url.scheme,
+                  f"{credentials}@{os.environ['RECOVERY_POSTGRES_HOST']}",
+                  source_url.path,
+                  source_url.query,
+                  source_url.fragment,
+              )
+          )
+          with psycopg.connect(recovery_url, connect_timeout=30) as connection:
+              result = connection.execute("SELECT 1").fetchone()
+          if result != (1,):
+              raise SystemExit("PostgreSQL connectivity query returned an unexpected result")
+          PY
+          unset DATABASE_URL
+          echo "POSTGRES_CONNECTIVITY_VALIDATED=true" >> "$GITHUB_ENV"
+
       - name: Write recovery evidence
         if: always()
         shell: bash
@@ -158,6 +209,7 @@ jobs:
             --arg qdrant_snapshot "${QDRANT_SNAPSHOT:-}" \
             --arg restore_started_at "${RESTORE_STARTED_AT:-}" \
             --arg restore_completed_at "${RESTORE_COMPLETED_AT:-}" \
+            --arg postgresql_connectivity_validated "${POSTGRES_CONNECTIVITY_VALIDATED:-false}" \
             '{
               schema_version: "1.0.0",
               github_sha: $github_sha,
@@ -169,6 +221,7 @@ jobs:
               qdrant_snapshot: $qdrant_snapshot,
               restore_started_at: $restore_started_at,
               restore_completed_at: $restore_completed_at,
+              postgresql_connectivity_validated: ($postgresql_connectivity_validated == "true"),
               rpo_target_hours: 24,
               rto_target_hours: 4
             }' > artifacts/recovery-evidence.json

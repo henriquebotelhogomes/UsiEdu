@@ -7,6 +7,9 @@ param postgresServerName string
 @description('Nome da conta de armazenamento que contém o share Qdrant de produção.')
 param storageAccountName string
 
+@description('Nome do Key Vault que contém somente a URL de conexão a validar.')
+param keyVaultName string
+
 var storageAccountContributorRoleDefinitionId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   '17d1049b-9a84-46fb-8f53-869881c3d3ab'
@@ -19,6 +22,10 @@ var postgresRestoreSourceRoleDefinitionId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   guid(subscription().id, 'usiedu-postgres-restore-source-operator')
 )
+var keyVaultSecretsUserRoleDefinitionId = subscriptionResourceId(
+  'Microsoft.Authorization/roleDefinitions',
+  '4633458b-17de-408a-b874-0445c86b69e6'
+)
 
 resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' existing = {
   name: postgresServerName
@@ -26,6 +33,15 @@ resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' e
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageAccountName
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+  name: keyVaultName
+}
+
+resource databaseUrlSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' existing = {
+  parent: keyVault
+  name: 'database-url'
 }
 
 resource deploymentPostgresRestoreSourceOperator 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -55,5 +71,15 @@ resource deploymentStorageKeyOperator 'Microsoft.Authorization/roleAssignments@2
     principalId: deploymentPrincipalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: storageAccountKeyOperatorRoleDefinitionId
+  }
+}
+
+resource deploymentDatabaseUrlReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(databaseUrlSecret.id, deploymentPrincipalId, keyVaultSecretsUserRoleDefinitionId)
+  scope: databaseUrlSecret
+  properties: {
+    principalId: deploymentPrincipalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: keyVaultSecretsUserRoleDefinitionId
   }
 }
