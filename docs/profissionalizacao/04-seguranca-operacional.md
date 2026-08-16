@@ -240,6 +240,19 @@ Azure Files no ambiente e o Container App no grupo de recuperação são
 removidos no cleanup. Essa preparação não é evidência de integridade até o
 workflow protegido concluir e publicar o artefato sanitizado.
 
+O run protegido `31922492862` restaurou PostgreSQL entre
+`2026-08-16T02:57:43Z` e `2026-08-16T03:03:56Z`, validou o servidor `Ready` e
+executou `SELECT 1` com sucesso, sem registrar a URL de conexão. O clone
+Qdrant e o snapshot também foram criados e removidos pelo cleanup; o grupo de
+recuperação, os shares temporários e os Container Apps efêmeros ficaram vazios
+após a falha. A validação runtime de Qdrant não iniciou porque o papel
+`Container Apps Contributor` não contém
+`microsoft.app/managedenvironments/storages/write`. Em vez do papel built-in
+mais amplo `Azure Container Storage Contributor`, o papel customizado `UsiEdu
+Container Apps Environment Storage Operator` adiciona somente `read`, `write`
+e `delete` ao mount do ambiente. O RPO/RTO e a integridade Qdrant continuam
+pendentes até o retry aprovado concluir.
+
 ### Preparação T04.5
 
 O inventário factual de observabilidade confirmou que o workspace
