@@ -43,46 +43,46 @@ resource recoveryQdrantValidation 'Microsoft.App/containerApps@2024-03-01' = {
           command: [
             'sh'
             '-c'
-            '''
-              python - <<'PY'
-              import hashlib
-              import json
-              import os
-              import time
-              from urllib.request import urlopen
-
-              def collections(url):
-                  with urlopen(f"{url}/collections", timeout=10) as response:
-                      payload = json.load(response)
-                  return sorted(item["name"] for item in payload["result"]["collections"])
-
-              for _ in range(60):
-                  try:
-                      with urlopen("http://127.0.0.1:6333/healthz", timeout=5):
-                          break
-                  except OSError:
-                      time.sleep(5)
-              else:
-                  raise SystemExit("Recovered Qdrant health check did not become ready")
-
-              source = collections(os.environ["SOURCE_QDRANT_URL"])
-              recovery = collections("http://127.0.0.1:6333")
-              source_hash = hashlib.sha256("\n".join(source).encode()).hexdigest()
-              recovery_hash = hashlib.sha256("\n".join(recovery).encode()).hexdigest()
-              result = {
-                  "validated": source == recovery,
-                  "source_collection_count": len(source),
-                  "recovery_collection_count": len(recovery),
-                  "source_collections_sha256": source_hash,
-                  "recovery_collections_sha256": recovery_hash,
-              }
-              print("QDRANT_RECOVERY_VALIDATION=" + json.dumps(result, sort_keys=True), flush=True)
-              if not result["validated"]:
-                  raise SystemExit("Recovered Qdrant collection fingerprint does not match source")
-              while True:
-                  time.sleep(3600)
-              PY
-            '''
+            join([
+              'python - <<PY'
+              'import hashlib'
+              'import json'
+              'import os'
+              'import time'
+              'from urllib.request import urlopen'
+              ''
+              'def collections(url):'
+              '    with urlopen(f"{url}/collections", timeout=10) as response:'
+              '        payload = json.load(response)'
+              '    return sorted(item["name"] for item in payload["result"]["collections"])'
+              ''
+              'for _ in range(60):'
+              '    try:'
+              '        with urlopen("http://127.0.0.1:6333/healthz", timeout=5):'
+              '            break'
+              '    except OSError:'
+              '        time.sleep(5)'
+              'else:'
+              '    raise SystemExit("Recovered Qdrant health check did not become ready")'
+              ''
+              'source = collections(os.environ["SOURCE_QDRANT_URL"])'
+              'recovery = collections("http://127.0.0.1:6333")'
+              'source_hash = hashlib.sha256("\n".join(source).encode()).hexdigest()'
+              'recovery_hash = hashlib.sha256("\n".join(recovery).encode()).hexdigest()'
+              'result = {'
+              '    "validated": source == recovery,'
+              '    "source_collection_count": len(source),'
+              '    "recovery_collection_count": len(recovery),'
+              '    "source_collections_sha256": source_hash,'
+              '    "recovery_collections_sha256": recovery_hash,'
+              '}'
+              'print("QDRANT_RECOVERY_VALIDATION=" + json.dumps(result, sort_keys=True), flush=True)'
+              'if not result["validated"]:'
+              '    raise SystemExit("Recovered Qdrant collection fingerprint does not match source")'
+              'while True:'
+              '    time.sleep(3600)'
+              'PY'
+            ], '\n')
           ]
           env: [
             {

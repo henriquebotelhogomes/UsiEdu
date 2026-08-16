@@ -148,6 +148,10 @@ def test_recovery_compares_qdrant_collections_without_exposing_names_or_content(
     assert "qdrant/qdrant:v1.14.1" in template
     assert "name: 'validator'" in template
     assert "SOURCE_QDRANT_URL" in template
+    assert "join([" in template
+    assert "'python - <<PY'" in template
+    assert "'import hashlib'" in template
+    assert not any(line.strip() == "'''" for line in template.splitlines())
     assert "QDRANT_RECOVERY_VALIDATION=" in template
     assert "collections_sha256" in template
     assert "external: true" not in template
