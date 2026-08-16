@@ -41,7 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           az rest --method get \
-            --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.AlertsManagement/alerts?api-version=2023-07-12-preview" \
+            --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.AlertsManagement/alerts?api-version=2019-03-01" \
             > artifacts/azure-alerts.json
           jq '
             [
@@ -103,4 +103,4 @@ jobs:
         with:
           name: azure-operational-alert-evidence
           path: artifacts/active-approved-alerts.json
-          if-no-files-found: error
+          if-no-files-found: warn
