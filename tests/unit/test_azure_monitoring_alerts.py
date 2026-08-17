@@ -181,7 +181,10 @@ def test_postgresql_alert_validation_is_isolated_reversible_and_uses_builtin_met
     assert workflow_text.count("awk -v value=") == 3
     assert 'test "${DB_ALIVE:-}" = "1"' not in workflow_text
     assert "ALERT_RESOLVED=true" in workflow_text
-    assert "length == 0" in workflow_text
+    assert 'monitorCondition == "Fired"' in workflow_text
+    assert 'monitorCondition == "Resolved"' in workflow_text
+    assert "fired-postgresql-validation-alert.json" in workflow_text
+    assert "resolved-postgresql-validation-alert.json" in workflow_text
     assert "Microsoft.AlertsManagement/alerts" in workflow_text
     assert "az postgres flexible-server restore" not in workflow_text
     assert "az storage" not in workflow_text

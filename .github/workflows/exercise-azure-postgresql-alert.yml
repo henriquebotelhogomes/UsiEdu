@@ -170,6 +170,7 @@ jobs:
                     | .properties.essentials
                     | select(.alertState == "New" or .alertState == "Acknowledged")
                     | select(.alertRule | endswith("/" + $alert))
+                    | select(.monitorCondition == "Fired")
                     | {
                         rule: (.alertRule | split("/") | last),
                         severity: .severity,
@@ -177,8 +178,8 @@ jobs:
                         fired_at: .startDateTime
                       }
                   ]
-                ' > artifacts/active-postgresql-validation-alert.json
-            if jq -e 'length == 1' artifacts/active-postgresql-validation-alert.json > /dev/null; then
+                ' > artifacts/fired-postgresql-validation-alert.json
+            if jq -e 'length == 1' artifacts/fired-postgresql-validation-alert.json > /dev/null; then
               ALERT_OBSERVED=true
               break
             fi
@@ -206,13 +207,19 @@ jobs:
                     [
                       .value[]
                       | .properties.essentials
-                      | select(.alertState == "New" or .alertState == "Acknowledged")
                       | select(.alertRule | endswith("/" + $alert))
+                      | select(.monitorCondition == "Resolved")
+                      | {
+                          rule: (.alertRule | split("/") | last),
+                          severity: .severity,
+                          state: .alertState,
+                          resolved_at: .monitorConditionResolvedDateTime
+                        }
                     ]
-                  ' > artifacts/active-postgresql-validation-alert.json
-              if jq -e 'length == 0' artifacts/active-postgresql-validation-alert.json > /dev/null; then
-                ALERT_RESOLVED=true
-                break
+                  ' > artifacts/resolved-postgresql-validation-alert.json
+              if jq -e 'length == 1' artifacts/resolved-postgresql-validation-alert.json > /dev/null; then
+                  ALERT_RESOLVED=true
+                  break
               fi
             fi
             sleep 20
