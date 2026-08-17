@@ -1981,6 +1981,13 @@ sessão OIDC imediatamente antes das validações autenticadas e um contrato
 estático exige essa renovação. Nenhuma evidência desse run permite aceitar
 RPO/RTO ou declarar T04.4 concluída; a comparação sanitizada de coleções ainda
 precisa ser executada em novo retry aprovado.</p>
+<p>O retry protegido <code>31980102870</code> confirmou a renovação OIDC e executou <code>SELECT
+1</code> no PostgreSQL restaurado. A comparação Qdrant não foi emitida porque a
+sequência <code>"\n"</code> do código Python foi convertida em quebra de linha pelo Bicep,
+produzindo erro de sintaxe no sidecar. O run confirmou a recuperação das
+coleções nos logs do Qdrant, mas essa observação não substitui a comparação
+sanitizada. O hash agora usa <code>chr(10)</code>, que não depende da interpretação de
+escape do template; o cleanup novamente removeu todos os recursos efêmeros.</p>
 <h3 id="preparacao-t045">Preparação T04.5<a class="headerlink" href="#preparacao-t045" title="Permanent link">&para;</a></h3>
 <p>O inventário factual de observabilidade confirmou que o workspace
 <code>usiedu-logs</code> retém dados por 30 dias e que <code>ContainerAppConsoleLogs_CL</code> tem
