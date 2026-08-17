@@ -1,0 +1,103 @@
+name: Configure Azure financial budget
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  configure:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      BUDGET_NAME: usiedu-monthly-budget
+      BUDGET_AMOUNT_BRL: "30"
+    steps:
+      - name: Checkout approved template
+        uses: actions/checkout@v4
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy approved monthly budget
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUDGET_START_DATE="$(date -u +%Y-%m-01T00:00:00Z)"
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "financial-budget-${GITHUB_RUN_ID}" \
+            --template-file infra/azure/financial-budget.bicep \
+            --parameters budgetStartDate="$BUDGET_START_DATE" \
+            --output none
+          echo "BUDGET_START_DATE=$BUDGET_START_DATE" >> "$GITHUB_ENV"
+
+      - name: Validate budget configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          az rest --method get \
+            --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Consumption/budgets/${BUDGET_NAME}?api-version=2023-05-01" \
+            | jq '{
+                name: .name,
+                amount: .properties.amount,
+                time_grain: .properties.timeGrain,
+                category: .properties.category,
+                start_date: .properties.timePeriod.startDate,
+                notifications: (
+                  .properties.notifications
+                  | to_entries
+                  | map({
+                      threshold: .value.threshold,
+                      threshold_type: .value.thresholdType,
+                      enabled: .value.enabled
+                    })
+                  | sort_by(.threshold)
+                )
+              }' > artifacts/financial-budget-configuration.json
+          jq -e \
+            --arg name "$BUDGET_NAME" \
+            --arg start "$BUDGET_START_DATE" \
+            --argjson amount "$BUDGET_AMOUNT_BRL" '
+              .name == $name and
+              .amount == $amount and
+              .time_grain == "Monthly" and
+              .category == "Cost" and
+              .start_date == $start and
+              .notifications == [
+                { threshold: 80, threshold_type: "Actual", enabled: true },
+                { threshold: 100, threshold_type: "Actual", enabled: true }
+              ]
+            ' artifacts/financial-budget-configuration.json > /dev/null
+
+      - name: Verify billing currency
+        shell: bash
+        run: |
+          set -euo pipefail
+          az rest --method get \
+            --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Consumption/budgets/${BUDGET_NAME}?api-version=2023-05-01" \
+            | jq -e '.properties.currentSpend.unit == "BRL"' > /dev/null
+
+      - name: Upload sanitized budget evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-financial-budget-configuration
+          path: artifacts/
+          if-no-files-found: error

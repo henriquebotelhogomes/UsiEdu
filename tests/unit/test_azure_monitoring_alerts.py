@@ -16,6 +16,14 @@ POSTGRES_SIMULATION_WORKFLOW_PATH = (
     ROOT / ".github" / "workflows" / "exercise-azure-postgresql-alert.yml"
 )
 POSTGRES_VALIDATION_TEMPLATE_PATH = ROOT / "infra" / "azure" / "postgresql-alert-validation.bicep"
+FINANCIAL_BUDGET_TEMPLATE_PATH = ROOT / "infra" / "azure" / "financial-budget.bicep"
+FINANCIAL_BUDGET_ACCESS_PATH = ROOT / "infra" / "azure" / "financial-budget-access.bicep"
+FINANCIAL_BUDGET_DEPLOY_WORKFLOW_PATH = (
+    ROOT / ".github" / "workflows" / "configure-azure-financial-budget.yml"
+)
+FINANCIAL_BUDGET_REPORT_WORKFLOW_PATH = (
+    ROOT / ".github" / "workflows" / "report-azure-financial-budget.yml"
+)
 
 
 def _workflow() -> tuple[str, dict]:
@@ -204,3 +212,68 @@ def test_postgresql_alert_validation_is_isolated_reversible_and_uses_builtin_met
     assert "autoMitigate: true" in template
     assert "actions: []" in template
     assert "@secure()" in template
+
+
+def test_financial_budget_is_scoped_approved_and_has_no_external_notification_channel() -> None:
+    template = FINANCIAL_BUDGET_TEMPLATE_PATH.read_text(encoding="utf-8")
+    access_template = FINANCIAL_BUDGET_ACCESS_PATH.read_text(encoding="utf-8")
+
+    assert "targetScope = 'resourceGroup'" in template
+    assert "Microsoft.Consumption/budgets@2023-05-01" in template
+    assert "name: 'usiedu-monthly-budget'" in template
+    assert "amount: 30" in template
+    assert "timeGrain: 'Monthly'" in template
+    assert "category: 'Cost'" in template
+    assert "threshold: 80" in template
+    assert "threshold: 100" in template
+    assert "thresholdType: 'Actual'" in template
+    assert "operator: 'GreaterThanOrEqualTo'" in template
+    assert "contactEmails: []" in template
+    assert "contactGroups: []" in template
+    assert "contactRoles: []" in template
+    assert "webhook" not in template.lower()
+    assert "teams" not in template.lower()
+
+    assert "targetScope = 'resourceGroup'" in access_template
+    assert "434105ed-43f6-45c7-a02f-909b2ba83430" in access_template
+    assert "Cost Management Contributor" not in access_template
+    assert "b24988ac-6180-42a0-ab88-20f7382dd24c" not in access_template
+
+
+def test_financial_budget_workflows_are_manual_protected_and_deduplicate_issues() -> None:
+    deploy_text = FINANCIAL_BUDGET_DEPLOY_WORKFLOW_PATH.read_text(encoding="utf-8")
+    deploy_workflow = yaml.safe_load(deploy_text)
+    report_text = FINANCIAL_BUDGET_REPORT_WORKFLOW_PATH.read_text(encoding="utf-8")
+    report_workflow = yaml.safe_load(report_text)
+
+    deploy_job = deploy_workflow["jobs"]["configure"]
+    assert set(deploy_workflow["on"]) == {"workflow_dispatch"}
+    assert deploy_workflow["permissions"] == {"contents": "read", "id-token": "write"}
+    assert deploy_job["if"] == "github.ref == 'refs/heads/main'"
+    assert deploy_job["environment"] == "production"
+    assert "infra/azure/financial-budget.bicep" in deploy_text
+    assert "az deployment group create" in deploy_text
+    assert "BUDGET_START_DATE" in deploy_text
+    assert "BRL" in deploy_text
+    assert "${{ secrets." not in deploy_text.lower()
+
+    report_job = report_workflow["jobs"]["report"]
+    assert set(report_workflow["on"]) == {"workflow_dispatch"}
+    assert report_workflow["permissions"] == {
+        "contents": "read",
+        "id-token": "write",
+        "issues": "write",
+    }
+    assert report_job["if"] == "github.ref == 'refs/heads/main'"
+    assert report_job["environment"] == "production"
+    assert "Microsoft.Consumption/budgets" in report_text
+    assert "azure-financial-alert" in report_text
+    assert "80" in report_text
+    assert "100" in report_text
+    assert "gh issue list" in report_text
+    assert "gh issue create" in report_text
+    assert "gh issue comment" in report_text
+    assert "BRL" in report_text
+    assert "webhook" not in report_text.lower()
+    assert "teams" not in report_text.lower()
+    assert "${{ secrets." not in report_text.lower()
