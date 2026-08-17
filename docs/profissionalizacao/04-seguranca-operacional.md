@@ -371,10 +371,16 @@ fechadas como duplicadas, com links para as respectivas canônicas. A
 deduplicação de alertas de log está, portanto, validada sem incluir dados de
 PostgreSQL, Qdrant ou Storage nos artefatos.
 
-O recorte de alertas de log foi concluído, mas T04.5 permanece em andamento:
-a indisponibilidade PostgreSQL não será simulada enquanto não houver uma forma
-segura de testar `is_db_alive` sem degradar ou falsificar produção, e alerta
-financeiro continua bloqueado pela ausência de orçamento Azure factual.
+O sexto run protegido, `32049698179`, validou a indisponibilidade PostgreSQL
+em um servidor efêmero sem rede pública no grupo isolado de recuperação. A
+regra temporária reproduziu o contrato de produção para `is_db_alive` (média
+menor que `1`, janela de 15 minutos e avaliação de cinco minutos), ficou
+`Fired` às `2026-08-17T17:45:19Z` após a parada controlada e `Resolved` às
+`2026-08-17T18:05:10Z` depois da retomada. A evidência sanitizada confirmou
+os dois estados e o cleanup; não restaram servidor nem regra temporários.
+
+O alerta financeiro continua bloqueado pela ausência de orçamento Azure
+factual e limiar aprovado. Ele é o único bloqueio restante de T04.5.
 
 O primeiro deploy protegido de alertas, `31921566440`, falhou sem criar regras
 porque a assinatura não estava registrada no provedor `Microsoft.Insights`.
@@ -410,9 +416,9 @@ mascare o erro primário.
   - [x] Commit: `docs(operacao): registrar recovery isolado`.
 - [ ] **T04.5 — Configurar alertas aprovados**
   - [x] Alertas de log: GitHub Action protegido e Azure Monitor validaram traceback e falha de ingestão, com Issues canônicas `#44` e `#45`.
-  - [ ] Alerta PostgreSQL: aguarda estratégia segura para testar `is_db_alive` sem degradar ou falsificar produção.
+  - [x] Alerta PostgreSQL: o run `32049698179` validou `is_db_alive` em servidor efêmero isolado, incluindo disparo, resolução e cleanup.
   - [ ] Alerta financeiro: bloqueado até existir orçamento Azure factual e limiar aprovado.
-  - [x] Evidência dos alertas de log: runs `32035688388` e `32036979098`, artefatos sanitizados e cópias de Issue reconciliadas.
+  - [x] Evidência técnica: runs `32035688388`, `32036979098` e `32049698179`, com artefatos sanitizados, cópias de Issue reconciliadas e validação PostgreSQL isolada.
   - [ ] Commit esperado: `ops(seguranca): adicionar alertas operacionais`.
 
 ## 8. Estratégia de testes e validação
@@ -447,6 +453,7 @@ procedimento aprovado: validar em cópia isolada primeiro.
 - [x] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.
 - [x] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.
 - [x] Alertas de log aprovados foram disparados de modo controlado e possuem Issues deduplicadas.
-- [ ] Alertas PostgreSQL e financeiro possuem simulação ou fato aprovados.
+- [x] Alerta PostgreSQL foi disparado e resolvido em ambiente isolado.
+- [ ] Alerta financeiro possui orçamento factual e limiar aprovado.
 - [ ] Nenhum segredo ou PII foi introduzido em código, documentação ou evidência.
 - [ ] Checklists legados só foram atualizados junto da implementação validada.
