@@ -2046,6 +2046,12 @@ o limite permaneceu temporariamente em <code>1</code>. Um PATCH ARM limitado ao 
 <code>replicaRetryLimit</code> restaurou imediatamente o valor <code>0</code>, que foi confirmado
 por leitura posterior. O workflow passa <code>-c</code> anexado ao argumento e usa o
 mesmo PATCH ARM somente para a reversão.</p>
+<p>O segundo run protegido, <code>32025906665</code>, também falhou antes de criar execução
+ou sinal: a CLI aceitou <code>-c</code>, mas rejeitou o código quando ele foi passado como
+segundo argumento. O rollback ARM foi bem-sucedido e o limite permaneceu em
+<code>0</code>. O workflow agora envia <code>-c</code> e o código como um único argumento separado
+por quebra de linha, forma aceita pelo parser da CLI e pelo interpretador
+Python.</p>
 <p>O primeiro deploy protegido de alertas, <code>31921566440</code>, falhou sem criar regras
 porque a assinatura não estava registrada no provedor <code>Microsoft.Insights</code>.
 Após o registro administrativo único do provedor, o retry protegido
