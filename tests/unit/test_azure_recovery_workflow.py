@@ -160,6 +160,7 @@ def test_recovery_compares_qdrant_collections_without_exposing_names_or_content(
     assert "'python - <<PY'" in template
     assert "'import hashlib'" in template
     assert not any(line.strip() == "'''" for line in template.splitlines())
+    assert "chr(10).join" in template
     assert "QDRANT_RECOVERY_VALIDATION=" in template
     assert "collections_sha256" in template
     assert "external: true" not in template
