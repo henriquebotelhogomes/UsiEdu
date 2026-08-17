@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T04.1–T04.4 concluídas; T04.5 pendente |
+| Estado | Concluído — T04.1–T04.5 validadas |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/main.bicep`, `infra/azure/deploy.ps1`, `src/security/guardrails.py`, `src/observability/` |
@@ -97,8 +97,8 @@ registrar método de backup do Azure Files, versão do manifest e consulta de
 coleção. A consistência entre corpus/manifest e coleção deve ser verificada
 antes de qualquer retorno. O exercício compara o tempo observado com RPO 24 h
 e RTO 4 h. Alertas precisam usar métricas/logs realmente disponíveis no Azure,
-GitHub issue/Action e Azure Monitor; nenhum e-mail, Teams ou orçamento é
-presumido.
+GitHub issue/Action e Azure Monitor; nenhum e-mail ou Teams é presumido, e
+orçamento financeiro só é aplicado após valor e limiares aprovados.
 
 ### Inventário T04.1
 
@@ -311,10 +311,10 @@ dois alertas ativos aprovados via ARM, cria ou atualiza uma Issue GitHub
 deduplicada pelo rótulo `azure-operational-alert` e publica artefato contendo
 apenas regra, severidade, estado e timestamp.
 
-O alerta financeiro não foi criado: não existe orçamento factual nem limiar
-aprovado. Esta preparação não altera Azure nem conclui T04.5; a implantação
-protegida, a simulação controlada de API, ingestão e banco, e a evidência da
-Issue ainda são necessárias.
+Na preparação inicial, o alerta financeiro não foi criado porque não existiam
+orçamento factual nem limiar aprovado. A implantação protegida, a simulação
+controlada de API, ingestão e banco, e a evidência da Issue ainda eram
+necessárias nessa etapa.
 
 O workflow protegido
 `.github/workflows/exercise-azure-log-alerts.yml` prepara a primeira simulação
@@ -379,8 +379,14 @@ menor que `1`, janela de 15 minutos e avaliação de cinco minutos), ficou
 `2026-08-17T18:05:10Z` depois da retomada. A evidência sanitizada confirmou
 os dois estados e o cleanup; não restaram servidor nem regra temporários.
 
-O alerta financeiro continua bloqueado pela ausência de orçamento Azure
-factual e limiar aprovado. Ele é o único bloqueio restante de T04.5.
+O orçamento mensal `usiedu-monthly-budget` foi criado no `rg-usiedu` pelo run
+protegido `32059130374`: valor de `R$ 30`, moeda `BRL`, ciclo mensal iniciado
+em `2026-08-01` e nenhuma notificação nativa. Os limiares aprovados de 80% e
+100% são avaliados exclusivamente pelo workflow protegido
+`report-azure-financial-budget.yml`, que cria ou atualiza Issues deduplicadas
+somente quando o gasto real os alcança. O primeiro relatório, `32060820073`,
+registrou gasto de `R$ 0,00`; portanto, nenhuma Issue financeira era esperada
+ou criada. T04.5 está concluída sem e-mail, Teams, webhook ou Action Group.
 
 O primeiro deploy protegido de alertas, `31921566440`, falhou sem criar regras
 porque a assinatura não estava registrada no provedor `Microsoft.Insights`.
@@ -414,12 +420,12 @@ mascare o erro primário.
   - [x] Teste: `SELECT 1` autenticado e comparação sanitizada de coleções pelo sidecar.
   - [x] Evidência: run `31981495657`, RTO observado, snapshot Qdrant, integridade e cleanup sem resíduos; a idade do PITR PostgreSQL não foi emitida.
   - [x] Commit: `docs(operacao): registrar recovery isolado`.
-- [ ] **T04.5 — Configurar alertas aprovados**
+- [x] **T04.5 — Configurar alertas aprovados**
   - [x] Alertas de log: GitHub Action protegido e Azure Monitor validaram traceback e falha de ingestão, com Issues canônicas `#44` e `#45`.
   - [x] Alerta PostgreSQL: o run `32049698179` validou `is_db_alive` em servidor efêmero isolado, incluindo disparo, resolução e cleanup.
-  - [ ] Alerta financeiro: bloqueado até existir orçamento Azure factual e limiar aprovado.
-  - [x] Evidência técnica: runs `32035688388`, `32036979098` e `32049698179`, com artefatos sanitizados, cópias de Issue reconciliadas e validação PostgreSQL isolada.
-  - [ ] Commit esperado: `ops(seguranca): adicionar alertas operacionais`.
+  - [x] Alerta financeiro: orçamento factual de R$ 30/mês no `rg-usiedu`, limiares de 80% e 100% por Issue protegida e sem canal externo.
+  - [x] Evidência técnica: runs `32035688388`, `32036979098`, `32049698179`, `32059130374` e `32060820073`, com artefatos sanitizados, cópias de Issue reconciliadas, validação PostgreSQL isolada e consulta financeira.
+  - [x] Commits: `feat(azure): adicionar budget financeiro mensal` e `fix(azure): usar issues para limiares de budget`.
 
 ## 8. Estratégia de testes e validação
 
@@ -438,9 +444,9 @@ mascare o erro primário.
 |---|---|---|
 | G0 — Baseline | Concluído | Bicep, deploy e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Key Vault/MI, RPO/RTO, alertas e gate legal; acesso Azure, fato jurídico e orçamento concreto bloqueiam somente as execuções dependentes. |
-| G2 — Implementação | Em andamento | T04.1–T04.4 concluídas; T04.5 permanece. |
-| G3 — Verificação | Em andamento | T04.1 cobre mascaramento; T04.2 cobre migração, JWT, health e ACR; T04.3 cobre logs e tracing minimizados; T04.4 validou restore isolado; alertas permanecem. |
-| G4 — Operação | Em andamento | Migração, minimização e recuperação isolada foram validadas; alertas permanecem. |
+| G2 — Implementação | Concluído | T04.1–T04.5 concluídas. |
+| G3 — Verificação | Em andamento | T04.1 cobre mascaramento; T04.2 cobre migração, JWT, health e ACR; T04.3 cobre logs e tracing minimizados; T04.4 validou restore isolado; T04.5 validou alertas técnicos e orçamento. |
+| G4 — Operação | Em andamento | Migração, minimização, recuperação isolada e alertas foram validados; os gates legais permanecem externos ao recorte técnico. |
 | G5 — Encerramento | Não iniciado | Evidências e checklists legados reconciliados. |
 
 Reversão de secret store/identidade deve preservar o segredo ativo até uma
@@ -454,6 +460,6 @@ procedimento aprovado: validar em cópia isolada primeiro.
 - [x] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.
 - [x] Alertas de log aprovados foram disparados de modo controlado e possuem Issues deduplicadas.
 - [x] Alerta PostgreSQL foi disparado e resolvido em ambiente isolado.
-- [ ] Alerta financeiro possui orçamento factual e limiar aprovado.
+- [x] Alerta financeiro possui orçamento factual e limiares aprovados.
 - [ ] Nenhum segredo ou PII foi introduzido em código, documentação ou evidência.
 - [ ] Checklists legados só foram atualizados junto da implementação validada.
