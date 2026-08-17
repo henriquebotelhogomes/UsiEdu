@@ -12,6 +12,10 @@ ACCESS_PATH = ROOT / "infra" / "azure" / "monitoring-access.bicep"
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "report-azure-operational-alerts.yml"
 DEPLOY_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "configure-azure-operational-alerts.yml"
 SIMULATION_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "exercise-azure-log-alerts.yml"
+POSTGRES_SIMULATION_WORKFLOW_PATH = (
+    ROOT / ".github" / "workflows" / "exercise-azure-postgresql-alert.yml"
+)
+POSTGRES_VALIDATION_TEMPLATE_PATH = ROOT / "infra" / "azure" / "postgresql-alert-validation.bicep"
 
 
 def _workflow() -> tuple[str, dict]:
@@ -147,3 +151,46 @@ def test_log_alert_simulation_is_protected_reversible_and_does_not_touch_data_st
     assert "QDRANT_URL" not in text
     assert "az storage" not in text
     assert "${{ secrets." not in text.lower()
+
+
+def test_postgresql_alert_validation_is_isolated_reversible_and_uses_builtin_metric() -> None:
+    workflow_text = POSTGRES_SIMULATION_WORKFLOW_PATH.read_text(encoding="utf-8")
+    workflow = yaml.safe_load(workflow_text)
+    template = POSTGRES_VALIDATION_TEMPLATE_PATH.read_text(encoding="utf-8")
+    job = workflow["jobs"]["simulate"]
+
+    assert set(workflow["on"]) == {"workflow_dispatch"}
+    assert workflow["permissions"] == {"contents": "read", "id-token": "write"}
+    assert job["if"] == "github.ref == 'refs/heads/main'"
+    assert job["environment"] == "production"
+    assert "RECOVERY_RESOURCE_GROUP: ${{ vars.AZURE_RECOVERY_RESOURCE_GROUP }}" in workflow_text
+    assert 'test "$RECOVERY_RESOURCE_GROUP" != "$RESOURCE_GROUP"' in workflow_text
+    assert "az deployment group create" in workflow_text
+    assert "infra/azure/postgresql-alert-validation.bicep" in workflow_text
+    assert "az postgres flexible-server stop" in workflow_text
+    assert "az postgres flexible-server start" in workflow_text
+    assert "az postgres flexible-server delete" in workflow_text
+    assert "trap cleanup EXIT" in workflow_text
+    assert "is_db_alive" in workflow_text
+    assert "awk -v value=" in workflow_text
+    assert "ALERT_RESOLVED=true" in workflow_text
+    assert "length == 0" in workflow_text
+    assert "Microsoft.AlertsManagement/alerts" in workflow_text
+    assert "az postgres flexible-server restore" not in workflow_text
+    assert "az storage" not in workflow_text
+    assert "az keyvault" not in workflow_text
+    assert "database-url" not in workflow_text
+    assert "${{ secrets." not in workflow_text.lower()
+
+    assert "Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01" in template
+    assert "Microsoft.Insights/metricAlerts@2018-03-01" in template
+    assert "publicNetworkAccess: 'Disabled'" in template
+    assert "metricName: 'is_db_alive'" in template
+    assert "operator: 'LessThan'" in template
+    assert "threshold: 1" in template
+    assert "timeAggregation: 'Average'" in template
+    assert "evaluationFrequency: 'PT5M'" in template
+    assert "windowSize: 'PT15M'" in template
+    assert "autoMitigate: true" in template
+    assert "actions: []" in template
+    assert "@secure()" in template
