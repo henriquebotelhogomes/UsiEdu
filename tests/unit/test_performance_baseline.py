@@ -15,6 +15,7 @@ from src.observability.performance_baseline import (
 
 ROOT = Path(__file__).parent.parent.parent
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "measure-azure-performance-baseline.yml"
+OBSERVABILITY_INIT_PATH = ROOT / "src" / "observability" / "__init__.py"
 
 
 def test_baseline_classifies_cold_only_when_no_replicas_are_running() -> None:
@@ -50,7 +51,15 @@ def test_baseline_workflow_is_protected_sanitized_and_uses_approved_load() -> No
     assert "burst-requests 10" in text
     assert "virtual sessions share one demo account" in text
     assert "az containerapp replica list" in text
+    assert 'python -m pip install --quiet "httpx==0.28.1"' in text
     assert "python -m src.observability.performance_baseline" in text
     assert "PERFORMANCE_DEMO_EMAIL" not in text.split("Upload sanitized baseline evidence")[1]
     assert "PERFORMANCE_DEMO_PASSWORD" not in text.split("Upload sanitized baseline evidence")[1]
     assert "${{ secrets." in text
+
+
+def test_observability_package_does_not_eagerly_import_langsmith_tracing() -> None:
+    package_init = OBSERVABILITY_INIT_PATH.read_text(encoding="utf-8")
+
+    assert "from src.observability.tracing import" not in package_init
+    assert "def __getattr__(name: str)" in package_init
