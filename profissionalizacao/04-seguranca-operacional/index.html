@@ -2077,10 +2077,15 @@ tracebacks e <code>#45</code> para falha de ingestão; as cópias <code>#46</cod
 fechadas como duplicadas, com links para as respectivas canônicas. A
 deduplicação de alertas de log está, portanto, validada sem incluir dados de
 PostgreSQL, Qdrant ou Storage nos artefatos.</p>
-<p>O recorte de alertas de log foi concluído, mas T04.5 permanece em andamento:
-a indisponibilidade PostgreSQL não será simulada enquanto não houver uma forma
-segura de testar <code>is_db_alive</code> sem degradar ou falsificar produção, e alerta
-financeiro continua bloqueado pela ausência de orçamento Azure factual.</p>
+<p>O sexto run protegido, <code>32049698179</code>, validou a indisponibilidade PostgreSQL
+em um servidor efêmero sem rede pública no grupo isolado de recuperação. A
+regra temporária reproduziu o contrato de produção para <code>is_db_alive</code> (média
+menor que <code>1</code>, janela de 15 minutos e avaliação de cinco minutos), ficou
+<code>Fired</code> às <code>2026-08-17T17:45:19Z</code> após a parada controlada e <code>Resolved</code> às
+<code>2026-08-17T18:05:10Z</code> depois da retomada. A evidência sanitizada confirmou
+os dois estados e o cleanup; não restaram servidor nem regra temporários.</p>
+<p>O alerta financeiro continua bloqueado pela ausência de orçamento Azure
+factual e limiar aprovado. Ele é o único bloqueio restante de T04.5.</p>
 <p>O primeiro deploy protegido de alertas, <code>31921566440</code>, falhou sem criar regras
 porque a assinatura não estava registrada no provedor <code>Microsoft.Insights</code>.
 Após o registro administrativo único do provedor, o retry protegido
@@ -2114,9 +2119,9 @@ mascare o erro primário.</p>
 <li>[x] Commit: <code>docs(operacao): registrar recovery isolado</code>.</li>
 <li>[ ] <strong>T04.5 — Configurar alertas aprovados</strong></li>
 <li>[x] Alertas de log: GitHub Action protegido e Azure Monitor validaram traceback e falha de ingestão, com Issues canônicas <code>#44</code> e <code>#45</code>.</li>
-<li>[ ] Alerta PostgreSQL: aguarda estratégia segura para testar <code>is_db_alive</code> sem degradar ou falsificar produção.</li>
+<li>[x] Alerta PostgreSQL: o run <code>32049698179</code> validou <code>is_db_alive</code> em servidor efêmero isolado, incluindo disparo, resolução e cleanup.</li>
 <li>[ ] Alerta financeiro: bloqueado até existir orçamento Azure factual e limiar aprovado.</li>
-<li>[x] Evidência dos alertas de log: runs <code>32035688388</code> e <code>32036979098</code>, artefatos sanitizados e cópias de Issue reconciliadas.</li>
+<li>[x] Evidência técnica: runs <code>32035688388</code>, <code>32036979098</code> e <code>32049698179</code>, com artefatos sanitizados, cópias de Issue reconciliadas e validação PostgreSQL isolada.</li>
 <li>[ ] Commit esperado: <code>ops(seguranca): adicionar alertas operacionais</code>.</li>
 </ul>
 <h2 id="8-estrategia-de-testes-e-validacao">8. Estratégia de testes e validação<a class="headerlink" href="#8-estrategia-de-testes-e-validacao" title="Permanent link">&para;</a></h2>
@@ -2208,7 +2213,8 @@ procedimento aprovado: validar em cópia isolada primeiro.</p>
 <li>[x] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.</li>
 <li>[x] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.</li>
 <li>[x] Alertas de log aprovados foram disparados de modo controlado e possuem Issues deduplicadas.</li>
-<li>[ ] Alertas PostgreSQL e financeiro possuem simulação ou fato aprovados.</li>
+<li>[x] Alerta PostgreSQL foi disparado e resolvido em ambiente isolado.</li>
+<li>[ ] Alerta financeiro possui orçamento factual e limiar aprovado.</li>
 <li>[ ] Nenhum segredo ou PII foi introduzido em código, documentação ou evidência.</li>
 <li>[ ] Checklists legados só foram atualizados junto da implementação validada.</li>
 </ul>
