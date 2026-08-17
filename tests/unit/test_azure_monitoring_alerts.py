@@ -130,6 +130,7 @@ def test_log_alert_simulation_is_protected_reversible_and_does_not_touch_data_st
     assert '--args="$CONTROLLED_FAILURE_ARGUMENT"' in text
     assert "Traceback (controlled alert simulation)" in text
     assert "BackoffLimitExceeded" in text
+    assert text.count("--query '[0].Count' -o tsv") == 2
     assert "Microsoft.AlertsManagement/alerts" in text
     assert "api-version=2019-03-01" in text
     assert "usiedu-containerapp-tracebacks" in text
