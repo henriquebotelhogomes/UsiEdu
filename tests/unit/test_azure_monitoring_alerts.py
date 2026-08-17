@@ -75,9 +75,13 @@ def test_alert_report_is_manual_protected_and_deduplicates_github_issues() -> No
     assert "2023-07-12-preview" not in text
     assert "usiedu-ingest-failed" in text
     assert "alertState" in text
+    assert "group_by(.rule)" in text
+    assert "map(max_by(.fired_at))" in text
     assert "gh issue list" in text
     assert "gh issue create" in text
     assert "gh issue comment" in text
+    assert "gh issue close" in text
+    assert "Consolidated into" in text
     assert "azure-operational-alert" in text
     assert "${{ secrets." not in text.lower()
     assert "webhook" not in text.lower()
