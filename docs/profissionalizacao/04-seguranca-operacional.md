@@ -262,6 +262,14 @@ estático exige essa renovação. Nenhuma evidência desse run permite aceitar
 RPO/RTO ou declarar T04.4 concluída; a comparação sanitizada de coleções ainda
 precisa ser executada em novo retry aprovado.
 
+O retry protegido `31980102870` confirmou a renovação OIDC e executou `SELECT
+1` no PostgreSQL restaurado. A comparação Qdrant não foi emitida porque a
+sequência `"\n"` do código Python foi convertida em quebra de linha pelo Bicep,
+produzindo erro de sintaxe no sidecar. O run confirmou a recuperação das
+coleções nos logs do Qdrant, mas essa observação não substitui a comparação
+sanitizada. O hash agora usa `chr(10)`, que não depende da interpretação de
+escape do template; o cleanup novamente removeu todos os recursos efêmeros.
+
 ### Preparação T04.5
 
 O inventário factual de observabilidade confirmou que o workspace
