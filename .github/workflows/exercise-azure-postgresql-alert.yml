@@ -1,0 +1,229 @@
+name: Exercise Azure PostgreSQL availability alert
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  simulate:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      RECOVERY_RESOURCE_GROUP: ${{ vars.AZURE_RECOVERY_RESOURCE_GROUP }}
+      SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+    steps:
+      - name: Checkout approved runbook
+        uses: actions/checkout@v4
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Exercise isolated PostgreSQL availability alert
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$RECOVERY_RESOURCE_GROUP"
+          test "$RECOVERY_RESOURCE_GROUP" != "$RESOURCE_GROUP"
+
+          VALIDATION_SERVER="usiedu-pg-alert-${GITHUB_RUN_ID}"
+          VALIDATION_ALERT="usiedu-postgresql-unavailable-validation-${GITHUB_RUN_ID}"
+          VALIDATION_SERVER_ID="/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RECOVERY_RESOURCE_GROUP}/providers/Microsoft.DBforPostgreSQL/flexibleServers/${VALIDATION_SERVER}"
+          ALERT_OBSERVED=false
+          ALERT_RESOLVED=false
+          SERVER_CREATED=false
+          ALERT_CREATED=false
+          CLEANUP_COMPLETED=false
+
+          write_evidence() {
+            jq -n \
+              --arg alert_rule "$VALIDATION_ALERT" \
+              --arg alert_observed "$ALERT_OBSERVED" \
+              --arg alert_resolved "$ALERT_RESOLVED" \
+              --arg cleanup_completed "$CLEANUP_COMPLETED" \
+              '{
+                schema_version: "1.0.0",
+                metric: "is_db_alive",
+                alert_rule: $alert_rule,
+                alert_observed: ($alert_observed == "true"),
+                alert_resolved: ($alert_resolved == "true"),
+                cleanup_completed: ($cleanup_completed == "true"),
+                production_contract: {
+                  aggregation: "Average",
+                  operator: "LessThan",
+                  threshold: 1,
+                  evaluation_frequency: "PT5M",
+                  window_size: "PT15M"
+                }
+              }' > artifacts/postgresql-alert-validation-evidence.json
+          }
+
+          cleanup() {
+            trap - EXIT
+            cleanup_failed=false
+            if [ "$ALERT_CREATED" = true ]; then
+              if az monitor metrics alert show \
+                --resource-group "$RECOVERY_RESOURCE_GROUP" \
+                --name "$VALIDATION_ALERT" \
+                --output none; then
+                if ! az monitor metrics alert delete \
+                  --resource-group "$RECOVERY_RESOURCE_GROUP" \
+                  --name "$VALIDATION_ALERT" \
+                  --output none; then
+                  cleanup_failed=true
+                fi
+              fi
+            fi
+            if [ "$SERVER_CREATED" = true ]; then
+              if az postgres flexible-server show \
+                --resource-group "$RECOVERY_RESOURCE_GROUP" \
+                --name "$VALIDATION_SERVER" \
+                --output none; then
+                if ! az postgres flexible-server delete \
+                  --resource-group "$RECOVERY_RESOURCE_GROUP" \
+                  --name "$VALIDATION_SERVER" \
+                  --yes \
+                  --output none; then
+                  cleanup_failed=true
+                fi
+              fi
+            fi
+            if [ "$cleanup_failed" = false ]; then
+              CLEANUP_COMPLETED=true
+            fi
+            write_evidence
+            if [ "$cleanup_failed" = true ]; then
+              return 1
+            fi
+          }
+          trap cleanup EXIT
+
+          VALIDATION_ADMIN_PASSWORD="$(openssl rand -hex 24)Aa1!"
+          echo "::add-mask::$VALIDATION_ADMIN_PASSWORD"
+          SERVER_CREATED=true
+          ALERT_CREATED=true
+          az deployment group create \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --name "postgresql-alert-validation-${GITHUB_RUN_ID}" \
+            --template-file infra/azure/postgresql-alert-validation.bicep \
+            --parameters \
+              validationServerName="$VALIDATION_SERVER" \
+              validationAlertName="$VALIDATION_ALERT" \
+              administratorLoginPassword="$VALIDATION_ADMIN_PASSWORD" \
+            --output none
+          unset VALIDATION_ADMIN_PASSWORD
+
+          for attempt in $(seq 1 36); do
+            SERVER_STATE=$(az postgres flexible-server show \
+              --resource-group "$RECOVERY_RESOURCE_GROUP" \
+              --name "$VALIDATION_SERVER" \
+              --query state -o tsv)
+            if [ "$SERVER_STATE" = "Ready" ]; then
+              break
+            fi
+            sleep 20
+          done
+          test "${SERVER_STATE:-}" = "Ready"
+
+          for attempt in $(seq 1 36); do
+            DB_ALIVE=$(az monitor metrics list \
+              --resource "$VALIDATION_SERVER_ID" \
+              --metrics is_db_alive \
+              --aggregation Average \
+              --interval PT1M \
+              --offset 1h \
+              -o json | jq -r '[.value[0].timeseries[].data[] | .average? | select(. != null)] | last // empty')
+            if awk -v value="${DB_ALIVE:-0}" 'BEGIN { exit !(value >= 1) }'; then
+              break
+            fi
+            sleep 20
+          done
+          test "${DB_ALIVE:-}" = "1"
+
+          az postgres flexible-server stop \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --name "$VALIDATION_SERVER" \
+            --yes \
+            --output none
+
+          for attempt in $(seq 1 48); do
+            az rest --method get \
+              --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RECOVERY_RESOURCE_GROUP}/providers/Microsoft.AlertsManagement/alerts?api-version=2019-03-01" \
+              | jq --arg alert "$VALIDATION_ALERT" '
+                  [
+                    .value[]
+                    | .properties.essentials
+                    | select(.alertState == "New" or .alertState == "Acknowledged")
+                    | select(.alertRule | endswith("/" + $alert))
+                    | {
+                        rule: (.alertRule | split("/") | last),
+                        severity: .severity,
+                        state: .alertState,
+                        fired_at: .startDateTime
+                      }
+                  ]
+                ' > artifacts/active-postgresql-validation-alert.json
+            if jq -e 'length == 1' artifacts/active-postgresql-validation-alert.json > /dev/null; then
+              ALERT_OBSERVED=true
+              break
+            fi
+            sleep 30
+          done
+          test "$ALERT_OBSERVED" = true
+
+          az postgres flexible-server start \
+            --resource-group "$RECOVERY_RESOURCE_GROUP" \
+            --name "$VALIDATION_SERVER" \
+            --output none
+
+          for attempt in $(seq 1 48); do
+            DB_ALIVE=$(az monitor metrics list \
+              --resource "$VALIDATION_SERVER_ID" \
+              --metrics is_db_alive \
+              --aggregation Average \
+              --interval PT1M \
+              --offset 1h \
+              -o json | jq -r '[.value[0].timeseries[].data[] | .average? | select(. != null)] | last // empty')
+            if awk -v value="${DB_ALIVE:-0}" 'BEGIN { exit !(value >= 1) }'; then
+              az rest --method get \
+                --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RECOVERY_RESOURCE_GROUP}/providers/Microsoft.AlertsManagement/alerts?api-version=2019-03-01" \
+                | jq --arg alert "$VALIDATION_ALERT" '
+                    [
+                      .value[]
+                      | .properties.essentials
+                      | select(.alertState == "New" or .alertState == "Acknowledged")
+                      | select(.alertRule | endswith("/" + $alert))
+                    ]
+                  ' > artifacts/active-postgresql-validation-alert.json
+              if jq -e 'length == 0' artifacts/active-postgresql-validation-alert.json > /dev/null; then
+                ALERT_RESOLVED=true
+                break
+              fi
+            fi
+            sleep 20
+          done
+          test "$ALERT_RESOLVED" = true
+
+      - name: Upload sanitized PostgreSQL alert evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-postgresql-alert-validation-evidence
+          path: artifacts/
+          if-no-files-found: error
