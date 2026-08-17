@@ -170,6 +170,11 @@ def test_postgresql_alert_validation_is_isolated_reversible_and_uses_builtin_met
     assert "az postgres flexible-server stop" in workflow_text
     assert "az postgres flexible-server start" in workflow_text
     assert "az postgres flexible-server delete" in workflow_text
+    assert (
+        '--name "$VALIDATION_SERVER" \\\n'
+        "            --output none\n\n"
+        "          for attempt in $(seq 1 48)"
+    ) in workflow_text
     assert "trap cleanup EXIT" in workflow_text
     assert "is_db_alive" in workflow_text
     assert "awk -v value=" in workflow_text
