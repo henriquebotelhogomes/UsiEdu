@@ -1729,6 +1729,15 @@ dependências e sinal de exit 137. O validador
 separa-as deterministicamente e recusa pergunta, resposta, token, segredo,
 JWT, e-mail e identificadores de sessão. O autoensaio versionado cobre somente
 o schema e não constitui baseline local ou Azure.</p>
+<p>O workflow manual protegido
+<code>.github/workflows/measure-azure-performance-baseline.yml</code> aguarda a API
+escalar a zero antes de medir o primeiro <code>/health</code> cold. Em seguida, mede login
+e uma rajada de dez chats em duas ondas de cinco sessões virtuais concorrentes
+que compartilham a conta demo protegida; isso respeita o limite de dez chats
+por minuto da conta e não é apresentado como cinco identidades distintas. A
+pergunta acadêmica escolhida não é cacheável; o coletor aborta se o stream
+indicar <code>from_cache</code>. A evidência contém somente métricas sanitizadas, nunca
+credencial, JWT, sessão, pergunta ou resposta.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[ ] <strong>T05.1 — Criar protocolo de medição</strong></li>
