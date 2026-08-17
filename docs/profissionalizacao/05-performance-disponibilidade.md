@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — protocolo T05.1 implementado; baseline factual pendente |
+| Estado | Em andamento — T05.1 concluída; T05.2–T05.5 planejadas |
 | Prioridade | P2 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), [validação P0](01-validacao-piloto.md), `infra/azure/main.bicep`, `frontend/nginx/default.conf.template` |
@@ -121,13 +121,22 @@ pergunta acadêmica escolhida não é cacheável; o coletor aborta se o stream
 indicar `from_cache`. A evidência contém somente métricas sanitizadas, nunca
 credencial, JWT, sessão, pergunta ou resposta.
 
+O primeiro baseline Azure, run `32068963046`, foi executado na revisão
+`usiedu-api--0000016`, com 2 vCPU, 4 GiB, mínimo de zero e máximo de uma
+réplica. A amostra cold de `/health` levou 108156,511 ms (108,157 s); o login
+warm levou 129,399 ms. As dez amostras de chat warm, em duas ondas de cinco
+sessões virtuais, retornaram HTTP 200: p95 de TTFT de 117392,377 ms (117,392
+s) e p95 total de 119296,793 ms (119,297 s). A consulta de logs na janela da execução encontrou zero eventos
+137. Esses números são uma baseline factual, não um SLO de chat: o limite de
+primeira resposta permanece pendente de decisão após comparações em T05.2.
+
 ## 7. Tarefas e microtarefas
 
-- [ ] **T05.1 — Criar protocolo de medição**
-  - [x] Definir cinco usuários concorrentes, rajada de dez, cold/warm, campos de telemetria e descarte de dados sensíveis; o SLO de primeira resposta/chat continua sem valor até medição factual.
+- [x] **T05.1 — Criar protocolo de medição**
+  - [x] Definir cinco usuários concorrentes, rajada de dez, cold/warm, campos de telemetria e descarte de dados sensíveis; o SLO de primeira resposta/chat continua sem valor até decisão após baseline factual.
   - [x] Teste: o script valida schema, separa amostras cold/warm e rejeita conteúdo sensível.
-  - [ ] Evidência: baseline local/Azure com revisão e configuração.
-  - [ ] Commit esperado: `docs(performance): definir protocolo de medicao`.
+  - [x] Evidência: baseline Azure do run `32068963046`, com revisão, configuração e relatório sanitizado.
+  - [x] Commits: `docs(performance): definir protocolo de medicao`, `feat(performance): medir baseline cold e warm` e `fix(performance): isolar coletor de baseline`.
 - [ ] **T05.2 — Medir componentes e fluxo**
   - [ ] Medir startup, memória, TTFT, total e falhas de embedder/reranker/chat.
   - [ ] Teste: repetição do cenário produz relatório agregável.
@@ -164,7 +173,7 @@ credencial, JWT, sessão, pergunta ou resposta.
 
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
-| G0 — Baseline | Concluído parcialmente | P0 oferece health/login; T05.2 completa TTFT/memória/carga. |
+| G0 — Baseline | Concluído parcialmente | T05.1 oferece baseline cold/warm de health, login e chat; T05.2 completa memória e componentes. |
 | G1 — Especificação | Concluído | Este documento define SLO/carga, retry e probes provisórios; medição Azure bloqueia somente o SLO de primeira resposta/chat e mudanças dependentes. |
 | G2 — Implementação | Não iniciado | Commits T05.1–T05.5. |
 | G3 — Verificação | Não iniciado | Testes de falha, métricas repetíveis e regressão. |
@@ -178,7 +187,7 @@ iniciativa P1 de qualidade RAG.
 
 ### Definition of Done
 
-- [ ] Linha de base distingue cold/warm e dependências; SLO de primeira resposta/chat só é fixado após T05.1.
+- [x] Linha de base distingue cold/warm e dependências; SLO de primeira resposta/chat só é fixado após T05.1.
 - [ ] Probes e política de falhas foram testados com cenários negativos.
 - [ ] Estratégia de escala/aquecimento tem comparação custo/latência e rollback.
 - [ ] Smoke P0 e logs da revisão não apontam regressão de disponibilidade.
