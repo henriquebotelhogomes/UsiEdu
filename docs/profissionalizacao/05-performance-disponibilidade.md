@@ -111,6 +111,16 @@ separa-as deterministicamente e recusa pergunta, resposta, token, segredo,
 JWT, e-mail e identificadores de sessão. O autoensaio versionado cobre somente
 o schema e não constitui baseline local ou Azure.
 
+O workflow manual protegido
+`.github/workflows/measure-azure-performance-baseline.yml` aguarda a API
+escalar a zero antes de medir o primeiro `/health` cold. Em seguida, mede login
+e uma rajada de dez chats em duas ondas de cinco sessões virtuais concorrentes
+que compartilham a conta demo protegida; isso respeita o limite de dez chats
+por minuto da conta e não é apresentado como cinco identidades distintas. A
+pergunta acadêmica escolhida não é cacheável; o coletor aborta se o stream
+indicar `from_cache`. A evidência contém somente métricas sanitizadas, nunca
+credencial, JWT, sessão, pergunta ou resposta.
+
 ## 7. Tarefas e microtarefas
 
 - [ ] **T05.1 — Criar protocolo de medição**
