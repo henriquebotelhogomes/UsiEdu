@@ -81,6 +81,8 @@ def test_alert_report_is_manual_protected_and_deduplicates_github_issues() -> No
     assert "gh issue create" in text
     assert "gh issue comment" in text
     assert "gh issue close" in text
+    assert "--reason duplicate" in text
+    assert "--duplicate-of" in text
     assert "Consolidated into" in text
     assert "azure-operational-alert" in text
     assert "${{ secrets." not in text.lower()
