@@ -1,0 +1,88 @@
+name: Measure Azure performance baseline
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      API_APP: ${{ vars.AZURE_API_APP }}
+      FRONTEND_APP: ${{ vars.AZURE_FRONTEND_APP }}
+      PERFORMANCE_DEMO_EMAIL: ${{ secrets.PERFORMANCE_DEMO_EMAIL }}
+      PERFORMANCE_DEMO_PASSWORD: ${{ secrets.PERFORMANCE_DEMO_PASSWORD }}
+    steps:
+      - name: Checkout approved protocol
+        uses: actions/checkout@v4
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Wait for scale to zero before cold sample
+        shell: bash
+        run: |
+          set -euo pipefail
+          API_REVISION=$(az containerapp show --resource-group "$RESOURCE_GROUP" \
+            --name "$API_APP" --query properties.latestRevisionName -o tsv)
+          for attempt in $(seq 1 30); do
+            INITIAL_REPLICA_COUNT=$(az containerapp replica list \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$API_APP" \
+              --revision "$API_REVISION" \
+              --query 'length(@)' -o tsv)
+            if [ "$INITIAL_REPLICA_COUNT" = "0" ]; then
+              break
+            fi
+            sleep 30
+          done
+          test "$INITIAL_REPLICA_COUNT" = "0"
+          FRONTEND_FQDN=$(az containerapp show --resource-group "$RESOURCE_GROUP" \
+            --name "$FRONTEND_APP" --query properties.configuration.ingress.fqdn -o tsv)
+          {
+            echo "API_REVISION=$API_REVISION"
+            echo "INITIAL_REPLICA_COUNT=$INITIAL_REPLICA_COUNT"
+            echo "FRONTEND_BASE_URL=https://$FRONTEND_FQDN"
+          } >> "$GITHUB_ENV"
+
+      - name: Measure sanitized cold and warm baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Five virtual sessions share one demo account; the burst stays within its 10/minute chat limit.
+          python -m src.observability.performance_baseline \
+            --base-url "$FRONTEND_BASE_URL" \
+            --email "$PERFORMANCE_DEMO_EMAIL" \
+            --password "$PERFORMANCE_DEMO_PASSWORD" \
+            --revision "$API_REVISION" \
+            --initial-replica-count "$INITIAL_REPLICA_COUNT" \
+            --concurrent-users 5 \
+            --burst-requests 10 \
+            --output artifacts/performance-baseline.json
+          unset PERFORMANCE_DEMO_EMAIL PERFORMANCE_DEMO_PASSWORD
+
+      - name: Upload sanitized baseline evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-performance-baseline
+          path: artifacts/performance-baseline.json
+          if-no-files-found: warn
