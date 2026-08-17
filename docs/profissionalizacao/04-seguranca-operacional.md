@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Em andamento — T04.1–T04.3 concluídas; T04.4–T04.5 pendentes |
+| Estado | Em andamento — T04.1–T04.4 concluídas; T04.5 pendente |
 | Prioridade | P1 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/main.bicep`, `infra/azure/deploy.ps1`, `src/security/guardrails.py`, `src/observability/` |
@@ -270,6 +270,17 @@ coleções nos logs do Qdrant, mas essa observação não substitui a comparaç�
 sanitizada. O hash agora usa `chr(10)`, que não depende da interpretação de
 escape do template; o cleanup novamente removeu todos os recursos efêmeros.
 
+O run protegido `31981495657` concluiu o exercício ponta a ponta: o restore
+PostgreSQL levou 6 min 11 s, a consulta autenticada `SELECT 1` passou e a
+comparação sanitizada de contagens e hashes SHA-256 das coleções Qdrant passou.
+Do início do restore ao fim do cleanup decorreram 10 min 59 s, abaixo do RTO
+provisório de 4 h. O snapshot Qdrant foi criado em
+`2026-08-17T00:23:10Z`, e a validação ocorreu 3 min 15 s depois. O Azure não
+emitiu no artefato o timestamp do ponto PITR efetivamente restaurado pelo
+PostgreSQL; portanto, o RPO de 24 h continua objetivo provisório, não SLA ou
+alegação de idade medida. Após o cleanup, o grupo isolado, os shares de
+recuperação, os mounts e os Container Apps efêmeros estavam vazios.
+
 ### Preparação T04.5
 
 O inventário factual de observabilidade confirmou que o workspace
@@ -332,11 +343,11 @@ mascare o erro primário.
   - [x] Teste: payload sintético e identificadores não aparecem em campos proibidos de log/trace; o cliente LangSmith e o feedback ocultam conteúdo.
   - [x] Evidência: execução aprovada `31661521278` confirmou as quatro flags de ocultação e health `ok`; o artefato sanitizado não contém payload, resposta, identificador pessoal ou segredo.
   - [x] Commit: `fix(privacidade): minimizar telemetria externa`.
-- [ ] **T04.4 — Exercitar recuperação**
-  - [ ] Criar runbooks de backup/restore isolados para PostgreSQL e Qdrant.
-  - [ ] Teste: restore controlado, consulta de banco, coleção e smoke RAG.
-  - [ ] Evidência: tempo observado, integridade e diferenças conhecidas.
-  - [ ] Commit esperado: `docs(operacao): testar recuperacao de dados`.
+- [x] **T04.4 — Exercitar recuperação**
+  - [x] Runbook: restore PostgreSQL e clone Qdrant em recursos efêmeros e isolados.
+  - [x] Teste: `SELECT 1` autenticado e comparação sanitizada de coleções pelo sidecar.
+  - [x] Evidência: run `31981495657`, RTO observado, snapshot Qdrant, integridade e cleanup sem resíduos; a idade do PITR PostgreSQL não foi emitida.
+  - [x] Commit: `docs(operacao): registrar recovery isolado`.
 - [ ] **T04.5 — Configurar alertas aprovados**
   - [ ] Usar GitHub issue/Action e Azure Monitor para alertas técnicos; usar orçamento Azure somente se factual, mantendo teto financeiro parametrizável caso contrário.
   - [ ] Teste: simular falha/API, job de ingestão, banco e custo quando suportado.
@@ -360,9 +371,9 @@ mascare o erro primário.
 |---|---|---|
 | G0 — Baseline | Concluído | Bicep, deploy e P0 inventariados. |
 | G1 — Especificação | Concluído | Este documento define Key Vault/MI, RPO/RTO, alertas e gate legal; acesso Azure, fato jurídico e orçamento concreto bloqueiam somente as execuções dependentes. |
-| G2 — Implementação | Em andamento | T04.1–T04.3 concluídas; T04.4–T04.5 permanecem. |
-| G3 — Verificação | Em andamento | T04.1 cobre mascaramento; T04.2 cobre migração, JWT, health e ACR; T04.3 cobre logs e tracing minimizados; restore e alertas permanecem. |
-| G4 — Operação | Em andamento | Migração e minimização Azure aprovadas e validadas; exercícios de recuperação e alertas permanecem. |
+| G2 — Implementação | Em andamento | T04.1–T04.4 concluídas; T04.5 permanece. |
+| G3 — Verificação | Em andamento | T04.1 cobre mascaramento; T04.2 cobre migração, JWT, health e ACR; T04.3 cobre logs e tracing minimizados; T04.4 validou restore isolado; alertas permanecem. |
+| G4 — Operação | Em andamento | Migração, minimização e recuperação isolada foram validadas; alertas permanecem. |
 | G5 — Encerramento | Não iniciado | Evidências e checklists legados reconciliados. |
 
 Reversão de secret store/identidade deve preservar o segredo ativo até uma
@@ -373,7 +384,7 @@ procedimento aprovado: validar em cópia isolada primeiro.
 ### Definition of Done
 
 - [x] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.
-- [ ] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.
+- [x] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.
 - [ ] Alertas aprovados foram disparados de modo controlado.
 - [ ] Nenhum segredo ou PII foi introduzido em código, documentação ou evidência.
 - [ ] Checklists legados só foram atualizados junto da implementação validada.
