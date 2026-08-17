@@ -357,6 +357,25 @@ extrair as contagens do Log Analytics: esta versão do CLI retorna uma lista
 achatada com `Count`, não `tables[0].rows`. A extração passa a usar
 `[0].Count`; um novo run protegido ainda deve publicar a evidência sanitizada.
 
+O quinto run protegido, `32035688388`, publicou a evidência sanitizada da
+execução `usiedu-ingest-uf6kgrx`: confirmou `traceback_signal_observed` e
+`ingest_failure_signal_observed` como verdadeiros, além do limite original de
+retry em `0`. O inventário sanitizado do mesmo run contém somente as duas
+regras ativas `usiedu-containerapp-tracebacks` e `usiedu-ingest-failed`, ambas
+`Sev2` no estado `New`.
+
+O relatório protegido `32036979098` consolidou ocorrências históricas pela
+regra antes de processar Issues. As Issues canônicas abertas são `#44` para
+tracebacks e `#45` para falha de ingestão; as cópias `#46` e `#47` foram
+fechadas como duplicadas, com links para as respectivas canônicas. A
+deduplicação de alertas de log está, portanto, validada sem incluir dados de
+PostgreSQL, Qdrant ou Storage nos artefatos.
+
+O recorte de alertas de log foi concluído, mas T04.5 permanece em andamento:
+a indisponibilidade PostgreSQL não será simulada enquanto não houver uma forma
+segura de testar `is_db_alive` sem degradar ou falsificar produção, e alerta
+financeiro continua bloqueado pela ausência de orçamento Azure factual.
+
 O primeiro deploy protegido de alertas, `31921566440`, falhou sem criar regras
 porque a assinatura não estava registrada no provedor `Microsoft.Insights`.
 Após o registro administrativo único do provedor, o retry protegido
@@ -390,9 +409,10 @@ mascare o erro primário.
   - [x] Evidência: run `31981495657`, RTO observado, snapshot Qdrant, integridade e cleanup sem resíduos; a idade do PITR PostgreSQL não foi emitida.
   - [x] Commit: `docs(operacao): registrar recovery isolado`.
 - [ ] **T04.5 — Configurar alertas aprovados**
-  - [ ] Usar GitHub issue/Action e Azure Monitor para alertas técnicos; usar orçamento Azure somente se factual, mantendo teto financeiro parametrizável caso contrário.
-  - [ ] Teste: simular falha/API, job de ingestão, banco e custo quando suportado.
-  - [ ] Evidência: regras, notificações de teste e owner.
+  - [x] Alertas de log: GitHub Action protegido e Azure Monitor validaram traceback e falha de ingestão, com Issues canônicas `#44` e `#45`.
+  - [ ] Alerta PostgreSQL: aguarda estratégia segura para testar `is_db_alive` sem degradar ou falsificar produção.
+  - [ ] Alerta financeiro: bloqueado até existir orçamento Azure factual e limiar aprovado.
+  - [x] Evidência dos alertas de log: runs `32035688388` e `32036979098`, artefatos sanitizados e cópias de Issue reconciliadas.
   - [ ] Commit esperado: `ops(seguranca): adicionar alertas operacionais`.
 
 ## 8. Estratégia de testes e validação
@@ -426,6 +446,7 @@ procedimento aprovado: validar em cópia isolada primeiro.
 
 - [x] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.
 - [x] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.
-- [ ] Alertas aprovados foram disparados de modo controlado.
+- [x] Alertas de log aprovados foram disparados de modo controlado e possuem Issues deduplicadas.
+- [ ] Alertas PostgreSQL e financeiro possuem simulação ou fato aprovados.
 - [ ] Nenhum segredo ou PII foi introduzido em código, documentação ou evidência.
 - [ ] Checklists legados só foram atualizados junto da implementação validada.
