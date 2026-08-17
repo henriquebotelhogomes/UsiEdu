@@ -173,6 +173,8 @@ def test_postgresql_alert_validation_is_isolated_reversible_and_uses_builtin_met
     assert "trap cleanup EXIT" in workflow_text
     assert "is_db_alive" in workflow_text
     assert "awk -v value=" in workflow_text
+    assert workflow_text.count("awk -v value=") == 3
+    assert 'test "${DB_ALIVE:-}" = "1"' not in workflow_text
     assert "ALERT_RESOLVED=true" in workflow_text
     assert "length == 0" in workflow_text
     assert "Microsoft.AlertsManagement/alerts" in workflow_text
