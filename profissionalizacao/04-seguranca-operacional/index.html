@@ -2065,6 +2065,22 @@ O job foi restaurado ao limite de retry <code>0</code>. O workflow falhou apenas
 extrair as contagens do Log Analytics: esta versão do CLI retorna uma lista
 achatada com <code>Count</code>, não <code>tables[0].rows</code>. A extração passa a usar
 <code>[0].Count</code>; um novo run protegido ainda deve publicar a evidência sanitizada.</p>
+<p>O quinto run protegido, <code>32035688388</code>, publicou a evidência sanitizada da
+execução <code>usiedu-ingest-uf6kgrx</code>: confirmou <code>traceback_signal_observed</code> e
+<code>ingest_failure_signal_observed</code> como verdadeiros, além do limite original de
+retry em <code>0</code>. O inventário sanitizado do mesmo run contém somente as duas
+regras ativas <code>usiedu-containerapp-tracebacks</code> e <code>usiedu-ingest-failed</code>, ambas
+<code>Sev2</code> no estado <code>New</code>.</p>
+<p>O relatório protegido <code>32036979098</code> consolidou ocorrências históricas pela
+regra antes de processar Issues. As Issues canônicas abertas são <code>#44</code> para
+tracebacks e <code>#45</code> para falha de ingestão; as cópias <code>#46</code> e <code>#47</code> foram
+fechadas como duplicadas, com links para as respectivas canônicas. A
+deduplicação de alertas de log está, portanto, validada sem incluir dados de
+PostgreSQL, Qdrant ou Storage nos artefatos.</p>
+<p>O recorte de alertas de log foi concluído, mas T04.5 permanece em andamento:
+a indisponibilidade PostgreSQL não será simulada enquanto não houver uma forma
+segura de testar <code>is_db_alive</code> sem degradar ou falsificar produção, e alerta
+financeiro continua bloqueado pela ausência de orçamento Azure factual.</p>
 <p>O primeiro deploy protegido de alertas, <code>31921566440</code>, falhou sem criar regras
 porque a assinatura não estava registrada no provedor <code>Microsoft.Insights</code>.
 Após o registro administrativo único do provedor, o retry protegido
@@ -2097,9 +2113,10 @@ mascare o erro primário.</p>
 <li>[x] Evidência: run <code>31981495657</code>, RTO observado, snapshot Qdrant, integridade e cleanup sem resíduos; a idade do PITR PostgreSQL não foi emitida.</li>
 <li>[x] Commit: <code>docs(operacao): registrar recovery isolado</code>.</li>
 <li>[ ] <strong>T04.5 — Configurar alertas aprovados</strong></li>
-<li>[ ] Usar GitHub issue/Action e Azure Monitor para alertas técnicos; usar orçamento Azure somente se factual, mantendo teto financeiro parametrizável caso contrário.</li>
-<li>[ ] Teste: simular falha/API, job de ingestão, banco e custo quando suportado.</li>
-<li>[ ] Evidência: regras, notificações de teste e owner.</li>
+<li>[x] Alertas de log: GitHub Action protegido e Azure Monitor validaram traceback e falha de ingestão, com Issues canônicas <code>#44</code> e <code>#45</code>.</li>
+<li>[ ] Alerta PostgreSQL: aguarda estratégia segura para testar <code>is_db_alive</code> sem degradar ou falsificar produção.</li>
+<li>[ ] Alerta financeiro: bloqueado até existir orçamento Azure factual e limiar aprovado.</li>
+<li>[x] Evidência dos alertas de log: runs <code>32035688388</code> e <code>32036979098</code>, artefatos sanitizados e cópias de Issue reconciliadas.</li>
 <li>[ ] Commit esperado: <code>ops(seguranca): adicionar alertas operacionais</code>.</li>
 </ul>
 <h2 id="8-estrategia-de-testes-e-validacao">8. Estratégia de testes e validação<a class="headerlink" href="#8-estrategia-de-testes-e-validacao" title="Permanent link">&para;</a></h2>
@@ -2190,7 +2207,8 @@ procedimento aprovado: validar em cópia isolada primeiro.</p>
 <ul>
 <li>[x] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.</li>
 <li>[x] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.</li>
-<li>[ ] Alertas aprovados foram disparados de modo controlado.</li>
+<li>[x] Alertas de log aprovados foram disparados de modo controlado e possuem Issues deduplicadas.</li>
+<li>[ ] Alertas PostgreSQL e financeiro possuem simulação ou fato aprovados.</li>
 <li>[ ] Nenhum segredo ou PII foi introduzido em código, documentação ou evidência.</li>
 <li>[ ] Checklists legados só foram atualizados junto da implementação validada.</li>
 </ul>
