@@ -130,6 +130,13 @@ s) e p95 total de 119296,793 ms (119,297 s). A consulta de logs na janela da exe
 137. Esses números são uma baseline factual, não um SLO de chat: o limite de
 primeira resposta permanece pendente de decisão após comparações em T05.2.
 
+Para completar T05.2, a instrumentação local passou a emitir somente eventos
+agregados de `embedder` e `reranker`: componente, operação, backend, quantidade
+de itens, duração e resultado `success` ou `error`. Query, documento, resposta,
+vetor e detalhe de exceção são proibidos. Esses eventos ainda aguardam
+publicação e uma nova medição Azure; portanto, não constituem evidência factual
+de componente nesta versão do documento.
+
 ## 7. Tarefas e microtarefas
 
 - [x] **T05.1 — Criar protocolo de medição**

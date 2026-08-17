@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 from pathlib import Path
 
 import numpy as np
 
+from src.observability.component_measurements import component_measurement
+
 # Caminho padrão do cache de embeddings
 _DEFAULT_CACHE = Path(".cache/embeddings")
+logger = logging.getLogger(__name__)
 
 
 class Embedder:
@@ -41,17 +45,24 @@ class Embedder:
         if self._model is not None:
             return
 
-        try:
-            from fastembed import TextEmbedding
+        with component_measurement(
+            logger=logger,
+            component="embedder",
+            operation="init_model",
+            item_count=0,
+            backend="model_loader",
+        ):
+            try:
+                from fastembed import TextEmbedding
 
-            self._model = TextEmbedding(model_name=self.model_name)
-            self._backend = "fastembed"
-        except (ImportError, ValueError):
-            from sentence_transformers import SentenceTransformer
+                self._model = TextEmbedding(model_name=self.model_name)
+                self._backend = "fastembed"
+            except (ImportError, ValueError):
+                from sentence_transformers import SentenceTransformer
 
-            st_model = SentenceTransformer(self.model_name)
-            self._model = st_model
-            self._backend = "sentence_transformers"
+                st_model = SentenceTransformer(self.model_name)
+                self._model = st_model
+                self._backend = "sentence_transformers"
 
         # Descobre a dimensão com um embedding de teste
         test = self._encode_batch(["dimensão teste"])
@@ -59,10 +70,16 @@ class Embedder:
 
     def _encode_batch(self, texts: list[str]) -> list[list[float]]:
         """Codifica um batch de textos usando o backend ativo."""
-        if self._backend == "fastembed":
-            results = list(self._model.embed(texts))
-            return [r.tolist() if hasattr(r, "tolist") else list(r) for r in results]
-        else:
+        with component_measurement(
+            logger=logger,
+            component="embedder",
+            operation="encode_batch",
+            item_count=len(texts),
+            backend=self._backend,
+        ):
+            if self._backend == "fastembed":
+                results = list(self._model.embed(texts))
+                return [r.tolist() if hasattr(r, "tolist") else list(r) for r in results]
             return self._model.encode(texts, normalize_embeddings=True).tolist()
 
     def embed(self, texts: list[str]) -> list[list[float]]:
