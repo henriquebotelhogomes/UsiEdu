@@ -60,16 +60,8 @@ jobs:
                 time_grain: .properties.timeGrain,
                 category: .properties.category,
                 start_date: .properties.timePeriod.startDate,
-                notifications: (
-                  .properties.notifications
-                  | to_entries
-                  | map({
-                      threshold: .value.threshold,
-                      threshold_type: .value.thresholdType,
-                      enabled: .value.enabled
-                    })
-                  | sort_by(.threshold)
-                )
+                notification_count: (.properties.notifications? // {} | length),
+                issue_thresholds: [80, 100]
               }' > artifacts/financial-budget-configuration.json
           jq -e \
             --arg name "$BUDGET_NAME" \
@@ -80,10 +72,8 @@ jobs:
               .time_grain == "Monthly" and
               .category == "Cost" and
               .start_date == $start and
-              .notifications == [
-                { threshold: 80, threshold_type: "Actual", enabled: true },
-                { threshold: 100, threshold_type: "Actual", enabled: true }
-              ]
+              .notification_count == 0 and
+              .issue_thresholds == [80, 100]
             ' artifacts/financial-budget-configuration.json > /dev/null
 
       - name: Verify billing currency

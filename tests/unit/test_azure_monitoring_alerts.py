@@ -224,13 +224,10 @@ def test_financial_budget_is_scoped_approved_and_has_no_external_notification_ch
     assert "amount: 30" in template
     assert "timeGrain: 'Monthly'" in template
     assert "category: 'Cost'" in template
-    assert "threshold: 80" in template
-    assert "threshold: 100" in template
-    assert "thresholdType: 'Actual'" in template
-    assert "operator: 'GreaterThanOrEqualTo'" in template
-    assert "contactEmails: []" in template
-    assert "contactGroups: []" in template
-    assert "contactRoles: []" in template
+    assert "notifications:" not in template
+    assert "contactEmails" not in template
+    assert "contactGroups" not in template
+    assert "contactRoles" not in template
     assert "webhook" not in template.lower()
     assert "teams" not in template.lower()
 
@@ -255,6 +252,8 @@ def test_financial_budget_workflows_are_manual_protected_and_deduplicate_issues(
     assert "az deployment group create" in deploy_text
     assert "BUDGET_START_DATE" in deploy_text
     assert "BRL" in deploy_text
+    assert "notification_count" in deploy_text
+    assert "issue_thresholds" in deploy_text
     assert "${{ secrets." not in deploy_text.lower()
 
     report_job = report_workflow["jobs"]["report"]
@@ -270,6 +269,7 @@ def test_financial_budget_workflows_are_manual_protected_and_deduplicate_issues(
     assert "azure-financial-alert" in report_text
     assert "80" in report_text
     assert "100" in report_text
+    assert "spend * 100 >= budget * threshold" in report_text
     assert "gh issue list" in report_text
     assert "gh issue create" in report_text
     assert "gh issue comment" in report_text
