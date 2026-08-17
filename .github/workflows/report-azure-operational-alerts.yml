@@ -61,6 +61,8 @@ jobs:
                   fired_at: .startDateTime
                 }
             ]
+            | group_by(.rule)
+            | map(max_by(.fired_at))
           ' artifacts/azure-alerts.json > artifacts/active-approved-alerts.json
 
       - name: Create or update deduplicated GitHub issues
@@ -87,13 +89,20 @@ jobs:
                 state: $state,
                 fired_at: $fired_at
               }')
-            issue_number=$(gh issue list --state open --label "$ALERT_LABEL" \
-              --search "\"${title}\" in:title" --json number --jq '.[0].number // empty')
+            issue_numbers=$(gh issue list --state open --label "$ALERT_LABEL" \
+              --search "\"${title}\" in:title" --limit 100 --json number \
+              --jq 'sort_by(.number) | .[].number')
+            issue_number=$(head -n 1 <<< "$issue_numbers")
 
             if [[ -z "$issue_number" ]]; then
               gh issue create --title "$title" --label "$ALERT_LABEL" --body "$body"
             else
               gh issue comment "$issue_number" --body "$body"
+              tail -n +2 <<< "$issue_numbers" | while IFS= read -r duplicate_number; do
+                [[ -z "$duplicate_number" ]] && continue
+                gh issue close "$duplicate_number" --reason not_planned \
+                  --comment "Consolidated into #${issue_number}."
+              done
             fi
           done < <(jq -c '.[]' artifacts/active-approved-alerts.json)
 
