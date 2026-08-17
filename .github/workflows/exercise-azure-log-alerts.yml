@@ -49,6 +49,11 @@ jobs:
             --resource-group "$RESOURCE_GROUP" \
             --name "$INGEST_JOB" \
             --query id -o tsv)
+          INGEST_IMAGE=$(az containerapp job show \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$INGEST_JOB" \
+            --query properties.template.containers[0].image -o tsv)
+          test -n "$INGEST_IMAGE"
 
           restore_retry_limit() {
             az rest --method patch \
@@ -69,6 +74,7 @@ jobs:
             --resource-group "$RESOURCE_GROUP" \
             --name "$INGEST_JOB" \
             --container-name ingest \
+            --image "$INGEST_IMAGE" \
             --command python \
             --args="$CONTROLLED_FAILURE_ARGUMENT" \
             --query name -o tsv)

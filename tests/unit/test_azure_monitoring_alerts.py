@@ -124,6 +124,8 @@ def test_log_alert_simulation_is_protected_reversible_and_does_not_touch_data_st
     assert "trap restore_retry_limit EXIT" in text
     assert "az containerapp job start" in text
     assert "--command python" in text
+    assert "INGEST_IMAGE" in text
+    assert '--image "$INGEST_IMAGE"' in text
     assert "CONTROLLED_FAILURE_ARGUMENT" in text
     assert '--args="$CONTROLLED_FAILURE_ARGUMENT"' in text
     assert "Traceback (controlled alert simulation)" in text

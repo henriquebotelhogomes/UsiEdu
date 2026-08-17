@@ -342,6 +342,12 @@ segundo argumento. O rollback ARM foi bem-sucedido e o limite permaneceu em
 por quebra de linha, forma aceita pelo parser da CLI e pelo interpretador
 Python.
 
+O terceiro run protegido, `32027057986`, também não criou execução ou sinal: a
+API de Container Apps exige que um override de comando informe explicitamente
+a imagem do container. O rollback ARM foi confirmado com o limite em `0`. O
+workflow agora obtém a imagem configurada no job e a reaplica somente à
+execução sintética, preservando o template do job e sem acessar os data stores.
+
 O primeiro deploy protegido de alertas, `31921566440`, falhou sem criar regras
 porque a assinatura não estava registrada no provedor `Microsoft.Insights`.
 Após o registro administrativo único do provedor, o retry protegido
