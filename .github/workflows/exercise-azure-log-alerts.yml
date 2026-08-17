@@ -100,11 +100,11 @@ jobs:
             TRACEBACK_COUNT=$(az monitor log-analytics query \
               --workspace "$WORKSPACE_ID" \
               --analytics-query "ContainerAppConsoleLogs_CL | where TimeGenerated > ago(15m) | where Log_s has 'Traceback (controlled alert simulation)' | count" \
-              --query 'tables[0].rows[0][0]' -o tsv)
+              --query '[0].Count' -o tsv)
             INGEST_FAILURE_COUNT=$(az monitor log-analytics query \
               --workspace "$WORKSPACE_ID" \
               --analytics-query "ContainerAppSystemLogs_CL | where TimeGenerated > ago(15m) | where JobName_s == '$INGEST_JOB' | where Reason_s == 'BackoffLimitExceeded' | count" \
-              --query 'tables[0].rows[0][0]' -o tsv)
+              --query '[0].Count' -o tsv)
             if [ "$TRACEBACK_COUNT" -gt 0 ] && [ "$INGEST_FAILURE_COUNT" -gt 0 ]; then
               break
             fi

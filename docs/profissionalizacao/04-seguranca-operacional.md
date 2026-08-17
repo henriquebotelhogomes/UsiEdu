@@ -348,6 +348,15 @@ a imagem do container. O rollback ARM foi confirmado com o limite em `0`. O
 workflow agora obtém a imagem configurada no job e a reaplica somente à
 execução sintética, preservando o template do job e sem acessar os data stores.
 
+O quarto run protegido, `32028207228`, criou a execução sintética e produziu
+dois tracebacks em `stderr` e o evento `BackoffLimitExceeded`. Os dois alertas
+aprovados ficaram ativos: `usiedu-containerapp-tracebacks` às
+`2026-08-17T12:10:55Z` e `usiedu-ingest-failed` às `2026-08-17T12:13:49Z`.
+O job foi restaurado ao limite de retry `0`. O workflow falhou apenas ao
+extrair as contagens do Log Analytics: esta versão do CLI retorna uma lista
+achatada com `Count`, não `tables[0].rows`. A extração passa a usar
+`[0].Count`; um novo run protegido ainda deve publicar a evidência sanitizada.
+
 O primeiro deploy protegido de alertas, `31921566440`, falhou sem criar regras
 porque a assinatura não estava registrada no provedor `Microsoft.Insights`.
 Após o registro administrativo único do provedor, o retry protegido
