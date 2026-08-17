@@ -1746,6 +1746,12 @@ sessões virtuais, retornaram HTTP 200: p95 de TTFT de 117392,377 ms (117,392
 s) e p95 total de 119296,793 ms (119,297 s). A consulta de logs na janela da execução encontrou zero eventos
 137. Esses números são uma baseline factual, não um SLO de chat: o limite de
 primeira resposta permanece pendente de decisão após comparações em T05.2.</p>
+<p>Para completar T05.2, a instrumentação local passou a emitir somente eventos
+agregados de <code>embedder</code> e <code>reranker</code>: componente, operação, backend, quantidade
+de itens, duração e resultado <code>success</code> ou <code>error</code>. Query, documento, resposta,
+vetor e detalhe de exceção são proibidos. Esses eventos ainda aguardam
+publicação e uma nova medição Azure; portanto, não constituem evidência factual
+de componente nesta versão do documento.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[x] <strong>T05.1 — Criar protocolo de medição</strong></li>
