@@ -2057,6 +2057,14 @@ API de Container Apps exige que um override de comando informe explicitamente
 a imagem do container. O rollback ARM foi confirmado com o limite em <code>0</code>. O
 workflow agora obtém a imagem configurada no job e a reaplica somente à
 execução sintética, preservando o template do job e sem acessar os data stores.</p>
+<p>O quarto run protegido, <code>32028207228</code>, criou a execução sintética e produziu
+dois tracebacks em <code>stderr</code> e o evento <code>BackoffLimitExceeded</code>. Os dois alertas
+aprovados ficaram ativos: <code>usiedu-containerapp-tracebacks</code> às
+<code>2026-08-17T12:10:55Z</code> e <code>usiedu-ingest-failed</code> às <code>2026-08-17T12:13:49Z</code>.
+O job foi restaurado ao limite de retry <code>0</code>. O workflow falhou apenas ao
+extrair as contagens do Log Analytics: esta versão do CLI retorna uma lista
+achatada com <code>Count</code>, não <code>tables[0].rows</code>. A extração passa a usar
+<code>[0].Count</code>; um novo run protegido ainda deve publicar a evidência sanitizada.</p>
 <p>O primeiro deploy protegido de alertas, <code>31921566440</code>, falhou sem criar regras
 porque a assinatura não estava registrada no provedor <code>Microsoft.Insights</code>.
 Após o registro administrativo único do provedor, o retry protegido
