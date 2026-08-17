@@ -121,8 +121,8 @@ jobs:
               schema_version: "1.0.0",
               execution: $execution,
               original_retry_limit: ($original_retry_limit | tonumber),
-              traceback_signal_observed: ($traceback_count | tonumber) > 0,
-              ingest_failure_signal_observed: ($ingest_failure_count | tonumber) > 0
+              traceback_signal_observed: (($traceback_count | tonumber) > 0),
+              ingest_failure_signal_observed: (($ingest_failure_count | tonumber) > 0)
             }' > artifacts/log-alert-signal-evidence.json
 
       - name: Wait for approved log alerts
