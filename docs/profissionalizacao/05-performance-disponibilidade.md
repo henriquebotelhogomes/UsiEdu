@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Planejado — especificado, não iniciado |
+| Estado | Em andamento — protocolo T05.1 implementado; baseline factual pendente |
 | Prioridade | P2 |
 | Dono | Henrique Botelho Gomes |
 | Dependências | [PRD do programa](00-prd-programa.md), [validação P0](01-validacao-piloto.md), `infra/azure/main.bicep`, `frontend/nginx/default.conf.template` |
@@ -101,11 +101,21 @@ Qualquer mudança deve preservar o fallback de `/chat`, não expor API e possuir
 rollback de revisão/configuração. Não há variável, endpoint ou migração nova
 autorizada por esta especificação.
 
+O protocolo versionado `src/observability/performance_protocol_v1.json` fixa a
+carga de cinco usuários concorrentes e rajada de dez, os cenários `health`,
+`login` e `chat`, e os campos sanitizados por amostra: revisão, réplicas,
+modelos, timestamps, status HTTP, latências total/TTFT, estado agregado das
+dependências e sinal de exit 137. O validador
+`src/observability/performance_protocol.py` exige amostras cold e warm,
+separa-as deterministicamente e recusa pergunta, resposta, token, segredo,
+JWT, e-mail e identificadores de sessão. O autoensaio versionado cobre somente
+o schema e não constitui baseline local ou Azure.
+
 ## 7. Tarefas e microtarefas
 
 - [ ] **T05.1 — Criar protocolo de medição**
-  - [ ] Definir cinco usuários concorrentes, rajada de dez, cold/warm, campos de telemetria e descarte de dados sensíveis; medir primeira resposta/chat antes de fixar seu SLO.
-  - [ ] Teste: script valida schema e separa amostras cold/warm.
+  - [x] Definir cinco usuários concorrentes, rajada de dez, cold/warm, campos de telemetria e descarte de dados sensíveis; o SLO de primeira resposta/chat continua sem valor até medição factual.
+  - [x] Teste: o script valida schema, separa amostras cold/warm e rejeita conteúdo sensível.
   - [ ] Evidência: baseline local/Azure com revisão e configuração.
   - [ ] Commit esperado: `docs(performance): definir protocolo de medicao`.
 - [ ] **T05.2 — Medir componentes e fluxo**
