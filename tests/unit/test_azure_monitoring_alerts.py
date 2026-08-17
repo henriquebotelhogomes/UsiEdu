@@ -11,6 +11,7 @@ ALERTS_PATH = ROOT / "infra" / "azure" / "monitoring-alerts.bicep"
 ACCESS_PATH = ROOT / "infra" / "azure" / "monitoring-access.bicep"
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "report-azure-operational-alerts.yml"
 DEPLOY_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "configure-azure-operational-alerts.yml"
+SIMULATION_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "exercise-azure-log-alerts.yml"
 
 
 def _workflow() -> tuple[str, dict]:
@@ -100,4 +101,34 @@ def test_alert_deployment_is_manual_protected_and_uses_compiled_templates() -> N
     assert "az resource show" in text
     assert '"${alert##*/}"' in text
     assert "az monitor scheduled-query" not in text
+    assert "${{ secrets." not in text.lower()
+
+
+def test_log_alert_simulation_is_protected_reversible_and_does_not_touch_data_stores() -> None:
+    text = SIMULATION_WORKFLOW_PATH.read_text(encoding="utf-8")
+    workflow = yaml.safe_load(text)
+    job = workflow["jobs"]["simulate"]
+
+    assert set(workflow["on"]) == {"workflow_dispatch"}
+    assert workflow["permissions"] == {"contents": "read", "id-token": "write"}
+    assert job["if"] == "github.ref == 'refs/heads/main'"
+    assert job["environment"] == "production"
+    assert "INGEST_JOB: ${{ vars.AZURE_INGEST_JOB }}" in text
+    assert '--name "$INGEST_JOB"' in text
+    assert "--name usiedu-ingest" not in text
+    assert "az containerapp job update" in text
+    assert "--replica-retry-limit 1" in text
+    assert '--replica-retry-limit "$ORIGINAL_RETRY_LIMIT"' in text
+    assert "trap restore_retry_limit EXIT" in text
+    assert "az containerapp job start" in text
+    assert "--command python" in text
+    assert "Traceback (controlled alert simulation)" in text
+    assert "BackoffLimitExceeded" in text
+    assert "Microsoft.AlertsManagement/alerts" in text
+    assert "api-version=2019-03-01" in text
+    assert "usiedu-containerapp-tracebacks" in text
+    assert "usiedu-ingest-failed" in text
+    assert "az postgres flexible-server" not in text
+    assert "QDRANT_URL" not in text
+    assert "az storage" not in text
     assert "${{ secrets." not in text.lower()

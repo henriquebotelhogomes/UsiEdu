@@ -316,6 +316,16 @@ aprovado. Esta preparação não altera Azure nem conclui T04.5; a implantação
 protegida, a simulação controlada de API, ingestão e banco, e a evidência da
 Issue ainda são necessárias.
 
+O workflow protegido
+`.github/workflows/exercise-azure-log-alerts.yml` prepara a primeira simulação
+controlada da T04.5. Ele altera temporariamente o limite de tentativas do job
+manual de ingestão de `0` para `1`, executa somente `python -c` para emitir um
+traceback sintético e encerrar com falha, e restaura o limite original com
+`trap` antes de verificar os dois alertas baseados em logs. A execução não
+acessa Qdrant, PostgreSQL ou Storage. A indisponibilidade PostgreSQL não é
+simulada neste workflow: não há injeção segura de `is_db_alive` e não se deve
+degradar ou falsificar a métrica do banco de produção.
+
 O primeiro deploy protegido de alertas, `31921566440`, falhou sem criar regras
 porque a assinatura não estava registrada no provedor `Microsoft.Insights`.
 Após o registro administrativo único do provedor, o retry protegido
