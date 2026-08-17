@@ -159,7 +159,6 @@ jobs:
           az postgres flexible-server stop \
             --resource-group "$RECOVERY_RESOURCE_GROUP" \
             --name "$VALIDATION_SERVER" \
-            --yes \
             --output none
 
           for attempt in $(seq 1 48); do
