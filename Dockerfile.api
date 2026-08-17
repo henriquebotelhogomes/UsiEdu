@@ -6,7 +6,7 @@ FROM python:3.12-slim AS builder
 WORKDIR /app
 
 # Instala dependências do sistema
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
@@ -24,6 +24,10 @@ RUN pip install --no-cache-dir --upgrade pip "setuptools>=78.1.1" && \
 FROM python:3.12-slim AS runtime
 
 WORKDIR /app
+
+# Atualiza pacotes do sistema corrigíveis antes da política Trivy da promoção.
+RUN apt-get update && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copia dependências do builder
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages

@@ -124,6 +124,13 @@ def test_api_image_installs_trivy_remediated_python_dependencies() -> None:
     assert "pip/_vendor/bom.cdx.json" in dockerfile
 
 
+def test_api_image_applies_security_updates_in_builder_and_runtime() -> None:
+    """Pacotes Debian com correção disponível devem ser atualizados antes do scan."""
+    dockerfile = Path("Dockerfile.api").read_text(encoding="utf-8")
+
+    assert dockerfile.count("apt-get upgrade -y") == 2
+
+
 def test_hatchling_build_includes_src_package() -> None:
     """A imagem instala o projeto a partir de src/, não de um pacote inexistente usiedu/."""
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
