@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0.0",
+  "evidence_kind": "performance_protocol_self_test",
+  "environment": "local",
+  "load_profile": {
+    "concurrent_users": 5,
+    "burst_requests": 10
+  },
+  "samples": [
+    {
+      "sample_id": "cold-health-001",
+      "temperature": "cold",
+      "scenario": "health",
+      "started_at": "2026-08-17T19:40:00Z",
+      "completed_at": "2026-08-17T19:40:01Z",
+      "revision": "self-test",
+      "replica_count": 1,
+      "models": {
+        "router": "fake-router",
+        "agent": "fake-agent",
+        "embedder": "fake-embedder",
+        "reranker": "fake-reranker"
+      },
+      "status_code": 200,
+      "latency_ms": {
+        "total": 45.0
+      },
+      "dependency_outcomes": {
+        "llm": "not_measured",
+        "qdrant": "not_measured",
+        "postgresql": "not_measured"
+      },
+      "exit_137_observed": false
+    },
+    {
+      "sample_id": "warm-login-001",
+      "temperature": "warm",
+      "scenario": "login",
+      "started_at": "2026-08-17T19:40:02Z",
+      "completed_at": "2026-08-17T19:40:03Z",
+      "revision": "self-test",
+      "replica_count": 1,
+      "models": {
+        "router": "fake-router",
+        "agent": "fake-agent",
+        "embedder": "fake-embedder",
+        "reranker": "fake-reranker"
+      },
+      "status_code": 200,
+      "latency_ms": {
+        "total": 35.0
+      },
+      "dependency_outcomes": {
+        "llm": "not_measured",
+        "qdrant": "not_measured",
+        "postgresql": "not_measured"
+      },
+      "exit_137_observed": false
+    },
+    {
+      "sample_id": "warm-chat-001",
+      "temperature": "warm",
+      "scenario": "chat",
+      "started_at": "2026-08-17T19:40:04Z",
+      "completed_at": "2026-08-17T19:40:05Z",
+      "revision": "self-test",
+      "replica_count": 1,
+      "models": {
+        "router": "fake-router",
+        "agent": "fake-agent",
+        "embedder": "fake-embedder",
+        "reranker": "fake-reranker"
+      },
+      "status_code": 200,
+      "latency_ms": {
+        "first_token": 18.0,
+        "total": 52.0
+      },
+      "dependency_outcomes": {
+        "llm": "not_measured",
+        "qdrant": "not_measured",
+        "postgresql": "not_measured"
+      },
+      "exit_137_observed": false
+    }
+  ]
+}
