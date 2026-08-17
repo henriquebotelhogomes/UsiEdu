@@ -1635,8 +1635,8 @@ interfaces; o PRD prevalece para comportamento.</p>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">LoginResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">access_token</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># JWT, expira em 1h</span>
-    <span class="n">token_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bearer&quot;</span>
-    <span class="n">profile</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;student&quot;</span><span class="p">,</span> <span class="s2">&quot;staff&quot;</span><span class="p">]</span>
+    <span class="n">token_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"bearer"</span>
+    <span class="n">profile</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"student"</span><span class="p">,</span> <span class="s2">"staff"</span><span class="p">]</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
 
 
@@ -1647,8 +1647,8 @@ interfaces; o PRD prevalece para comportamento.</p>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Source</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">document</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># ex.: &quot;Regimento Geral da UnB&quot;</span>
-    <span class="n">section</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># ex.: &quot;Título III, Cap. II, Art. 112&quot;</span>
+    <span class="n">document</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># ex.: "Regimento Geral da UnB"</span>
+    <span class="n">section</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># ex.: "Título III, Cap. II, Art. 112"</span>
     <span class="n">excerpt</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># trecho recuperado</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
 
@@ -1656,14 +1656,14 @@ interfaces; o PRD prevalece para comportamento.</p>
 <span class="k">class</span><span class="w"> </span><span class="nc">ChatResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">answer</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">agents_involved</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># ex.: [&quot;academico&quot;, &quot;financeiro&quot;]</span>
+    <span class="n">agents_involved</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># ex.: ["academico", "financeiro"]</span>
     <span class="n">sources</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Source</span><span class="p">]</span>
-    <span class="n">intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;academico&quot;</span><span class="p">,</span> <span class="s2">&quot;financeiro&quot;</span><span class="p">,</span> <span class="s2">&quot;institucional&quot;</span><span class="p">,</span> <span class="s2">&quot;composta&quot;</span><span class="p">,</span> <span class="s2">&quot;fora_de_escopo&quot;</span><span class="p">]</span>
+    <span class="n">intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"academico"</span><span class="p">,</span> <span class="s2">"financeiro"</span><span class="p">,</span> <span class="s2">"institucional"</span><span class="p">,</span> <span class="s2">"composta"</span><span class="p">,</span> <span class="s2">"fora_de_escopo"</span><span class="p">]</span>
 
 
 <span class="c1"># histórico (T7.4)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ChatHistoryMessage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">role</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant&quot;</span><span class="p">]</span>
+    <span class="n">role</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"user"</span><span class="p">,</span> <span class="s2">"assistant"</span><span class="p">]</span>
     <span class="n">content</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">timestamp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># o checkpointer não persiste timestamp</span>
 
@@ -1677,12 +1677,12 @@ interfaces; o PRD prevalece para comportamento.</p>
 <span class="k">class</span><span class="w"> </span><span class="nc">FeedbackRequest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">message_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># run_id recebido no evento SSE meta</span>
-    <span class="n">rating</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;up&quot;</span><span class="p">,</span> <span class="s2">&quot;down&quot;</span><span class="p">]</span>
+    <span class="n">rating</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"up"</span><span class="p">,</span> <span class="s2">"down"</span><span class="p">]</span>
     <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># máximo de 500 caracteres</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">FeedbackResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ok&quot;</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ok"</span>
     <span class="n">feedback_id</span><span class="p">:</span> <span class="nb">int</span>
 
 
@@ -1694,7 +1694,7 @@ interfaces; o PRD prevalece para comportamento.</p>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">FeedbackRecentItem</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">rating</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;up&quot;</span><span class="p">,</span> <span class="s2">&quot;down&quot;</span><span class="p">]</span>
+    <span class="n">rating</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"up"</span><span class="p">,</span> <span class="s2">"down"</span><span class="p">]</span>
     <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">profile</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">created_at</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># ISO 8601</span>
@@ -1741,7 +1741,7 @@ interfaces; o PRD prevalece para comportamento.</p>
 e faz fallback automático para <code>POST /chat</code> em erro de rede/parse antes de receber tokens.
 Nginx exige <code>proxy_buffering off</code> no <code>location /chat/stream</code>.</p>
 <h3 id="23-erros-padronizados">2.3 Erros padronizados<a class="headerlink" href="#23-erros-padronizados" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;UNAUTHORIZED&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<p><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UNAUTHORIZED"</span><span class="p">,</span><span class="w"> </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 Códigos: <code>UNAUTHORIZED</code> (401), <code>FORBIDDEN</code> (403), <code>VALIDATION</code> (422),
 <code>SESSION_NOT_FOUND</code> (404), <code>LLM_UNAVAILABLE</code> (503), <code>INTERNAL</code> (500).</p>
@@ -1761,7 +1761,7 @@ Códigos: <code>UNAUTHORIZED</code> (401), <code>FORBIDDEN</code> (403), <code>V
 <span class="na">QDRANT_COLLECTION_INSTITUCIONAL</span><span class="o">=</span><span class="s">institucional</span>
 
 <span class="c1"># Auth</span>
-<span class="na">JWT_SECRET</span><span class="o">=</span><span class="w">                             </span><span class="c1"># gerar: python -c &quot;import secrets; print(secrets.token_urlsafe(32))&quot;</span>
+<span class="na">JWT_SECRET</span><span class="o">=</span><span class="w">                             </span><span class="c1"># gerar: python -c "import secrets; print(secrets.token_urlsafe(32))"</span>
 <span class="na">JWT_EXPIRES_MINUTES</span><span class="o">=</span><span class="s">60</span>
 
 <span class="c1"># Observabilidade</span>
@@ -1788,23 +1788,23 @@ Códigos: <code>UNAUTHORIZED</code> (401), <code>FORBIDDEN</code> (403), <code>V
 </code></pre></div>
 <h2 id="4-modelos-de-dados-mockados-srctoolsmock_datapy">4. Modelos de dados mockados (<code>src/tools/mock_data.py</code>)<a class="headerlink" href="#4-modelos-de-dados-mockados-srctoolsmock_datapy" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">STUDENTS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;ana-123&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;nome&quot;</span><span class="p">:</span> <span class="s2">&quot;Ana Souza&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;curso&quot;</span><span class="p">:</span> <span class="s2">&quot;ADS&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;periodo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">&quot;notas&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;calculo-1&quot;</span><span class="p">:</span> <span class="mf">5.8</span><span class="p">,</span> <span class="s2">&quot;programacao-1&quot;</span><span class="p">:</span> <span class="mf">9.1</span><span class="p">},</span>
-        <span class="s2">&quot;faltas&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;calculo-1&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;programacao-1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="s2">"ana-123"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"nome"</span><span class="p">:</span> <span class="s2">"Ana Souza"</span><span class="p">,</span>
+        <span class="s2">"curso"</span><span class="p">:</span> <span class="s2">"ADS"</span><span class="p">,</span>
+        <span class="s2">"periodo"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">"notas"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"calculo-1"</span><span class="p">:</span> <span class="mf">5.8</span><span class="p">,</span> <span class="s2">"programacao-1"</span><span class="p">:</span> <span class="mf">9.1</span><span class="p">},</span>
+        <span class="s2">"faltas"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"calculo-1"</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">"programacao-1"</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
     <span class="p">},</span>
 <span class="p">}</span>
 <span class="n">BOLETOS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;ana-123&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;bol-001&quot;</span><span class="p">,</span> <span class="s2">&quot;valor&quot;</span><span class="p">:</span> <span class="mf">890.00</span><span class="p">,</span> <span class="s2">&quot;vencimento&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-07-10&quot;</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;vencido&quot;</span><span class="p">},</span>
+    <span class="s2">"ana-123"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"bol-001"</span><span class="p">,</span> <span class="s2">"valor"</span><span class="p">:</span> <span class="mf">890.00</span><span class="p">,</span> <span class="s2">"vencimento"</span><span class="p">:</span> <span class="s2">"2026-07-10"</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"vencido"</span><span class="p">},</span>
     <span class="p">],</span>
 <span class="p">}</span>
 <span class="n">POLITICA_RENEGOCIACAO</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;desconto_maximo_percentual&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>  <span class="c1"># aplicado apenas a juros/multa</span>
-    <span class="s2">&quot;parcelas_maximas&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
-    <span class="s2">&quot;condicao&quot;</span><span class="p">:</span> <span class="s2">&quot;apenas boletos vencidos há menos de 30 dias&quot;</span><span class="p">,</span>
+    <span class="s2">"desconto_maximo_percentual"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>  <span class="c1"># aplicado apenas a juros/multa</span>
+    <span class="s2">"parcelas_maximas"</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="s2">"condicao"</span><span class="p">:</span> <span class="s2">"apenas boletos vencidos há menos de 30 dias"</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Todas as tools dos agentes são funções assíncronas puras sobre esses dados —
@@ -1821,8 +1821,8 @@ Checkpointer: SQLite, chave thread_id = session_id
 </code></pre></div>
 <p>Saída estruturada do supervisor (validada com Pydantic):</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SupervisorDecision</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;academico&quot;</span><span class="p">,</span> <span class="s2">&quot;financeiro&quot;</span><span class="p">,</span> <span class="s2">&quot;institucional&quot;</span><span class="p">,</span> <span class="s2">&quot;composta&quot;</span><span class="p">,</span> <span class="s2">&quot;fora_de_escopo&quot;</span><span class="p">]</span>
-    <span class="n">plan</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># sub-tarefas, apenas para intent=&quot;composta&quot;</span>
+    <span class="n">intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"academico"</span><span class="p">,</span> <span class="s2">"financeiro"</span><span class="p">,</span> <span class="s2">"institucional"</span><span class="p">,</span> <span class="s2">"composta"</span><span class="p">,</span> <span class="s2">"fora_de_escopo"</span><span class="p">]</span>
+    <span class="n">plan</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># sub-tarefas, apenas para intent="composta"</span>
     <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># breve justificativa (aparece no trace)</span>
 </code></pre></div>
 <h2 id="6-convencoes-de-codigo">6. Convenções de código<a class="headerlink" href="#6-convencoes-de-codigo" title="Permanent link">&para;</a></h2>

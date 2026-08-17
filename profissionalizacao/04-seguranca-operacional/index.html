@@ -2038,6 +2038,14 @@ traceback sintético e encerrar com falha, e restaura o limite original com
 acessa Qdrant, PostgreSQL ou Storage. A indisponibilidade PostgreSQL não é
 simulada neste workflow: não há injeção segura de <code>is_db_alive</code> e não se deve
 degradar ou falsificar a métrica do banco de produção.</p>
+<p>O primeiro run protegido dessa simulação, <code>31982697595</code>, falhou antes de criar
+uma execução do job porque o CLI interpretou o argumento Python <code>-c</code> como sua
+própria opção. Nenhum sinal de log ou alerta foi produzido. O rollback inicial
+também não conseguiu aplicar o valor numérico <code>0</code> pelo comando de alto nível;
+o limite permaneceu temporariamente em <code>1</code>. Um PATCH ARM limitado ao campo
+<code>replicaRetryLimit</code> restaurou imediatamente o valor <code>0</code>, que foi confirmado
+por leitura posterior. O workflow passa <code>-c</code> anexado ao argumento e usa o
+mesmo PATCH ARM somente para a reversão.</p>
 <p>O primeiro deploy protegido de alertas, <code>31921566440</code>, falhou sem criar regras
 porque a assinatura não estava registrada no provedor <code>Microsoft.Insights</code>.
 Após o registro administrativo único do provedor, o retry protegido

@@ -1550,15 +1550,15 @@ nao altera o escopo do piloto.</p>
 </ul>
 <h3 id="reproducao-sem-segredos">Reproducao sem segredos<a class="headerlink" href="#reproducao-sem-segredos" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="n">az</span> <span class="n">containerapp</span> <span class="n">list</span> <span class="p">-</span><span class="n">-resource-group</span> <span class="n">rg-usiedu</span> <span class="p">`</span>
-  <span class="p">-</span><span class="n">-query</span> <span class="s2">&quot;[].{name:name,state:properties.provisioningState,revision:properties.latestRevisionName,fqdn:properties.configuration.ingress.fqdn,external:properties.configuration.ingress.external}&quot;</span> <span class="p">`</span>
+  <span class="p">-</span><span class="n">-query</span> <span class="s2">"[].{name:name,state:properties.provisioningState,revision:properties.latestRevisionName,fqdn:properties.configuration.ingress.fqdn,external:properties.configuration.ingress.external}"</span> <span class="p">`</span>
   <span class="n">-o</span> <span class="n">table</span>
 
 <span class="n">az</span> <span class="n">containerapp</span> <span class="n">job</span> <span class="n">execution</span> <span class="n">list</span> <span class="p">-</span><span class="n">-name</span> <span class="n">usiedu-ingest</span> <span class="p">-</span><span class="n">-resource-group</span> <span class="n">rg-usiedu</span> <span class="p">`</span>
-  <span class="p">-</span><span class="n">-query</span> <span class="s2">&quot;[].{name:name,status:properties.status,start:properties.startTime,end:properties.endTime}&quot;</span> <span class="p">`</span>
+  <span class="p">-</span><span class="n">-query</span> <span class="s2">"[].{name:name,status:properties.status,start:properties.startTime,end:properties.endTime}"</span> <span class="p">`</span>
   <span class="n">-o</span> <span class="n">table</span>
 
 <span class="n">az</span> <span class="n">postgres</span> <span class="n">flexible-server</span> <span class="n">show</span> <span class="p">-</span><span class="n">-name</span> <span class="n">usiedu-pg-j6p4znlvml25e</span> <span class="p">-</span><span class="n">-resource-group</span> <span class="n">rg-usiedu</span> <span class="p">`</span>
-  <span class="p">-</span><span class="n">-query</span> <span class="s2">&quot;{state:state,version:version,sku:sku.name,storageGb:storage.storageSizeGb}&quot;</span> <span class="n">-o</span> <span class="n">json</span>
+  <span class="p">-</span><span class="n">-query</span> <span class="s2">"{state:state,version:version,sku:sku.name,storageGb:storage.storageSizeGb}"</span> <span class="n">-o</span> <span class="n">json</span>
 </code></pre></div>
 <h2 id="t-p02-fluxo-funcional-publico">T-P0.2 - Fluxo funcional publico<a class="headerlink" href="#t-p02-fluxo-funcional-publico" title="Permanent link">&para;</a></h2>
 <p><strong>Status:</strong> concluida com falha em 2026-08-11.</p>
@@ -1632,7 +1632,7 @@ o diagnostico e a correcao.</p>
 </table>
 <p>Comandos de evidencia sem segredos:</p>
 <div class="highlight"><pre><span></span><code><span class="n">az</span> <span class="n">containerapp</span> <span class="n">show</span> <span class="p">-</span><span class="n">-name</span> <span class="n">usiedu-api</span> <span class="p">-</span><span class="n">-resource-group</span> <span class="n">rg-usiedu</span> <span class="p">`</span>
-  <span class="p">-</span><span class="n">-query</span> <span class="s2">&quot;{scale:properties.template.scale,revision:properties.latestRevisionName}&quot;</span> <span class="n">-o</span> <span class="n">json</span>
+  <span class="p">-</span><span class="n">-query</span> <span class="s2">"{scale:properties.template.scale,revision:properties.latestRevisionName}"</span> <span class="n">-o</span> <span class="n">json</span>
 
 <span class="n">az</span> <span class="n">containerapp</span> <span class="n">logs</span> <span class="n">show</span> <span class="p">-</span><span class="n">-name</span> <span class="n">usiedu-api</span> <span class="p">-</span><span class="n">-resource-group</span> <span class="n">rg-usiedu</span> <span class="p">`</span>
   <span class="p">-</span><span class="n">-type</span> <span class="n">system</span> <span class="p">-</span><span class="n">-tail</span> <span class="n">200</span>
@@ -1640,7 +1640,7 @@ o diagnostico e a correcao.</p>
 <span class="nv">$workspaceId</span> <span class="p">=</span> <span class="n">az</span> <span class="n">monitor</span> <span class="n">log-analytics</span> <span class="n">workspace</span> <span class="n">show</span> <span class="p">-</span><span class="n">-resource-group</span> <span class="n">rg-usiedu</span> <span class="p">`</span>
   <span class="p">-</span><span class="n">-workspace-name</span> <span class="n">usiedu-logs</span> <span class="p">-</span><span class="n">-query</span> <span class="n">customerId</span> <span class="n">-o</span> <span class="n">tsv</span>
 <span class="n">az</span> <span class="n">monitor</span> <span class="n">log-analytics</span> <span class="n">query</span> <span class="p">-</span><span class="n">-workspace</span> <span class="nv">$workspaceId</span> <span class="p">-</span><span class="n">-analytics-query</span> <span class="p">`</span>
-  <span class="s2">&quot;ContainerAppSystemLogs_CL | where TimeGenerated &gt; ago(3d) | where ContainerAppName_s == &#39;usiedu-api&#39; | summarize total=count(), exit137=countif(Log_s has &#39;137&#39;), oom=countif(Log_s has &#39;OOM&#39;)&quot;</span> <span class="n">-o</span> <span class="n">json</span>
+  <span class="s2">"ContainerAppSystemLogs_CL | where TimeGenerated &gt; ago(3d) | where ContainerAppName_s == 'usiedu-api' | summarize total=count(), exit137=countif(Log_s has '137'), oom=countif(Log_s has 'OOM')"</span> <span class="n">-o</span> <span class="n">json</span>
 </code></pre></div>
 <p>O 504 em cold start e os eventos 137 impedem o aceite T9.4 e exigem T-P0.4:
 diagnostico, teste de regressao e a menor correcao possivel.</p>
