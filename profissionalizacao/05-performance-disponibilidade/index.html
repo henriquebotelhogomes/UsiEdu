@@ -1536,7 +1536,7 @@
 <tbody>
 <tr>
 <td>Estado</td>
-<td>Planejado — especificado, não iniciado</td>
+<td>Em andamento — protocolo T05.1 implementado; baseline factual pendente</td>
 </tr>
 <tr>
 <td>Prioridade</td>
@@ -1720,11 +1720,20 @@ ocorre depois do primeiro token nem em escrita não idempotente.
 Qualquer mudança deve preservar o fallback de <code>/chat</code>, não expor API e possuir
 rollback de revisão/configuração. Não há variável, endpoint ou migração nova
 autorizada por esta especificação.</p>
+<p>O protocolo versionado <code>src/observability/performance_protocol_v1.json</code> fixa a
+carga de cinco usuários concorrentes e rajada de dez, os cenários <code>health</code>,
+<code>login</code> e <code>chat</code>, e os campos sanitizados por amostra: revisão, réplicas,
+modelos, timestamps, status HTTP, latências total/TTFT, estado agregado das
+dependências e sinal de exit 137. O validador
+<code>src/observability/performance_protocol.py</code> exige amostras cold e warm,
+separa-as deterministicamente e recusa pergunta, resposta, token, segredo,
+JWT, e-mail e identificadores de sessão. O autoensaio versionado cobre somente
+o schema e não constitui baseline local ou Azure.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[ ] <strong>T05.1 — Criar protocolo de medição</strong></li>
-<li>[ ] Definir cinco usuários concorrentes, rajada de dez, cold/warm, campos de telemetria e descarte de dados sensíveis; medir primeira resposta/chat antes de fixar seu SLO.</li>
-<li>[ ] Teste: script valida schema e separa amostras cold/warm.</li>
+<li>[x] Definir cinco usuários concorrentes, rajada de dez, cold/warm, campos de telemetria e descarte de dados sensíveis; o SLO de primeira resposta/chat continua sem valor até medição factual.</li>
+<li>[x] Teste: o script valida schema, separa amostras cold/warm e rejeita conteúdo sensível.</li>
 <li>[ ] Evidência: baseline local/Azure com revisão e configuração.</li>
 <li>[ ] Commit esperado: <code>docs(performance): definir protocolo de medicao</code>.</li>
 <li>[ ] <strong>T05.2 — Medir componentes e fluxo</strong></li>
