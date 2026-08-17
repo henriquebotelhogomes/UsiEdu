@@ -326,6 +326,15 @@ acessa Qdrant, PostgreSQL ou Storage. A indisponibilidade PostgreSQL não é
 simulada neste workflow: não há injeção segura de `is_db_alive` e não se deve
 degradar ou falsificar a métrica do banco de produção.
 
+O primeiro run protegido dessa simulação, `31982697595`, falhou antes de criar
+uma execução do job porque o CLI interpretou o argumento Python `-c` como sua
+própria opção. Nenhum sinal de log ou alerta foi produzido. O rollback inicial
+também não conseguiu aplicar o valor numérico `0` pelo comando de alto nível;
+o limite permaneceu temporariamente em `1`. Um PATCH ARM limitado ao campo
+`replicaRetryLimit` restaurou imediatamente o valor `0`, que foi confirmado
+por leitura posterior. O workflow passa `-c` anexado ao argumento e usa o
+mesmo PATCH ARM somente para a reversão.
+
 O primeiro deploy protegido de alertas, `31921566440`, falhou sem criar regras
 porque a assinatura não estava registrada no provedor `Microsoft.Insights`.
 Após o registro administrativo único do provedor, o retry protegido
