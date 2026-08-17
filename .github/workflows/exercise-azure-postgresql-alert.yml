@@ -154,7 +154,7 @@ jobs:
             fi
             sleep 20
           done
-          test "${DB_ALIVE:-}" = "1"
+          awk -v value="${DB_ALIVE:-0}" 'BEGIN { exit !(value >= 1) }'
 
           az postgres flexible-server stop \
             --resource-group "$RECOVERY_RESOURCE_GROUP" \
