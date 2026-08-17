@@ -100,7 +100,8 @@ jobs:
               gh issue comment "$issue_number" --body "$body"
               tail -n +2 <<< "$issue_numbers" | while IFS= read -r duplicate_number; do
                 [[ -z "$duplicate_number" ]] && continue
-                gh issue close "$duplicate_number" --reason not_planned \
+                gh issue close "$duplicate_number" --reason duplicate \
+                  --duplicate-of "$issue_number" \
                   --comment "Consolidated into #${issue_number}."
               done
             fi
