@@ -45,12 +45,16 @@ jobs:
             --name "$INGEST_JOB" \
             --query properties.configuration.replicaRetryLimit -o tsv)
           test "$ORIGINAL_RETRY_LIMIT" = "0"
+          INGEST_JOB_ID=$(az containerapp job show \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$INGEST_JOB" \
+            --query id -o tsv)
 
           restore_retry_limit() {
-            az containerapp job update \
-              --resource-group "$RESOURCE_GROUP" \
-              --name "$INGEST_JOB" \
-              --replica-retry-limit "$ORIGINAL_RETRY_LIMIT" \
+            az rest --method patch \
+              --url "https://management.azure.com${INGEST_JOB_ID}?api-version=2024-03-01" \
+              --headers 'Content-Type=application/json' \
+              --body "{\"properties\":{\"configuration\":{\"replicaRetryLimit\":${ORIGINAL_RETRY_LIMIT}}}}" \
               --output none
           }
           trap restore_retry_limit EXIT
@@ -65,7 +69,7 @@ jobs:
             --name "$INGEST_JOB" \
             --container-name ingest \
             --command python \
-            --args "-c" "import sys; print('Traceback (controlled alert simulation)', file=sys.stderr); raise SystemExit(1)" \
+            --args=-c "import sys; print('Traceback (controlled alert simulation)', file=sys.stderr); raise SystemExit(1)" \
             --query name -o tsv)
           test -n "$EXECUTION_NAME"
 
@@ -159,10 +163,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          RESTORED_RETRY_LIMIT=$(az containerapp job show \
-            --resource-group "$RESOURCE_GROUP" \
-            --name "$INGEST_JOB" \
-            --query properties.configuration.replicaRetryLimit -o tsv)
+          for attempt in $(seq 1 18); do
+            RESTORED_RETRY_LIMIT=$(az containerapp job show \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$INGEST_JOB" \
+              --query properties.configuration.replicaRetryLimit -o tsv)
+            if [ "$RESTORED_RETRY_LIMIT" = "0" ]; then
+              break
+            fi
+            sleep 10
+          done
           test "$RESTORED_RETRY_LIMIT" = "0"
 
       - name: Upload sanitized log alert evidence

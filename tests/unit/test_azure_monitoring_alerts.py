@@ -118,10 +118,13 @@ def test_log_alert_simulation_is_protected_reversible_and_does_not_touch_data_st
     assert "--name usiedu-ingest" not in text
     assert "az containerapp job update" in text
     assert "--replica-retry-limit 1" in text
-    assert '--replica-retry-limit "$ORIGINAL_RETRY_LIMIT"' in text
+    assert "--method patch" in text
+    assert "Content-Type=application/json" in text
+    assert "replicaRetryLimit" in text
     assert "trap restore_retry_limit EXIT" in text
     assert "az containerapp job start" in text
     assert "--command python" in text
+    assert "--args=-c" in text
     assert "Traceback (controlled alert simulation)" in text
     assert "BackoffLimitExceeded" in text
     assert "Microsoft.AlertsManagement/alerts" in text
