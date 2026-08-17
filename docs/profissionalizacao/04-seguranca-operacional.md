@@ -335,6 +335,13 @@ o limite permaneceu temporariamente em `1`. Um PATCH ARM limitado ao campo
 por leitura posterior. O workflow passa `-c` anexado ao argumento e usa o
 mesmo PATCH ARM somente para a reversão.
 
+O segundo run protegido, `32025906665`, também falhou antes de criar execução
+ou sinal: a CLI aceitou `-c`, mas rejeitou o código quando ele foi passado como
+segundo argumento. O rollback ARM foi bem-sucedido e o limite permaneceu em
+`0`. O workflow agora envia `-c` e o código como um único argumento separado
+por quebra de linha, forma aceita pelo parser da CLI e pelo interpretador
+Python.
+
 O primeiro deploy protegido de alertas, `31921566440`, falhou sem criar regras
 porque a assinatura não estava registrada no provedor `Microsoft.Insights`.
 Após o registro administrativo único do provedor, o retry protegido
