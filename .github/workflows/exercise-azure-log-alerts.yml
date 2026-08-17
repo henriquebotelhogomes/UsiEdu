@@ -64,12 +64,13 @@ jobs:
             --name "$INGEST_JOB" \
             --replica-retry-limit 1 \
             --output none
+          CONTROLLED_FAILURE_ARGUMENT=$'-c\nimport sys; print("Traceback (controlled alert simulation)", file=sys.stderr); raise SystemExit(1)'
           EXECUTION_NAME=$(az containerapp job start \
             --resource-group "$RESOURCE_GROUP" \
             --name "$INGEST_JOB" \
             --container-name ingest \
             --command python \
-            --args=-c "import sys; print('Traceback (controlled alert simulation)', file=sys.stderr); raise SystemExit(1)" \
+            --args="$CONTROLLED_FAILURE_ARGUMENT" \
             --query name -o tsv)
           test -n "$EXECUTION_NAME"
 
