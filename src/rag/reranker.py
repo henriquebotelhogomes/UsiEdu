@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+import logging
+
+from src.observability.component_measurements import component_measurement
+
+logger = logging.getLogger(__name__)
+
 
 class Reranker:
     """Reranker usando cross-encoder local (bge-reranker-base).
@@ -28,9 +34,16 @@ class Reranker:
     def _init_model(self) -> None:
         if self._model is not None:
             return
-        from sentence_transformers import CrossEncoder
+        with component_measurement(
+            logger=logger,
+            component="reranker",
+            operation="init_model",
+            item_count=0,
+            backend="cross_encoder",
+        ):
+            from sentence_transformers import CrossEncoder
 
-        self._model = CrossEncoder(self.model_name)
+            self._model = CrossEncoder(self.model_name)
 
     def rerank(
         self,
@@ -57,7 +70,14 @@ class Reranker:
                 pairs.append((query, window))
                 pair_to_doc.append(doc_idx)
 
-        raw_scores = self._model.predict(pairs)
+        with component_measurement(
+            logger=logger,
+            component="reranker",
+            operation="predict",
+            item_count=len(pairs),
+            backend="cross_encoder",
+        ):
+            raw_scores = self._model.predict(pairs)
         if hasattr(raw_scores, "tolist"):
             raw_scores = raw_scores.tolist()
         elif not isinstance(raw_scores, list):
