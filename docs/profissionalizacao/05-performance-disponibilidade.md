@@ -170,6 +170,14 @@ O digest publicado é
 o health público retornou `ok` após a promoção. A política ainda deve ser
 reavaliada se a matriz de falhas ou o provedor mudar.
 
+T05.4 introduz `GET /ready`: retorna 503 até o lifecycle concluir processo,
+configuração, modelos, retrievers e checkpointer; depois retorna
+`{"status":"ready"}`. O endpoint não consulta LLM, Qdrant ou PostgreSQL.
+Liveness continua em `/health`. A API declara probes HTTP de liveness e
+readiness, ambos na porta 8000, com atraso inicial de 5 s, período de 10 s,
+timeout de 5 s e limiar de três falhas. A implementação aguarda promoção e
+smoke Azure antes de ser aceita.
+
 ## 7. Tarefas e microtarefas
 
 - [x] **T05.1 — Criar protocolo de medição**
@@ -188,8 +196,8 @@ reavaliada se a matriz de falhas ou o provedor mudar.
   - [x] Evidência: contratos determinísticos de retry/stream, provider, Qdrant, PostgreSQL, grafo e chat stream; promoção `32086095641` e health público aprovados.
   - [x] Commits: `feat(performance): definir resiliencia de dependencias` e `test(performance): cobrir timeout postgres`.
 - [ ] **T05.4 — Validar probes**
-  - [ ] Validar readiness rasa de processo/configuração/modelos e observação separada das dependências.
-  - [ ] Teste: serviço não recebe tráfego antes da condição de prontidão aprovada.
+  - [x] Implementar readiness rasa de processo/configuração/modelos e observação separada das dependências.
+  - [x] Teste: `/ready` retorna 503 antes do lifecycle e 200 somente após estado de prontidão; Bicep exige probes HTTP.
   - [ ] Evidência: configuração, logs e smoke Azure.
   - [ ] Commit esperado: `ops(performance): validar probes azure`.
 - [ ] **T05.5 — Comparar escala e aquecimento**

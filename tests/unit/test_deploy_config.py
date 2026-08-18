@@ -114,6 +114,19 @@ def test_api_dockerfile_copies_package_before_installing_it() -> None:
     assert dockerfile.index("COPY src/ ./src/") < dockerfile.index("pip install --no-cache-dir .")
 
 
+def test_azure_api_declares_shallow_liveness_and_readiness_probes() -> None:
+    template = Path("infra/azure/main.bicep").read_text(encoding="utf-8")
+    api_app = template.split("resource apiApp", maxsplit=1)[1].split(
+        "resource frontendApp", maxsplit=1
+    )[0]
+
+    assert "type: 'Liveness'" in api_app
+    assert "type: 'Readiness'" in api_app
+    assert "path: '/health'" in api_app
+    assert "path: '/ready'" in api_app
+    assert "port: 8000" in api_app
+
+
 def test_api_image_installs_trivy_remediated_python_dependencies() -> None:
     """A imagem da API não deve reintroduzir achados HIGH corrigíveis do Trivy."""
     dockerfile = Path("Dockerfile.api").read_text(encoding="utf-8")

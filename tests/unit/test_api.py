@@ -70,6 +70,19 @@ class TestAuth:
         assert response.status_code == 200
         assert response.json()["status"] == "ok"
 
+    def test_ready_endpoint_requires_completed_startup(self) -> None:
+        from src.api.main import create_app
+
+        app = create_app()
+        client = TestClient(app)
+
+        assert client.get("/ready").status_code == 503
+
+        app.state.ready = True
+        response = client.get("/ready")
+        assert response.status_code == 200
+        assert response.json() == {"status": "ready"}
+
 
 class TestChatEndpoint:
     """Testes do endpoint de chat."""

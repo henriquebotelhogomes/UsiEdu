@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from slowapi.errors import RateLimitExceeded
@@ -100,6 +100,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     - Cria o grafo LangGraph com os modelos configurados
     - Configura checkpointer SQLite
     """
+    app.state.ready = False
+
     # Configura logging
     setup_logging()
 
@@ -139,10 +141,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
         # Injeta o grafo no módulo de chat
         init_graph(graph)
+        app.state.ready = True
 
-        yield
-
-    # Cleanup: nada necessário por enquanto
+        try:
+            yield
+        finally:
+            app.state.ready = False
 
 
 def create_app() -> FastAPI:
@@ -153,6 +157,7 @@ def create_app() -> FastAPI:
         version="0.2.0",
         lifespan=lifespan,
     )
+    app.state.ready = False
 
     # CORS
     app.add_middleware(
@@ -177,6 +182,13 @@ def create_app() -> FastAPI:
     async def health():
         # Contadores do cache semântico (T9.2)
         return {"status": "ok", "version": "0.2.0", **get_chat_cache().stats()}
+
+    @app.get("/ready")
+    async def ready():
+        """Indica somente que processo, configuração e modelos foram inicializados."""
+        if not app.state.ready:
+            raise HTTPException(status_code=503, detail="Aplicação ainda não está pronta.")
+        return {"status": "ready"}
 
     return app
 
