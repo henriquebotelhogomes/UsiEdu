@@ -184,6 +184,12 @@ O encaminhamento `/ready` foi promovido no run `32130007299`. O patch protegido
 de 5 s, período de 10 s, timeout de 5 s e limiar de três falhas. As consultas
 públicas posteriores retornaram `{"status":"ok"}` e `{"status":"ready"}`.
 
+T05.5 não iniciou alteração de escala: o relatório financeiro `32133433210`
+registrou gasto de R$ 61,446 sobre o orçamento mensal de R$ 30,000 no
+`rg-usiedu`. As Issues deduplicadas `#72` (80%) e `#73` (100%) foram abertas.
+A configuração da API permanece em mínimo de zero e máximo de uma réplica; não
+houve experimento de aquecimento ou mudança de custo.
+
 ## 7. Tarefas e microtarefas
 
 - [x] **T05.1 — Criar protocolo de medição**
@@ -201,15 +207,15 @@ públicas posteriores retornaram `{"status":"ok"}` e `{"status":"ready"}`.
   - [x] Teste: dependência lenta/indisponível respeita política e encerra stream corretamente.
   - [x] Evidência: contratos determinísticos de retry/stream, provider, Qdrant, PostgreSQL, grafo e chat stream; promoção `32086095641` e health público aprovados.
   - [x] Commits: `feat(performance): definir resiliencia de dependencias` e `test(performance): cobrir timeout postgres`.
-- [ ] **T05.4 — Validar probes**
+- [x] **T05.4 — Validar probes**
   - [x] Implementar readiness rasa de processo/configuração/modelos e observação separada das dependências.
   - [x] Teste: `/ready` retorna 503 antes do lifecycle e 200 somente após estado de prontidão; Bicep exige probes HTTP.
   - [x] Evidência: promoções `32130007299` e `32132629273`, probes na revisão `0000021` e smoke público de `/health` e `/ready`.
   - [x] Commits: `ops(performance): validar probes azure`, `fix(performance): aplicar probes no template ativo` e `fix(azure): aguardar consistencia dos probes`.
 - [ ] **T05.5 — Comparar escala e aquecimento**
-  - [ ] Comparar `minReplicas`, imagem/cache, aquecimento ou modelo mais leve sem combinar variáveis.
+  - [ ] Comparar `minReplicas`, imagem/cache, aquecimento ou modelo mais leve sem combinar variáveis. *Bloqueado: budget excedido; manter `minReplicas: 0` até decisão financeira.*
   - [ ] Teste: carga aprovada antes/depois e rollback da configuração.
-  - [ ] Evidência: latência, custo observável, decisão e revisão.
+  - [x] Evidência de bloqueio: relatório `32133433210`, gasto R$ 61,446/R$ 30,000 e Issues `#72`/`#73`; escala atual preservada.
   - [ ] Commit esperado: `perf(azure): comparar estrategias de cold start`.
 
 ## 8. Estratégia de testes e validação
