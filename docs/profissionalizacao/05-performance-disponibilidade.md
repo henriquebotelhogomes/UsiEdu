@@ -137,6 +137,22 @@ vetor e detalhe de exceção são proibidos. Esses eventos ainda aguardam
 publicação e uma nova medição Azure; portanto, não constituem evidência factual
 de componente nesta versão do documento.
 
+Após a promoção da revisão `usiedu-api--0000017`, o run `32083849044` repetiu
+a carga de referência e publicou as 12 amostras sanitizadas com HTTP 200. Para
+as dez amostras de chat, o p95 pelo método nearest-rank foi 122337,715 ms
+(122,338 s) de TTFT e 153600,100 ms (153,600 s) de tempo total. O embedder
+inicializou em 19272,548 ms e suas duas codificações tiveram média de 78,997 ms
+e máximo de 135,782 ms. O reranker inicializou em 16100,505 ms e suas dez
+predições de até 31 pares tiveram média de 14652,455 ms e máximo de
+15121,772 ms. Na mesma janela, o pico de working set foi 2296696832 bytes
+(2,139 GiB), o pico de CPU 2027059848 nanocores (2,027 cores), a réplica máxima
+foi uma, e não houve restart, evento de sistema de falha ou exit 137. Os dados
+de componente são agregados e não incluem conteúdo, vetores ou exceções.
+
+Esta é uma medição comparável de startup, memória, TTFT, total e falhas de
+embedder/reranker/chat; os valores continuam sendo baseline, não aceite de SLO
+de chat ou decisão de escala.
+
 ## 7. Tarefas e microtarefas
 
 - [x] **T05.1 — Criar protocolo de medição**
@@ -144,11 +160,11 @@ de componente nesta versão do documento.
   - [x] Teste: o script valida schema, separa amostras cold/warm e rejeita conteúdo sensível.
   - [x] Evidência: baseline Azure do run `32068963046`, com revisão, configuração e relatório sanitizado.
   - [x] Commits: `docs(performance): definir protocolo de medicao`, `feat(performance): medir baseline cold e warm` e `fix(performance): isolar coletor de baseline`.
-- [ ] **T05.2 — Medir componentes e fluxo**
-  - [ ] Medir startup, memória, TTFT, total e falhas de embedder/reranker/chat.
-  - [ ] Teste: repetição do cenário produz relatório agregável.
-  - [ ] Evidência: tabela de percentis e eventos 137 para revisão comparável.
-  - [ ] Commit esperado: `docs(performance): registrar baseline azure`.
+- [x] **T05.2 — Medir componentes e fluxo**
+  - [x] Medir startup, memória, TTFT, total e falhas de embedder/reranker/chat.
+  - [x] Teste: repetição do cenário produz relatório agregável e a telemetria de componentes recusa conteúdo e detalhe de exceção.
+  - [x] Evidência: run `32083849044`, agregados de componente, p95 nearest-rank e zero eventos 137.
+  - [x] Commits: `feat(performance): medir componentes rag` e `fix(security): atualizar pacotes da imagem api`.
 - [ ] **T05.3 — Definir resiliência**
   - [ ] Registrar timeout/retry/falha por LLM, Qdrant e PostgreSQL, com no máximo um retry idempotente e nenhum após stream/escrita não idempotente.
   - [ ] Teste: dependência lenta/indisponível respeita política e encerra stream corretamente.
@@ -180,7 +196,7 @@ de componente nesta versão do documento.
 
 | Gate | Estado documental atual | Condição / evidência futura |
 |---|---|---|
-| G0 — Baseline | Concluído parcialmente | T05.1 oferece baseline cold/warm de health, login e chat; T05.2 completa memória e componentes. |
+| G0 — Baseline | Concluído | T05.1 e T05.2 oferecem baseline cold/warm, memória e componentes. |
 | G1 — Especificação | Concluído | Este documento define SLO/carga, retry e probes provisórios; medição Azure bloqueia somente o SLO de primeira resposta/chat e mudanças dependentes. |
 | G2 — Implementação | Não iniciado | Commits T05.1–T05.5. |
 | G3 — Verificação | Não iniciado | Testes de falha, métricas repetíveis e regressão. |
