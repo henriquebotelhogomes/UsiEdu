@@ -163,6 +163,13 @@ nova chamada. Qdrant usa timeout de 10 s e repete uma única vez as leituras
 estado. O backoff único é 250 ms mais jitter de até 250 ms. Erros fora de
 timeout/conexão não são repetidos.
 
+O run protegido `32086095641` publicou essa política na revisão
+`usiedu-api--0000018` após build, Trivy, política de imagem e smoke aprovados.
+O digest publicado é
+`sha256:c07da5d64e33b1c4ac42a8c984b4dffa9367ffee2d1b6f6d2df5bbe192684015`;
+o health público retornou `ok` após a promoção. A política ainda deve ser
+reavaliada se a matriz de falhas ou o provedor mudar.
+
 ## 7. Tarefas e microtarefas
 
 - [x] **T05.1 — Criar protocolo de medição**
@@ -178,8 +185,8 @@ timeout/conexão não são repetidos.
 - [x] **T05.3 — Definir resiliência**
   - [x] Registrar timeout/retry/falha por LLM, Qdrant e PostgreSQL, com no máximo um retry idempotente e nenhum após stream/escrita não idempotente.
   - [x] Teste: dependência lenta/indisponível respeita política e encerra stream corretamente.
-  - [x] Evidência: contratos determinísticos de retry/stream, provider, Qdrant, PostgreSQL, grafo e chat stream.
-  - [x] Commit: `feat(performance): definir resiliencia de dependencias`.
+  - [x] Evidência: contratos determinísticos de retry/stream, provider, Qdrant, PostgreSQL, grafo e chat stream; promoção `32086095641` e health público aprovados.
+  - [x] Commits: `feat(performance): definir resiliencia de dependencias` e `test(performance): cobrir timeout postgres`.
 - [ ] **T05.4 — Validar probes**
   - [ ] Validar readiness rasa de processo/configuração/modelos e observação separada das dependências.
   - [ ] Teste: serviço não recebe tráfego antes da condição de prontidão aprovada.
