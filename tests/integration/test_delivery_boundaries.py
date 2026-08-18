@@ -143,8 +143,9 @@ async def test_postgres_boundary_success_and_unavailability_are_distinct(
     async def connected():
         yield connection
 
-    async def connect_success(url: str):
+    async def connect_success(url: str, *, connect_timeout: float):
         assert url == "postgresql://integration.invalid/usiedu"
+        assert connect_timeout == 10.0
         return connected()
 
     monkeypatch.setenv("USIEDU_DATABASE_URL", "postgresql://integration.invalid/usiedu")
@@ -152,7 +153,8 @@ async def test_postgres_boundary_success_and_unavailability_are_distinct(
     async with postgres_connection() as observed:
         assert observed is connection
 
-    async def connect_failure(url: str):
+    async def connect_failure(url: str, *, connect_timeout: float):
+        assert connect_timeout == 10.0
         raise ConnectionError(f"PostgreSQL indisponível em {url}")
 
     monkeypatch.setattr("psycopg.AsyncConnection.connect", connect_failure)

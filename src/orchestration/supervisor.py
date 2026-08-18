@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents.prompts.supervisor import SUPERVISOR_SYSTEM_PROMPT
+from src.observability.resilience import call_idempotent_with_single_retry
 from src.orchestration.state import AgentState, SupervisorDecision
 
 if TYPE_CHECKING:
@@ -57,7 +58,7 @@ def make_supervisor_node(router_llm: BaseChatModel) -> callable:
             HumanMessage(content=state["messages"][-1].content if state["messages"] else ""),
         ]
 
-        response = router_llm.invoke(llm_messages)
+        response = call_idempotent_with_single_retry(lambda: router_llm.invoke(llm_messages))
         raw = response.content.strip()
 
         # Remove delimitadores de código markdown se presentes

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.rag.retriever import HybridRetriever, _BM25Index
+from src.rag.retriever import HybridRetriever, _BM25Index, qdrant_timeout_seconds
 
 
 @pytest.fixture
@@ -187,6 +187,23 @@ class TestSearch:
     def test_search_retorna_lista_vazia_sem_resultados(self, retriever):
         results = retriever.search("pergunta sem resposta")
         assert results == []
+
+    def test_search_retries_qdrant_once_after_timeout(self, retriever, mock_qdrant):
+        class _QueryResponse:
+            points = []
+
+        mock_qdrant.query_points.side_effect = [TimeoutError("slow"), _QueryResponse()]
+
+        assert retriever.search("Qual o prazo de matrícula?") == []
+        assert mock_qdrant.query_points.call_count == 2
+
+
+def test_qdrant_timeout_is_positive_and_configurable(monkeypatch) -> None:
+    monkeypatch.setenv("USIEDU_QDRANT_TIMEOUT_SECONDS", "8.5")
+    assert qdrant_timeout_seconds() == 8.5
+
+    monkeypatch.setenv("USIEDU_QDRANT_TIMEOUT_SECONDS", "0")
+    assert qdrant_timeout_seconds() == 10.0
 
 
 class TestBuildBM25Index:

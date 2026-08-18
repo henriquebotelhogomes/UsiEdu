@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents.prompts.documental import DOCUMENTAL_SYSTEM_PROMPT
+from src.observability.resilience import stream_with_single_pre_token_retry
 from src.orchestration.state import AgentState
 from src.rag.models import Source
 
@@ -77,7 +78,9 @@ def make_documental_node(
         # Stream dos tokens do LLM (T7.3): o endpoint /chat/stream captura
         # estes chunks via astream_events e os envia por SSE ao cliente.
         response_parts: list[str] = []
-        async for chunk in agent_llm.astream(llm_messages):
+        async for chunk in stream_with_single_pre_token_retry(
+            lambda: agent_llm.astream(llm_messages)
+        ):
             part = chunk.content if isinstance(chunk.content, str) else str(chunk.content)
             response_parts.append(part)
         response_text = "".join(response_parts).strip()

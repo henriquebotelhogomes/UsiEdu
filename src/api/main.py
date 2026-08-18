@@ -59,10 +59,10 @@ def _build_retrievers():
 
         from src.rag.embedder import Embedder
         from src.rag.reranker import Reranker
-        from src.rag.retriever import HybridRetriever
+        from src.rag.retriever import HybridRetriever, qdrant_timeout_seconds
 
         qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
-        client = QdrantClient(qdrant_url)
+        client = QdrantClient(qdrant_url, timeout=qdrant_timeout_seconds())
         embedder = Embedder()
 
         try:

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from src.llm.fake import FakeChatModel
-from src.llm.provider import get_chat_model
+from src.llm.provider import _build_opencode_go, get_chat_model
 
 
 class TestGetChatModel:
@@ -33,6 +33,25 @@ class TestGetChatModel:
         """Provider inválido deve levantar ValueError."""
         with pytest.raises(ValueError, match="Provider desconhecido"):
             get_chat_model(provider="inexistente")
+
+    def test_opencode_go_disables_sdk_retries_and_sets_timeout(self, monkeypatch) -> None:
+        created_with: dict[str, object] = {}
+
+        class FakeChatOpenAI:
+            def __init__(self, **kwargs: object) -> None:
+                created_with.update(kwargs)
+
+        monkeypatch.setitem(
+            __import__("sys").modules,
+            "langchain_openai",
+            type("Module", (), {"ChatOpenAI": FakeChatOpenAI}),
+        )
+        monkeypatch.setenv("USIEDU_LLM_TIMEOUT_SECONDS", "45")
+
+        _build_opencode_go()
+
+        assert created_with["timeout"] == 45.0
+        assert created_with["max_retries"] == 0
 
 
 class TestFakeChatModel:
