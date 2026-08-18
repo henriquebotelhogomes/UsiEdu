@@ -1775,6 +1775,12 @@ nova chamada. Qdrant usa timeout de 10 s e repete uma única vez as leituras
 10 s e não recebe retry automático, pois cache e feedback podem escrever
 estado. O backoff único é 250 ms mais jitter de até 250 ms. Erros fora de
 timeout/conexão não são repetidos.</p>
+<p>O run protegido <code>32086095641</code> publicou essa política na revisão
+<code>usiedu-api--0000018</code> após build, Trivy, política de imagem e smoke aprovados.
+O digest publicado é
+<code>sha256:c07da5d64e33b1c4ac42a8c984b4dffa9367ffee2d1b6f6d2df5bbe192684015</code>;
+o health público retornou <code>ok</code> após a promoção. A política ainda deve ser
+reavaliada se a matriz de falhas ou o provedor mudar.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[x] <strong>T05.1 — Criar protocolo de medição</strong></li>
@@ -1790,8 +1796,8 @@ timeout/conexão não são repetidos.</p>
 <li>[x] <strong>T05.3 — Definir resiliência</strong></li>
 <li>[x] Registrar timeout/retry/falha por LLM, Qdrant e PostgreSQL, com no máximo um retry idempotente e nenhum após stream/escrita não idempotente.</li>
 <li>[x] Teste: dependência lenta/indisponível respeita política e encerra stream corretamente.</li>
-<li>[x] Evidência: contratos determinísticos de retry/stream, provider, Qdrant, PostgreSQL, grafo e chat stream.</li>
-<li>[x] Commit: <code>feat(performance): definir resiliencia de dependencias</code>.</li>
+<li>[x] Evidência: contratos determinísticos de retry/stream, provider, Qdrant, PostgreSQL, grafo e chat stream; promoção <code>32086095641</code> e health público aprovados.</li>
+<li>[x] Commits: <code>feat(performance): definir resiliencia de dependencias</code> e <code>test(performance): cobrir timeout postgres</code>.</li>
 <li>[ ] <strong>T05.4 — Validar probes</strong></li>
 <li>[ ] Validar readiness rasa de processo/configuração/modelos e observação separada das dependências.</li>
 <li>[ ] Teste: serviço não recebe tráfego antes da condição de prontidão aprovada.</li>
