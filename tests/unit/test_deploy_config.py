@@ -167,6 +167,31 @@ def test_frontend_proxy_allows_api_cold_start() -> None:
     assert "proxy_read_timeout 180s;" in config
 
 
+def test_frontend_proxy_forwards_readiness_to_api() -> None:
+    config = Path("frontend/nginx/default.conf.template").read_text(encoding="utf-8")
+
+    readiness_block = config.split("location /ready", maxsplit=1)[1]
+    assert "proxy_pass ${UPSTREAM_API_URL};" in readiness_block
+    assert "proxy_set_header Host $proxy_host;" in readiness_block
+
+
+def test_probe_workflow_is_manual_protected_and_preserves_api_template() -> None:
+    workflow = Path(".github/workflows/configure-azure-api-probes.yml").read_text(encoding="utf-8")
+
+    assert "workflow_dispatch:" in workflow
+    assert "environment: production" in workflow
+    assert "id-token: write" in workflow
+    assert "az rest --method get" in workflow
+    assert "az rest --method patch" in workflow
+    assert ".properties.template" in workflow
+    assert "Liveness" in workflow
+    assert "Readiness" in workflow
+    assert '"path": "/health"' in workflow
+    assert '"path": "/ready"' in workflow
+    assert "api-probes.json" in workflow
+    assert "${{ secrets." not in workflow.lower()
+
+
 def test_api_image_declares_jwt_library_used_by_authentication() -> None:
     """A imagem deve instalar o pacote que fornece o modulo ``jwt``."""
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
