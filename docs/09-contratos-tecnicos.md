@@ -42,6 +42,7 @@
 | GET | `/feedback/stats` | sim | Retorna totais e taxa agregada de satisfação |
 | GET | `/feedback/recent?limit={1..100}` | sim | Retorna os feedbacks mais recentes sem expor `message_id` |
 | GET | `/health` | não | Liveness: `{ "status": "ok" }` |
+| GET | `/ready` | não | Readiness rasa: `{ "status": "ready" }` somente após processo, configuração e modelos serem inicializados; não consulta LLM, Qdrant ou PostgreSQL |
 
 ### 2.2 Schemas (Pydantic)
 
