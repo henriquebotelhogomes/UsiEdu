@@ -178,6 +178,12 @@ readiness, ambos na porta 8000, com atraso inicial de 5 s, período de 10 s,
 timeout de 5 s e limiar de três falhas. A implementação aguarda promoção e
 smoke Azure antes de ser aceita.
 
+O encaminhamento `/ready` foi promovido no run `32130007299`. O patch protegido
+`32132629273` confirmou, na revisão `usiedu-api--0000021`, liveness em
+`/health` e readiness em `/ready`, ambos HTTP na porta 8000 com atraso inicial
+de 5 s, período de 10 s, timeout de 5 s e limiar de três falhas. As consultas
+públicas posteriores retornaram `{"status":"ok"}` e `{"status":"ready"}`.
+
 ## 7. Tarefas e microtarefas
 
 - [x] **T05.1 — Criar protocolo de medição**
@@ -198,8 +204,8 @@ smoke Azure antes de ser aceita.
 - [ ] **T05.4 — Validar probes**
   - [x] Implementar readiness rasa de processo/configuração/modelos e observação separada das dependências.
   - [x] Teste: `/ready` retorna 503 antes do lifecycle e 200 somente após estado de prontidão; Bicep exige probes HTTP.
-  - [ ] Evidência: configuração, logs e smoke Azure.
-  - [ ] Commit esperado: `ops(performance): validar probes azure`.
+  - [x] Evidência: promoções `32130007299` e `32132629273`, probes na revisão `0000021` e smoke público de `/health` e `/ready`.
+  - [x] Commits: `ops(performance): validar probes azure`, `fix(performance): aplicar probes no template ativo` e `fix(azure): aguardar consistencia dos probes`.
 - [ ] **T05.5 — Comparar escala e aquecimento**
   - [ ] Comparar `minReplicas`, imagem/cache, aquecimento ou modelo mais leve sem combinar variáveis.
   - [ ] Teste: carga aprovada antes/depois e rollback da configuração.
