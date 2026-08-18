@@ -189,6 +189,8 @@ def test_probe_workflow_is_manual_protected_and_preserves_api_template() -> None
     assert '"path": "/health"' in workflow
     assert '"path": "/ready"' in workflow
     assert "api-probes.json" in workflow
+    assert "for attempt in $(seq 1 18)" in workflow
+    assert "sleep 10" in workflow
     assert "${{ secrets." not in workflow.lower()
 
 

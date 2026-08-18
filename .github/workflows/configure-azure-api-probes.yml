@@ -72,9 +72,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          az containerapp show --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
-            --query '{revision:properties.latestRevisionName,probes:properties.template.containers[0].probes}' \
-            -o json > artifacts/api-probes.json
+          for attempt in $(seq 1 18); do
+            az containerapp show --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
+              --query '{revision:properties.latestRevisionName,probes:properties.template.containers[0].probes}' \
+              -o json > artifacts/api-probes.json
+            if jq -e '
+              .revision and
+              (.probes | length == 2) and
+              (any(.probes[]; .type == "Liveness" and .httpGet.path == "/health" and .httpGet.port == 8000)) and
+              (any(.probes[]; .type == "Readiness" and .httpGet.path == "/ready" and .httpGet.port == 8000))
+            ' artifacts/api-probes.json > /dev/null; then
+              break
+            fi
+            sleep 10
+          done
           jq -e '
             .revision and
             (.probes | length == 2) and
