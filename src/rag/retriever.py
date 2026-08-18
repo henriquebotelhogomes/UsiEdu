@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING
 
+from src.observability.resilience import call_idempotent_with_single_retry
 from src.rag.models import RetrievalResult, Source
 
 if TYPE_CHECKING:
@@ -98,6 +100,15 @@ _STOPWORDS = {
 }
 
 
+def qdrant_timeout_seconds() -> float:
+    """Retorna timeout Qdrant com fallback seguro para chamadas idempotentes."""
+    try:
+        timeout = float(os.getenv("USIEDU_QDRANT_TIMEOUT_SECONDS", "10"))
+    except ValueError:
+        return 10.0
+    return timeout if timeout > 0 else 10.0
+
+
 def _tokenize(text: str) -> list[str]:
     """Tokenização simples (lowercase + split por palavras) sem stopwords."""
     import re
@@ -158,11 +169,13 @@ class HybridRetriever:
         # genérico; os termos dos top hits BM25 direcionam a busca vetorial
         expanded_query = self._expand_query(query, bm25_results)
         query_vector = self.embedder.embed_query(expanded_query)
-        query_resp = self.client.query_points(
-            collection_name=self.collection_name,
-            query=query_vector,
-            limit=self.search_top_k,
-            query_filter=profile_filter,
+        query_resp = call_idempotent_with_single_retry(
+            lambda: self.client.query_points(
+                collection_name=self.collection_name,
+                query=query_vector,
+                limit=self.search_top_k,
+                query_filter=profile_filter,
+            )
         )
         vector_hits = query_resp.points
 
@@ -189,11 +202,13 @@ class HybridRetriever:
     def build_bm25_index(self) -> None:
         """Constrói índice BM25 a partir dos documentos no Qdrant."""
 
-        all_points, _ = self.client.scroll(
-            collection_name=self.collection_name,
-            limit=10000,
-            with_payload=True,
-            with_vectors=False,
+        all_points, _ = call_idempotent_with_single_retry(
+            lambda: self.client.scroll(
+                collection_name=self.collection_name,
+                limit=10000,
+                with_payload=True,
+                with_vectors=False,
+            )
         )
 
         if not all_points:
@@ -279,10 +294,12 @@ class HybridRetriever:
         if not ids:
             return []
 
-        points = self.client.retrieve(
-            collection_name=self.collection_name,
-            ids=ids,
-            with_payload=True,
+        points = call_idempotent_with_single_retry(
+            lambda: self.client.retrieve(
+                collection_name=self.collection_name,
+                ids=ids,
+                with_payload=True,
+            )
         )
 
         points_map = {str(p.id): p for p in points}
