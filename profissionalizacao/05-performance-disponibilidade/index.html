@@ -1781,6 +1781,13 @@ O digest publicado é
 <code>sha256:c07da5d64e33b1c4ac42a8c984b4dffa9367ffee2d1b6f6d2df5bbe192684015</code>;
 o health público retornou <code>ok</code> após a promoção. A política ainda deve ser
 reavaliada se a matriz de falhas ou o provedor mudar.</p>
+<p>T05.4 introduz <code>GET /ready</code>: retorna 503 até o lifecycle concluir processo,
+configuração, modelos, retrievers e checkpointer; depois retorna
+<code>{"status":"ready"}</code>. O endpoint não consulta LLM, Qdrant ou PostgreSQL.
+Liveness continua em <code>/health</code>. A API declara probes HTTP de liveness e
+readiness, ambos na porta 8000, com atraso inicial de 5 s, período de 10 s,
+timeout de 5 s e limiar de três falhas. A implementação aguarda promoção e
+smoke Azure antes de ser aceita.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[x] <strong>T05.1 — Criar protocolo de medição</strong></li>
@@ -1799,8 +1806,8 @@ reavaliada se a matriz de falhas ou o provedor mudar.</p>
 <li>[x] Evidência: contratos determinísticos de retry/stream, provider, Qdrant, PostgreSQL, grafo e chat stream; promoção <code>32086095641</code> e health público aprovados.</li>
 <li>[x] Commits: <code>feat(performance): definir resiliencia de dependencias</code> e <code>test(performance): cobrir timeout postgres</code>.</li>
 <li>[ ] <strong>T05.4 — Validar probes</strong></li>
-<li>[ ] Validar readiness rasa de processo/configuração/modelos e observação separada das dependências.</li>
-<li>[ ] Teste: serviço não recebe tráfego antes da condição de prontidão aprovada.</li>
+<li>[x] Implementar readiness rasa de processo/configuração/modelos e observação separada das dependências.</li>
+<li>[x] Teste: <code>/ready</code> retorna 503 antes do lifecycle e 200 somente após estado de prontidão; Bicep exige probes HTTP.</li>
 <li>[ ] Evidência: configuração, logs e smoke Azure.</li>
 <li>[ ] Commit esperado: <code>ops(performance): validar probes azure</code>.</li>
 <li>[ ] <strong>T05.5 — Comparar escala e aquecimento</strong></li>

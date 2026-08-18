@@ -1624,6 +1624,12 @@ interfaces; o PRD prevalece para comportamento.</p>
 <td>não</td>
 <td>Liveness: <code>{ "status": "ok" }</code></td>
 </tr>
+<tr>
+<td>GET</td>
+<td><code>/ready</code></td>
+<td>não</td>
+<td>Readiness rasa: <code>{ "status": "ready" }</code> somente após processo, configuração e modelos serem inicializados; não consulta LLM, Qdrant ou PostgreSQL</td>
+</tr>
 </tbody>
 </table>
 <h3 id="22-schemas-pydantic">2.2 Schemas (Pydantic)<a class="headerlink" href="#22-schemas-pydantic" title="Permanent link">&para;</a></h3>
