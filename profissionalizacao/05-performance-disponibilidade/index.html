@@ -1788,6 +1788,11 @@ Liveness continua em <code>/health</code>. A API declara probes HTTP de liveness
 readiness, ambos na porta 8000, com atraso inicial de 5 s, período de 10 s,
 timeout de 5 s e limiar de três falhas. A implementação aguarda promoção e
 smoke Azure antes de ser aceita.</p>
+<p>O encaminhamento <code>/ready</code> foi promovido no run <code>32130007299</code>. O patch protegido
+<code>32132629273</code> confirmou, na revisão <code>usiedu-api--0000021</code>, liveness em
+<code>/health</code> e readiness em <code>/ready</code>, ambos HTTP na porta 8000 com atraso inicial
+de 5 s, período de 10 s, timeout de 5 s e limiar de três falhas. As consultas
+públicas posteriores retornaram <code>{"status":"ok"}</code> e <code>{"status":"ready"}</code>.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[x] <strong>T05.1 — Criar protocolo de medição</strong></li>
@@ -1808,8 +1813,8 @@ smoke Azure antes de ser aceita.</p>
 <li>[ ] <strong>T05.4 — Validar probes</strong></li>
 <li>[x] Implementar readiness rasa de processo/configuração/modelos e observação separada das dependências.</li>
 <li>[x] Teste: <code>/ready</code> retorna 503 antes do lifecycle e 200 somente após estado de prontidão; Bicep exige probes HTTP.</li>
-<li>[ ] Evidência: configuração, logs e smoke Azure.</li>
-<li>[ ] Commit esperado: <code>ops(performance): validar probes azure</code>.</li>
+<li>[x] Evidência: promoções <code>32130007299</code> e <code>32132629273</code>, probes na revisão <code>0000021</code> e smoke público de <code>/health</code> e <code>/ready</code>.</li>
+<li>[x] Commits: <code>ops(performance): validar probes azure</code>, <code>fix(performance): aplicar probes no template ativo</code> e <code>fix(azure): aguardar consistencia dos probes</code>.</li>
 <li>[ ] <strong>T05.5 — Comparar escala e aquecimento</strong></li>
 <li>[ ] Comparar <code>minReplicas</code>, imagem/cache, aquecimento ou modelo mais leve sem combinar variáveis.</li>
 <li>[ ] Teste: carga aprovada antes/depois e rollback da configuração.</li>
