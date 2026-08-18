@@ -1766,6 +1766,15 @@ de componente são agregados e não incluem conteúdo, vetores ou exceções.</p
 <p>Esta é uma medição comparável de startup, memória, TTFT, total e falhas de
 embedder/reranker/chat; os valores continuam sendo baseline, não aceite de SLO
 de chat ou decisão de escala.</p>
+<p>T05.3 define timeout de 120 s para o cliente LLM e desativa retries internos do
+SDK; classificação do supervisor pode repetir uma vez apenas para timeout ou
+conexão. O stream dos agentes pode repetir uma vez somente antes do primeiro
+token; após qualquer token, a falha é propagada para o evento SSE <code>error</code>, sem
+nova chamada. Qdrant usa timeout de 10 s e repete uma única vez as leituras
+<code>query_points</code>, <code>scroll</code> e <code>retrieve</code>. PostgreSQL usa timeout de conexão de
+10 s e não recebe retry automático, pois cache e feedback podem escrever
+estado. O backoff único é 250 ms mais jitter de até 250 ms. Erros fora de
+timeout/conexão não são repetidos.</p>
 <h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[x] <strong>T05.1 — Criar protocolo de medição</strong></li>
@@ -1778,11 +1787,11 @@ de chat ou decisão de escala.</p>
 <li>[x] Teste: repetição do cenário produz relatório agregável e a telemetria de componentes recusa conteúdo e detalhe de exceção.</li>
 <li>[x] Evidência: run <code>32083849044</code>, agregados de componente, p95 nearest-rank e zero eventos 137.</li>
 <li>[x] Commits: <code>feat(performance): medir componentes rag</code> e <code>fix(security): atualizar pacotes da imagem api</code>.</li>
-<li>[ ] <strong>T05.3 — Definir resiliência</strong></li>
-<li>[ ] Registrar timeout/retry/falha por LLM, Qdrant e PostgreSQL, com no máximo um retry idempotente e nenhum após stream/escrita não idempotente.</li>
-<li>[ ] Teste: dependência lenta/indisponível respeita política e encerra stream corretamente.</li>
-<li>[ ] Evidência: matriz de falhas, decisão e resultados de teste.</li>
-<li>[ ] Commit esperado: <code>docs(performance): definir politica de falhas</code>.</li>
+<li>[x] <strong>T05.3 — Definir resiliência</strong></li>
+<li>[x] Registrar timeout/retry/falha por LLM, Qdrant e PostgreSQL, com no máximo um retry idempotente e nenhum após stream/escrita não idempotente.</li>
+<li>[x] Teste: dependência lenta/indisponível respeita política e encerra stream corretamente.</li>
+<li>[x] Evidência: contratos determinísticos de retry/stream, provider, Qdrant, PostgreSQL, grafo e chat stream.</li>
+<li>[x] Commit: <code>feat(performance): definir resiliencia de dependencias</code>.</li>
 <li>[ ] <strong>T05.4 — Validar probes</strong></li>
 <li>[ ] Validar readiness rasa de processo/configuração/modelos e observação separada das dependências.</li>
 <li>[ ] Teste: serviço não recebe tráfego antes da condição de prontidão aprovada.</li>
