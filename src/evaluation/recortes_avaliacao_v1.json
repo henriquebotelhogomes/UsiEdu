@@ -1,0 +1,439 @@
+{
+  "schema_version": "1.0.0",
+  "taxonomy_version": "1.0.0",
+  "aggregation": {
+    "rag_respondible": {
+      "selector": "requires_retrieval=true",
+      "method": "simple_mean_per_metric"
+    },
+    "tool": {
+      "selector": "category=tool",
+      "method": "deterministic_assertions"
+    },
+    "composta": {
+      "selector": "category=composta",
+      "method": "subquestion_report"
+    },
+    "fora_de_escopo": {
+      "selector": "category=fora_de_escopo",
+      "method": "deterministic_assertions"
+    },
+    "sem_resposta": {
+      "selector": "category=sem_resposta",
+      "method": "deterministic_assertions"
+    }
+  },
+  "cases": [
+    {
+      "id": "q001",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q001.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar e responder os requisitos institucionais para trancamento de matricula.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q002",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q002.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar a data de inicio do semestre letivo 2026.2 no calendario oficial.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q003",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q003.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Responder com base na LDB sem inventar carga horaria ausente da fonte recuperada.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q004",
+      "category": "tool",
+      "subquestions": [
+        {
+          "id": "q004.tool",
+          "category": "tool",
+          "requires_retrieval": false,
+          "expectation": "Retornar somente as notas autorizadas do aluno autenticado.",
+          "assertions": ["value_correct", "authorization_respected", "retrieval_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q005",
+      "category": "tool",
+      "subquestions": [
+        {
+          "id": "q005.tool",
+          "category": "tool",
+          "requires_retrieval": false,
+          "expectation": "Retornar faltas e frequencia do aluno autenticado sem recuperacao documental.",
+          "assertions": ["value_correct", "authorization_respected", "retrieval_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q006",
+      "category": "tool",
+      "subquestions": [
+        {
+          "id": "q006.tool",
+          "category": "tool",
+          "requires_retrieval": false,
+          "expectation": "Retornar o boleto autorizado do aluno autenticado.",
+          "assertions": ["value_correct", "authorization_respected", "retrieval_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q007",
+      "category": "tool",
+      "subquestions": [
+        {
+          "id": "q007.tool",
+          "category": "tool",
+          "requires_retrieval": false,
+          "expectation": "Simular renegociacao sem efeito vinculante e somente para o usuario autorizado.",
+          "assertions": ["value_correct", "authorization_respected", "retrieval_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q008",
+      "category": "composta",
+      "subquestions": [
+        {
+          "id": "q008.notas",
+          "category": "tool",
+          "requires_retrieval": false,
+          "expectation": "Retornar as notas autorizadas do aluno.",
+          "assertions": ["value_correct", "authorization_respected", "retrieval_calls_zero"]
+        },
+        {
+          "id": "q008.boleto",
+          "category": "tool",
+          "requires_retrieval": false,
+          "expectation": "Retornar o boleto autorizado do aluno.",
+          "assertions": ["value_correct", "authorization_respected", "retrieval_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q009",
+      "category": "fora_de_escopo",
+      "subquestions": [
+        {
+          "id": "q009.redirect",
+          "category": "fora_de_escopo",
+          "requires_retrieval": false,
+          "expectation": "Redirecionar previsao do tempo ao escopo UsiEdu sem RAG ou agentes.",
+          "assertions": ["redirected_to_usiedu_scope", "rag_calls_zero", "agent_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q010",
+      "category": "fora_de_escopo",
+      "subquestions": [
+        {
+          "id": "q010.redirect",
+          "category": "fora_de_escopo",
+          "requires_retrieval": false,
+          "expectation": "Redirecionar recomendacao de restaurante ao escopo UsiEdu sem RAG ou agentes.",
+          "assertions": ["redirected_to_usiedu_scope", "rag_calls_zero", "agent_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q011",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q011.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar a politica institucional de renegociacao aplicavel.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q012",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q012.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar as regras institucionais de aproveitamento de estudos.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q013",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q013.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar a frequencia minima exigida para aprovacao.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q014",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q014.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar o periodo de renovacao de matricula no calendario oficial.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q015",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q015.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar o artigo da LDB que inicia a disciplina da educacao superior.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q016",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q016.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar o procedimento institucional para licenca capacitacao.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q017",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q017.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar o processo institucional de avaliacao de desempenho.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q018",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q018.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar o prazo de 30 a 90 dias e o fluxo de afastamento para pos-graduacao.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q019",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q019.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar o procedimento para adicional de insalubridade sem afirmar concessao automatica.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q020",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q020.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Responder somente os direitos sustentados pela legislacao recuperada e explicitar limites da fonte.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q021",
+      "category": "direct",
+      "subquestions": [
+        {
+          "id": "q021.rag",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Pedir identificacao da secretaria e nao generalizar horario de uma unidade para toda a UnB.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    },
+    {
+      "id": "q022",
+      "category": "sem_resposta",
+      "subquestions": [
+        {
+          "id": "q022.refusal",
+          "category": "sem_resposta",
+          "requires_retrieval": false,
+          "expectation": "Informar que nao ha politica geral comprovada e pedir o laboratorio ou unidade, sem inventar fonte.",
+          "assertions": ["honest_refusal", "fabricated_sources_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q023",
+      "category": "composta",
+      "subquestions": [
+        {
+          "id": "q023.teletrabalho",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar a norma institucional sobre teletrabalho.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        },
+        {
+          "id": "q023.boleto",
+          "category": "tool",
+          "requires_retrieval": false,
+          "expectation": "Negar acesso do perfil staff ao boleto de aluno sem recuperacao documental.",
+          "assertions": ["value_correct", "authorization_respected", "retrieval_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q024",
+      "category": "fora_de_escopo",
+      "subquestions": [
+        {
+          "id": "q024.redirect",
+          "category": "fora_de_escopo",
+          "requires_retrieval": false,
+          "expectation": "Redirecionar cotacao de moeda ao escopo UsiEdu sem RAG ou agentes.",
+          "assertions": ["redirected_to_usiedu_scope", "rag_calls_zero", "agent_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q025",
+      "category": "fora_de_escopo",
+      "subquestions": [
+        {
+          "id": "q025.redirect",
+          "category": "fora_de_escopo",
+          "requires_retrieval": false,
+          "expectation": "Redirecionar regras de transito ao escopo UsiEdu sem RAG ou agentes.",
+          "assertions": ["redirected_to_usiedu_scope", "rag_calls_zero", "agent_calls_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q026",
+      "category": "sem_resposta",
+      "subquestions": [
+        {
+          "id": "q026.refusal",
+          "category": "sem_resposta",
+          "requires_retrieval": false,
+          "expectation": "Recusar honestamente sem inventar procedimento para horas extras.",
+          "assertions": ["honest_refusal", "fabricated_sources_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q027",
+      "category": "sem_resposta",
+      "subquestions": [
+        {
+          "id": "q027.refusal",
+          "category": "sem_resposta",
+          "requires_retrieval": false,
+          "expectation": "Recusar honestamente sem inventar procedimento para progressao funcional.",
+          "assertions": ["honest_refusal", "fabricated_sources_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q028",
+      "category": "sem_resposta",
+      "subquestions": [
+        {
+          "id": "q028.refusal",
+          "category": "sem_resposta",
+          "requires_retrieval": false,
+          "expectation": "Recusar honestamente sem inventar procedimento para reembolso de transporte.",
+          "assertions": ["honest_refusal", "fabricated_sources_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q029",
+      "category": "sem_resposta",
+      "subquestions": [
+        {
+          "id": "q029.refusal",
+          "category": "sem_resposta",
+          "requires_retrieval": false,
+          "expectation": "Recusar honestamente sem inventar regras para afastamento por saude.",
+          "assertions": ["honest_refusal", "fabricated_sources_zero"]
+        }
+      ]
+    },
+    {
+      "id": "q030",
+      "category": "composta",
+      "subquestions": [
+        {
+          "id": "q030.seguranca",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar normas institucionais de seguranca do trabalho.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        },
+        {
+          "id": "q030.treinamentos",
+          "category": "direct",
+          "requires_retrieval": true,
+          "expectation": "Recuperar o calendario institucional de treinamentos.",
+          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+        }
+      ]
+    }
+  ]
+}

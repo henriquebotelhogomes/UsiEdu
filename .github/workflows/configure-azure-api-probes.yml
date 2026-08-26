@@ -1,0 +1,102 @@
+name: Configure Azure API probes
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  configure:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      API_APP: ${{ vars.AZURE_API_APP }}
+      SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+    steps:
+      - name: Checkout approved runbook
+        uses: actions/checkout@v4
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Apply shallow liveness and readiness probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          API_RESOURCE_ID="/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/containerApps/${API_APP}"
+          API_RESOURCE=$(az rest --method get \
+            --url "https://management.azure.com${API_RESOURCE_ID}?api-version=2024-03-01")
+          PROBES='[
+            {
+              "type": "Liveness",
+              "httpGet": {"path": "/health", "port": 8000, "scheme": "HTTP"},
+              "initialDelaySeconds": 5,
+              "periodSeconds": 10,
+              "timeoutSeconds": 5,
+              "failureThreshold": 3
+            },
+            {
+              "type": "Readiness",
+              "httpGet": {"path": "/ready", "port": 8000, "scheme": "HTTP"},
+              "initialDelaySeconds": 5,
+              "periodSeconds": 10,
+              "timeoutSeconds": 5,
+              "failureThreshold": 3
+            }
+          ]'
+          UPDATED_TEMPLATE=$(jq --argjson probes "$PROBES" \
+            '.properties.template | .containers[0].probes = $probes' <<< "$API_RESOURCE")
+          PATCH_BODY=$(jq -n --argjson template "$UPDATED_TEMPLATE" '{properties: {template: $template}}')
+          az rest --method patch \
+            --url "https://management.azure.com${API_RESOURCE_ID}?api-version=2024-03-01" \
+            --headers 'Content-Type=application/json' \
+            --body "$PATCH_BODY" \
+            --output none
+
+      - name: Verify shallow probe configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            az containerapp show --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
+              --query '{revision:properties.latestRevisionName,probes:properties.template.containers[0].probes}' \
+              -o json > artifacts/api-probes.json
+            if jq -e '
+              .revision and
+              (.probes | length == 2) and
+              (any(.probes[]; .type == "Liveness" and .httpGet.path == "/health" and .httpGet.port == 8000)) and
+              (any(.probes[]; .type == "Readiness" and .httpGet.path == "/ready" and .httpGet.port == 8000))
+            ' artifacts/api-probes.json > /dev/null; then
+              break
+            fi
+            sleep 10
+          done
+          jq -e '
+            .revision and
+            (.probes | length == 2) and
+            (any(.probes[]; .type == "Liveness" and .httpGet.path == "/health" and .httpGet.port == 8000)) and
+            (any(.probes[]; .type == "Readiness" and .httpGet.path == "/ready" and .httpGet.port == 8000))
+          ' artifacts/api-probes.json > /dev/null
+
+      - name: Upload sanitized probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-api-probes
+          path: artifacts/api-probes.json
+          if-no-files-found: error

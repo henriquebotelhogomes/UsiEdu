@@ -1,0 +1,465 @@
+# P1 — Segurança e continuidade operacional
+
+| Campo | Valor |
+|---|---|
+| Estado | Concluído — T04.1–T04.5 validadas |
+| Prioridade | P1 |
+| Dono | Henrique Botelho Gomes |
+| Dependências | [PRD do programa](00-prd-programa.md), `infra/azure/main.bicep`, `infra/azure/deploy.ps1`, `src/security/guardrails.py`, `src/observability/` |
+| Documentos normativos | `PLANO_PROFISSIONALIZACAO.md`; `PRD.v2.md` RF2-09–11 e T9.4; `docs/03-rag-e-infraestrutura.md` §§ 7, 10 e 11; `docs/04-piloto-e-roadmap.md` §§ 5 e 7; `docs/07-prd-requisitos.md` RNF-05–06; `docs/08-plano-execucao.md` T9.1–T9.4; `docs/09-contratos-tecnicos.md` §§ 2–3 |
+| Checklists legados afetados | `docs/08-plano-execucao.md` T9.4; `docs/04-piloto-e-roadmap.md` § 5; `docs/07-prd-requisitos.md` § 7. Não alterar status nesta especificação. |
+| Atualizado em | 2026-08-12 |
+
+## 1. Contexto e evidências
+
+O piloto usa JWT de uma hora e dados demo; RNF-05 veda dados pessoais reais.
+Rate limiting e guardrails determinísticos já existem. A API tem tracing
+LangSmith/LangChain habilitado e logs JSON; portanto, payloads e metadados
+precisam de revisão de minimização antes de ampliar o uso externo.
+
+No Azure, `main.bicep` recebe segredos como parâmetros seguros e cria secrets
+no Container App, mas o deploy atual gera `JWT_SECRET` e senha PostgreSQL se
+omitidos. Isso pode invalidar sessões a cada deploy. O ACR usa admin user;
+PostgreSQL Flexible Server possui retenção de backup de sete dias, sem backup
+georredundante, HA desabilitada e regra `allow-azure-services`. Qdrant persiste
+em Azure Files. Não há evidência versionada de restore de PostgreSQL/Qdrant,
+política LGPD/privacidade, Key Vault, Managed Identity, alertas de orçamento
+ou alertas operacionais.
+
+## 2. Objetivo mensurável
+
+Antes de tratar o piloto como operação contínua, demonstrar que segredos,
+telemetria e dados têm proprietário e política; que JWT não muda
+involuntariamente; e que PostgreSQL e Qdrant podem ser restaurados em exercício
+documentado. A configuração técnica atual inclui retenção PostgreSQL de sete
+dias, ausência de HA/geo-backup e Log Analytics com 30 dias no Bicep; isso não
+é política LGPD aprovada. Para o piloto, RPO de 24 h e RTO de 4 h são decisões
+provisórias revisáveis; retenção jurídica, orçamento aprovado e dados jurídicos
+não são inventados.
+
+## 3. Escopo e não escopo
+
+### Escopo
+
+- Azure Key Vault + Managed Identity, com retirada da dependência operacional
+  de ACR admin após migração validada.
+- Persistência, rotação e impacto de sessão do segredo JWT.
+- Inventário/minimização de dados em logs e LangSmith, privacidade e LGPD.
+- Backup e restauração de PostgreSQL e do volume Qdrant.
+- Alertas de orçamento, API, ingestão e banco.
+
+### Não escopo
+
+- Coletar dados pessoais reais para testar a política.
+- Alterar guardrails, autenticação de produto, RBAC institucional, SSO ou
+multi-tenancy.
+- Declarar conformidade LGPD ou SLA sem responsável legal e evidência.
+
+## 4. Requisitos e critérios de aceite
+
+| ID | Requisito | Critério de aceite verificável |
+|---|---|---|
+| RQ-SEC-01 | Segredos não devem ser versionados, logados ou entregues por parâmetro inseguro de pipeline. | Scan do repositório/pipeline não encontra valor real; referências apontam para mecanismo aprovado. |
+| RQ-SEC-02 | JWT deve sobreviver a deploy normal e ter rotação controlada. | Dado deploy sem rotação, então token válido mantém o comportamento esperado; dada rotação aprovada, então impacto e comunicação são registrados. |
+| RQ-SEC-03 | Telemetria deve ter inventário e minimização; retenção só é declarada quando aprovada. | Para cada campo enviado a logs/LangSmith, então há finalidade, classificação e mascaramento/remoção. Até revisão, só metadados operacionais mínimos de dados demo/sintéticos (revisão, timestamps, status) são permitidos; pergunta/resposta, token, senha, JWT e identificadores pessoais são vedados em novos campos/uso externo. |
+| RQ-SEC-04 | O piloto não pode admitir usuários externos nem dados pessoais até haver política aprovada, canal formal e controlador identificado. | Enquanto o gate vigorar, somente contas demo e dados sintéticos são aceitos; a publicação de política só ocorre após fatos jurídicos reais. |
+| RQ-SEC-05 | Estado PostgreSQL e Qdrant deve ser recuperável para o RPO provisório de 24 h e RTO provisório de 4 h. | Exercício restaura cópia autorizada e comprova integridade por consulta/smoke sem sobrescrever produção, registrando tempos contra os objetivos. |
+| RQ-SEC-06 | Falhas e custo devem ser detectáveis. | Simulação/consulta controlada produz alerta de API, ingestão e banco por GitHub issue/Action e Azure Monitor; o limite financeiro usa orçamento Azure factual ou permanece parametrizável. |
+
+## 5. Decisões, dependências e riscos
+
+| Tipo | Item | Dono / condição | Mitigação ou próximo passo |
+|---|---|---|---|
+| Decisão tomada | Dados do piloto são demo; PII real não é requisito. | RNF-05. | Não introduzir PII para validar telemetria. |
+| Decisão tomada | PostgreSQL é o estado transacional; Qdrant usa Azure Files. | `docs/03` § 10 e Bicep. | Exercícios devem cobrir ambos. |
+| Decisão tomada | Backup PostgreSQL configurado: 7 dias; geo-backup e HA desabilitados. | `main.bicep`. | Tratar como baseline, não como garantia de recuperação testada. |
+| Decisão provisória | Segredos usam Azure Key Vault + Managed Identity; a dependência operacional de ACR admin é eliminada somente após migração validada. | Revisar após identidade, RBAC mínimo e pull de imagem com MI validados no Azure. | T04.1/T04.2 podem inventariar e desenhar migração sem valores; aplicação para no acesso Azure. |
+| Gate explícito legal | Sem controlador jurídico identificado, canal formal e política/retenção aprovada, o piloto fica restrito a conta demo e dados sintéticos; não admite usuários externos ou dados pessoais. | Revisar somente com fatos jurídicos aprovados, sem inferir e-mail, controlador ou prazo. | T04.3 pode inventariar/minimizar e preparar conteúdo local; para antes de publicar política ou ampliar o público. O LangSmith existente deve ser auditado antes de ampliar payloads, não é aprovação para novos dados. |
+| Decisão provisória | RPO é 24 h e RTO é 4 h para PostgreSQL e Qdrant no piloto. | Revisar após primeiro restore isolado, mudança de arquitetura ou exigência de produto. | T04.4 pode criar o protocolo e medir; a aprovação final depende da evidência de restore. |
+| Decisão provisória | Alertas técnicos usam GitHub issue/Action e Azure Monitor. | Revisar quando canal formal de operação for aprovado. | T04.5 pode desenhar e testar alertas nesses canais sem inventar e-mail/Teams. |
+| Gate explícito financeiro | Usar orçamento Azure existente somente se verificado; caso contrário, o teto financeiro fica parametrizável. | Requer acesso à assinatura/configuração Azure. | A ausência de valor não bloqueia testes técnicos, apenas a ativação de alerta financeiro com limiar concreto. |
+| Risco | Rotação inesperada de JWT encerra todas as sessões. | Deploy atual pode gerar segredo. | Separar provisionamento de rotação e testar continuidade. |
+| Risco | Restore incompleto deixa Qdrant e PostgreSQL inconsistentes. | Estados são diferentes. | Exercício isolado e checklist de consistência. |
+
+## 6. Plano técnico
+
+A futura implementação começará por inventário sem valores de segredo:
+`deploy.ps1`, parâmetros Bicep, variáveis do Container App, GitHub Actions,
+logs JSON e configuração LangSmith. A migração de segredo só ocorre após
+definir identidade e permissões de menor privilégio em Key Vault/Managed
+Identity; nenhum segredo será copiado para documento, output de CI ou comando
+histórico. A configuração atual de ACR admin, factual no Bicep e no script de
+deploy, só será removida após pull autenticado por MI comprovado.
+
+O teste de recuperação deve usar cópia/ambiente isolado. Para PostgreSQL,
+registrar origem, ponto de recuperação e consulta de integridade. Para Qdrant,
+registrar método de backup do Azure Files, versão do manifest e consulta de
+coleção. A consistência entre corpus/manifest e coleção deve ser verificada
+antes de qualquer retorno. O exercício compara o tempo observado com RPO 24 h
+e RTO 4 h. Alertas precisam usar métricas/logs realmente disponíveis no Azure,
+GitHub issue/Action e Azure Monitor; nenhum e-mail ou Teams é presumido, e
+orçamento financeiro só é aplicado após valor e limiares aprovados.
+
+### Inventário T04.1
+
+O inventário versionado em `src/security/operational_inventory_v1.json` registra
+quatro superfícies classificadas sem valores: segredos runtime, telemetria,
+estado persistente e permissões de entrega. Ele referencia a configuração Bicep,
+o caminho de deploy, workflows OIDC, configurações locais e módulos de API,
+feedback, cache e tracing.
+
+O diagnóstico é rastreável e preserva os gates: a migração Key Vault/Managed
+Identity e a retirada do ACR admin foram validadas na execução aprovada
+`31659709461`; a minimização de payloads LangSmith, política pública e usuários
+externos seguem bloqueados pelo gate legal; o restore isolado segue para T04.4.
+Como proteção imediata, o formatter JSON mascara recursivamente campos de
+segredo antes de serializar logs. O bootstrap manual agora exige JWT explícito,
+evitando gerar uma chave que invalidaria sessões em um deploy normal.
+
+### Runbook T04.2
+
+`infra/azure/security-foundation.bicep` cria, sem parâmetros de segredo, um
+Key Vault com RBAC, uma identidade atribuída pelo usuário e somente os papéis
+`AcrPull` e `Key Vault Secrets User` para o runtime. O deployment principal do
+workflow recebe `Key Vault Secrets Officer` no cofre e `Container Apps
+Contributor` apenas no ambiente gerenciado, além de `Container Apps Jobs
+Contributor` somente no job de ingestão. O ACR recebe `Contributor` somente no
+recurso do registry, pois é o menor papel built-in disponível para desativar o
+admin após o smoke; esses papéis permitem copiar os valores ativos e atribuir a
+identidade sem os registrar.
+
+Após aplicar essa fundação e configurar as referências não secretas de cofre e
+identidade como variáveis de Actions, o workflow manual
+`.github/workflows/migrate-azure-secrets.yml` exige `main` e aprovação do
+Environment `production`. Ele lê os segredos ativos em memória, preserva o
+mesmo JWT, grava as versões no Key Vault, muda API/frontend para pull com
+identidade e referências `keyvaultref`, configura também o job de ingestão,
+reinicia a revisão da API, executa health público e só então desativa o ACR
+admin. A extensão beta de Container Apps pode retornar erro após atribuir uma
+identidade ao job; o runbook só continua após consultar o ARM e confirmar a
+identidade, mantendo falhas reais bloqueantes. O artefato contém identificadores
+de execução, cofre e identidade, nunca valores de segredo.
+
+A execução aprovada `31659709461` concluiu a migração, o reinício, o smoke e a
+desativação do ACR admin. A verificação posterior confirmou a identidade de
+runtime e o registry autenticado por identidade na API, frontend e job; nenhuma
+das três configurações mantém `registry-password`; o ACR permanece com admin
+desativado; e `/health` retornou `status: ok`. O artefato sanitizado da execução
+registra somente o SHA, o ID da execução, o cofre e a identidade. Valores de
+segredo não foram lidos para evidência.
+
+Rotação é uma operação separada e aprovada: publicar uma nova versão no Key
+Vault, atualizar uma única referência, validar login e health e manter a versão
+anterior durante a janela de reversão. Se a validação falhar, a referência volta
+para a versão anterior; nenhum segredo é impresso em logs ou evidência.
+
+### Preparação T04.4
+
+O workflow manual `.github/workflows/exercise-azure-recovery.yml` só executa
+em `main`, exige o Environment `production` e falha antes de alterar recursos
+se o grupo de recuperação não for diferente de `rg-usiedu`, se o servidor
+restaurado não tiver nome distinto da origem ou se algum recurso de origem não
+existir. Ele restaura PostgreSQL para um servidor efêmero no grupo isolado e
+cria um snapshot do share `qdrant` para copiá-lo a um share efêmero, sem listar
+arquivos, conteúdo de coleções, dados de banco ou credenciais. A evidência
+sanitizada registra somente identificadores, timestamps e as metas provisórias
+RPO 24 h/RTO 4 h; a limpeza só aponta para os recursos efêmeros e para o
+snapshot identificado.
+
+Os templates `infra/azure/recovery-source-access.bicep` e
+`infra/azure/recovery-target-access.bicep` separam os escopos mínimos: `Reader`
+foi substituído pelo papel customizado `UsiEdu PostgreSQL Restore Source
+Operator`, com somente `read` e `write` de `flexibleServers`, atribuído apenas
+ao servidor de origem. O Azure exige `write` no recurso vinculado durante o
+restore, como evidenciado pelo run protegido `31729077464`; o primeiro run
+falhou antes de criar recursos por essa autorização ausente e a limpeza
+confirmou que o grupo isolado e os shares de recuperação continuaram vazios.
+No segundo run protegido, `31730271262`, o restore PostgreSQL isolado concluiu
+em 7 min 9 s e foi removido pela limpeza; o snapshot de Qdrant pelo plano de
+dados falhou com `Incorrect padding` antes da cópia. O share efêmero criado
+antes da falha foi removido manualmente e o grupo isolado voltou a ficar vazio.
+O runbook passou a usar o snapshot pelo plano de controle e registra os
+identificadores do snapshot e do clone antes da cópia, para que a limpeza
+também os alcance se a operação falhar.
+O terceiro run protegido, `31731678159`, recebeu `InternalServerError` do
+provedor PostgreSQL após aguardar a operação, sem criar o servidor de
+recuperação; o grupo isolado e os snapshots permaneceram vazios. O runbook
+agora executa no máximo uma nova tentativa após 30 segundos para essa operação
+transitória e consulta a lista de servidores antes da limpeza, evitando que
+`ResourceNotFound` de uma criação inexistente torne o cleanup falso-negativo.
+No quarto run protegido, `31733643718`, o restore PostgreSQL isolado foi
+concluído e limpo, mas o clone Qdrant falhou porque o comando preview
+`share-rm snapshot` retorna `snapshotTime`, não `properties.shareSnapshot`;
+o URI de cópia recebeu o parâmetro de snapshot vazio. A correção extrai
+explicitamente `snapshotTime`; o snapshot diagnóstico criado para confirmar o
+contrato foi removido e não ficaram servidores, clones ou snapshots
+temporários.
+No quinto run protegido, `31769690066`, o snapshot foi extraído corretamente,
+mas a SAS de share foi assinada para o share ativo e não permaneceu válida após
+adicionar `sharesnapshot` ao URI. O sexto run protegido, `31770644006`, usou
+uma SAS de conta temporária, mas o subcomando `az storage file copy start-batch`
+continuou falhando no processamento da origem de snapshot. Dois snapshots
+temporários de runs anteriores foram identificados pelo plano de controle e
+removidos; o grupo isolado e os clones permaneceram vazios. O runbook agora usa
+AzCopy, que suporta cópia recursiva de snapshots, com SAS de conta separadas e
+temporárias: origem limitada a leitura/listagem e destino limitado a
+criação/escrita/listagem no serviço Files.
+O sétimo run protegido, `31771590396`, concluiu o restore PostgreSQL para
+`usiedu-pg-recovery-20260813` (PostgreSQL 16 em estado `Ready`), criou o clone
+`qdrant-recovery-31771590396` a partir do snapshot
+`2026-08-16T01:33:05.0000000Z`, validou a existência dos dois recursos e
+executou a limpeza. O workflow terminou em 8 min 22 s, abaixo do RTO provisório
+de 4 h; a evidência sanitizada registra início e fim do restore, sem chave,
+SAS, dados de banco ou arquivos do share. A consulta SQL autenticada e a
+verificação de coleção Qdrant ainda não foram executadas, portanto a evidência
+não permite aceitar RPO ou declarar T04.4 concluída.
+`Storage Account Contributor` e `Storage Account Key Operator Service Role`
+ficam apenas na conta que hospeda Qdrant, e `Contributor` somente no grupo
+isolado. O último papel não é concedido no grupo de produção. A T04.4
+permanece pendente até uma execução protegida gerar a evidência de restore,
+consulta SQL autenticada, verificação de coleção e comparação RPO/RTO.
+
+Em 2026-08-15, a leitura sanitizada do identificador do segredo
+`database-url` pelo principal OIDC foi negada com `ForbiddenByRbac`; portanto,
+nenhuma consulta autenticada foi simulada ou declarada como concluída.
+`infra/azure/recovery-source-access.bicep` passa a atribuir `Key Vault Secrets
+User` somente a esse secret, não ao cofre. Após o bootstrap administrativo
+dessa atribuição, o workflow recupera a URL apenas em memória, troca o host
+pela instância efêmera, executa `SELECT 1` e registra apenas o booleano de
+conectividade. A regra temporária `allow-azure-services` existe somente no
+servidor recuperado e é removida junto com ele. A execução protegida e a
+verificação runtime das coleções Qdrant continuam necessárias.
+
+Para Qdrant, o workflow prepara o Container App efêmero definido em
+`infra/azure/recovery-qdrant-validation.bicep`: ele monta exclusivamente o
+share clonado, executa Qdrant com a mesma versão da origem e usa um sidecar no
+mesmo ambiente para comparar a API interna de coleções da origem e da cópia.
+O sidecar emite somente contagens e hashes SHA-256 dos nomes ordenados; não
+lista nomes, pontos, payloads ou arquivos. A configuração temporária de
+Azure Files no ambiente e o Container App no grupo de recuperação são
+removidos no cleanup. Essa preparação não é evidência de integridade até o
+workflow protegido concluir e publicar o artefato sanitizado.
+
+O run protegido `31922492862` restaurou PostgreSQL entre
+`2026-08-16T02:57:43Z` e `2026-08-16T03:03:56Z`, validou o servidor `Ready` e
+executou `SELECT 1` com sucesso, sem registrar a URL de conexão. O clone
+Qdrant e o snapshot também foram criados e removidos pelo cleanup; o grupo de
+recuperação, os shares temporários e os Container Apps efêmeros ficaram vazios
+após a falha. A validação runtime de Qdrant não iniciou porque o papel
+`Container Apps Contributor` não contém
+`microsoft.app/managedenvironments/storages/write`. Em vez do papel built-in
+mais amplo `Azure Container Storage Contributor`, o papel customizado `UsiEdu
+Container Apps Environment Storage Operator` adiciona somente `read`, `write`
+e `delete` ao mount do ambiente. O RPO/RTO e a integridade Qdrant continuam
+pendentes até o retry aprovado concluir.
+
+O retry protegido `31979082376` restaurou PostgreSQL e concluiu o snapshot e
+clone Qdrant, mas a consulta `SELECT 1` falhou antes da comparação Qdrant:
+após o restore, a asserção OIDC inicial havia expirado. O cleanup removeu o
+servidor, share, snapshot, mount e Container App efêmeros. O workflow renova a
+sessão OIDC imediatamente antes das validações autenticadas e um contrato
+estático exige essa renovação. Nenhuma evidência desse run permite aceitar
+RPO/RTO ou declarar T04.4 concluída; a comparação sanitizada de coleções ainda
+precisa ser executada em novo retry aprovado.
+
+O retry protegido `31980102870` confirmou a renovação OIDC e executou `SELECT
+1` no PostgreSQL restaurado. A comparação Qdrant não foi emitida porque a
+sequência `"\n"` do código Python foi convertida em quebra de linha pelo Bicep,
+produzindo erro de sintaxe no sidecar. O run confirmou a recuperação das
+coleções nos logs do Qdrant, mas essa observação não substitui a comparação
+sanitizada. O hash agora usa `chr(10)`, que não depende da interpretação de
+escape do template; o cleanup novamente removeu todos os recursos efêmeros.
+
+O run protegido `31981495657` concluiu o exercício ponta a ponta: o restore
+PostgreSQL levou 6 min 11 s, a consulta autenticada `SELECT 1` passou e a
+comparação sanitizada de contagens e hashes SHA-256 das coleções Qdrant passou.
+Do início do restore ao fim do cleanup decorreram 10 min 59 s, abaixo do RTO
+provisório de 4 h. O snapshot Qdrant foi criado em
+`2026-08-17T00:23:10Z`, e a validação ocorreu 3 min 15 s depois. O Azure não
+emitiu no artefato o timestamp do ponto PITR efetivamente restaurado pelo
+PostgreSQL; portanto, o RPO de 24 h continua objetivo provisório, não SLA ou
+alegação de idade medida. Após o cleanup, o grupo isolado, os shares de
+recuperação, os mounts e os Container Apps efêmeros estavam vazios.
+
+### Preparação T04.5
+
+O inventário factual de observabilidade confirmou que o workspace
+`usiedu-logs` retém dados por 30 dias e que `ContainerAppConsoleLogs_CL` tem
+os campos `TimeGenerated`, `ContainerAppName_s`, `Stream_s` e `Log_s`. Em
+30 dias, a consulta de diagnóstico encontrou 17 janelas de cinco minutos com
+tracebacks em `stderr`, com máximo de oito por janela; nas 24 horas mais
+recentes não houve janela correspondente. O PostgreSQL expõe a métrica
+`is_db_alive`, que permaneceu em `1` nas amostras de cinco minutos das últimas
+24 horas. Não havia metric alerts, action groups nem orçamento Azure no grupo
+de recursos no momento da consulta.
+
+O job manual `usiedu-ingest` teve os reasons `BackoffLimitExceeded` (cinco
+eventos históricos) e `Completed` (três); o primeiro é o sinal factual de
+falha usado para o alerta de ingestão. `infra/azure/monitoring-alerts.bicep`
+prepara três alertas sem action group ou destino externo: traceback de
+Container Apps em `stderr` nos últimos cinco minutos, `BackoffLimitExceeded`
+do job de ingestão e `is_db_alive` médio abaixo de `1` por 15 minutos no
+PostgreSQL.
+`infra/azure/monitoring-access.bicep` limita a identidade OIDC a
+`Monitoring Contributor` no grupo de recursos e `Log Analytics Reader` no
+workspace; não concede `Contributor`. O workflow manual e protegido
+`.github/workflows/configure-azure-operational-alerts.yml` aplica e verifica
+os três recursos após o bootstrap administrativo de RBAC mínimo; a identidade
+OIDC não tenta atribuir privilégios a si mesma. O workflow manual e protegido
+`.github/workflows/report-azure-operational-alerts.yml` consulta somente os
+dois alertas ativos aprovados via ARM, cria ou atualiza uma Issue GitHub
+deduplicada pelo rótulo `azure-operational-alert` e publica artefato contendo
+apenas regra, severidade, estado e timestamp.
+
+Na preparação inicial, o alerta financeiro não foi criado porque não existiam
+orçamento factual nem limiar aprovado. A implantação protegida, a simulação
+controlada de API, ingestão e banco, e a evidência da Issue ainda eram
+necessárias nessa etapa.
+
+O workflow protegido
+`.github/workflows/exercise-azure-log-alerts.yml` prepara a primeira simulação
+controlada da T04.5. Ele altera temporariamente o limite de tentativas do job
+manual de ingestão de `0` para `1`, executa somente `python -c` para emitir um
+traceback sintético e encerrar com falha, e restaura o limite original com
+`trap` antes de verificar os dois alertas baseados em logs. A execução não
+acessa Qdrant, PostgreSQL ou Storage. A indisponibilidade PostgreSQL não é
+simulada neste workflow: não há injeção segura de `is_db_alive` e não se deve
+degradar ou falsificar a métrica do banco de produção.
+
+O primeiro run protegido dessa simulação, `31982697595`, falhou antes de criar
+uma execução do job porque o CLI interpretou o argumento Python `-c` como sua
+própria opção. Nenhum sinal de log ou alerta foi produzido. O rollback inicial
+também não conseguiu aplicar o valor numérico `0` pelo comando de alto nível;
+o limite permaneceu temporariamente em `1`. Um PATCH ARM limitado ao campo
+`replicaRetryLimit` restaurou imediatamente o valor `0`, que foi confirmado
+por leitura posterior. O workflow passa `-c` anexado ao argumento e usa o
+mesmo PATCH ARM somente para a reversão.
+
+O segundo run protegido, `32025906665`, também falhou antes de criar execução
+ou sinal: a CLI aceitou `-c`, mas rejeitou o código quando ele foi passado como
+segundo argumento. O rollback ARM foi bem-sucedido e o limite permaneceu em
+`0`. O workflow agora envia `-c` e o código como um único argumento separado
+por quebra de linha, forma aceita pelo parser da CLI e pelo interpretador
+Python.
+
+O terceiro run protegido, `32027057986`, também não criou execução ou sinal: a
+API de Container Apps exige que um override de comando informe explicitamente
+a imagem do container. O rollback ARM foi confirmado com o limite em `0`. O
+workflow agora obtém a imagem configurada no job e a reaplica somente à
+execução sintética, preservando o template do job e sem acessar os data stores.
+
+O quarto run protegido, `32028207228`, criou a execução sintética e produziu
+dois tracebacks em `stderr` e o evento `BackoffLimitExceeded`. Os dois alertas
+aprovados ficaram ativos: `usiedu-containerapp-tracebacks` às
+`2026-08-17T12:10:55Z` e `usiedu-ingest-failed` às `2026-08-17T12:13:49Z`.
+O job foi restaurado ao limite de retry `0`. O workflow falhou apenas ao
+extrair as contagens do Log Analytics: esta versão do CLI retorna uma lista
+achatada com `Count`, não `tables[0].rows`. A extração passa a usar
+`[0].Count`; um novo run protegido ainda deve publicar a evidência sanitizada.
+
+O quinto run protegido, `32035688388`, publicou a evidência sanitizada da
+execução `usiedu-ingest-uf6kgrx`: confirmou `traceback_signal_observed` e
+`ingest_failure_signal_observed` como verdadeiros, além do limite original de
+retry em `0`. O inventário sanitizado do mesmo run contém somente as duas
+regras ativas `usiedu-containerapp-tracebacks` e `usiedu-ingest-failed`, ambas
+`Sev2` no estado `New`.
+
+O relatório protegido `32036979098` consolidou ocorrências históricas pela
+regra antes de processar Issues. As Issues canônicas abertas são `#44` para
+tracebacks e `#45` para falha de ingestão; as cópias `#46` e `#47` foram
+fechadas como duplicadas, com links para as respectivas canônicas. A
+deduplicação de alertas de log está, portanto, validada sem incluir dados de
+PostgreSQL, Qdrant ou Storage nos artefatos.
+
+O sexto run protegido, `32049698179`, validou a indisponibilidade PostgreSQL
+em um servidor efêmero sem rede pública no grupo isolado de recuperação. A
+regra temporária reproduziu o contrato de produção para `is_db_alive` (média
+menor que `1`, janela de 15 minutos e avaliação de cinco minutos), ficou
+`Fired` às `2026-08-17T17:45:19Z` após a parada controlada e `Resolved` às
+`2026-08-17T18:05:10Z` depois da retomada. A evidência sanitizada confirmou
+os dois estados e o cleanup; não restaram servidor nem regra temporários.
+
+O orçamento mensal `usiedu-monthly-budget` foi criado no `rg-usiedu` pelo run
+protegido `32059130374`: valor de `R$ 30`, moeda `BRL`, ciclo mensal iniciado
+em `2026-08-01` e nenhuma notificação nativa. Os limiares aprovados de 80% e
+100% são avaliados exclusivamente pelo workflow protegido
+`report-azure-financial-budget.yml`, que cria ou atualiza Issues deduplicadas
+somente quando o gasto real os alcança. O primeiro relatório, `32060820073`,
+registrou gasto de `R$ 0,00`; portanto, nenhuma Issue financeira era esperada
+ou criada. T04.5 está concluída sem e-mail, Teams, webhook ou Action Group.
+
+O primeiro deploy protegido de alertas, `31921566440`, falhou sem criar regras
+porque a assinatura não estava registrada no provedor `Microsoft.Insights`.
+Após o registro administrativo único do provedor, o retry protegido
+`31921996765` criou e validou os três recursos. O primeiro relatório
+protegido, `31922153135`, revelou que a API `Microsoft.AlertsManagement/alerts`
+não aceita `2023-07-12-preview` nessa assinatura; a versão estável
+`2019-03-01` retornou uma lista vazia quando consultada localmente. O workflow
+passa a usar essa versão e não transforma a ausência de artefato em falha que
+mascare o erro primário.
+
+## 7. Tarefas e microtarefas
+
+- [x] **T04.1 — Inventariar superfície operacional**
+  - [x] Mapear segredos, fluxos de dados, logs, LangSmith, persistência e permissões sem valores. *(`src/security/operational_inventory_v1.json` classifica as quatro superfícies e referencia cada caminho técnico sem registrar valores.)*
+  - [x] Teste: busca automatizada detecta segredo simulado e valida mascaramento de log. *(`tests/unit/test_operational_hygiene.py` cobre atribuições simuladas, campos recursivos e o formatter JSON.)*
+  - [x] Evidência: inventário classificado e revisão de campos enviados. *(Os campos sensíveis são substituídos por `[REDACTED]` antes da serialização; os gates de Key Vault/MI, privacidade e restore permanecem rastreados no inventário.)*
+  - [x] Commit: `docs(seguranca): inventariar superficie operacional`.
+- [x] **T04.2 — Definir gestão de segredos e JWT**
+  - [x] Registrar migração para Key Vault/Managed Identity, menor privilégio, rotação, contingência e retirada de ACR admin após validação.
+  - [x] Teste: o contrato determinístico exige que o bootstrap receba JWT explícito, a promoção só atualize imagens e o runbook preserve o valor ativo; rotação continua operação separada e aprovada.
+  - [x] Evidência: execução `31659709461`, artefato sanitizado, referências Key Vault/MI e health público aprovados; nenhum valor foi registrado.
+  - [x] Commit: `fix(azure): impedir jwt automatico`.
+- [x] **T04.3 — Formalizar dados e privacidade**
+  - [x] Aplicar a restrição demo/sintética e inventariar minimização; política pública, controlador, canal formal, retenção e usuários externos permanecem bloqueados até fatos aprovados.
+  - [x] Teste: payload sintético e identificadores não aparecem em campos proibidos de log/trace; o cliente LangSmith e o feedback ocultam conteúdo.
+  - [x] Evidência: execução aprovada `31661521278` confirmou as quatro flags de ocultação e health `ok`; o artefato sanitizado não contém payload, resposta, identificador pessoal ou segredo.
+  - [x] Commit: `fix(privacidade): minimizar telemetria externa`.
+- [x] **T04.4 — Exercitar recuperação**
+  - [x] Runbook: restore PostgreSQL e clone Qdrant em recursos efêmeros e isolados.
+  - [x] Teste: `SELECT 1` autenticado e comparação sanitizada de coleções pelo sidecar.
+  - [x] Evidência: run `31981495657`, RTO observado, snapshot Qdrant, integridade e cleanup sem resíduos; a idade do PITR PostgreSQL não foi emitida.
+  - [x] Commit: `docs(operacao): registrar recovery isolado`.
+- [x] **T04.5 — Configurar alertas aprovados**
+  - [x] Alertas de log: GitHub Action protegido e Azure Monitor validaram traceback e falha de ingestão, com Issues canônicas `#44` e `#45`.
+  - [x] Alerta PostgreSQL: o run `32049698179` validou `is_db_alive` em servidor efêmero isolado, incluindo disparo, resolução e cleanup.
+  - [x] Alerta financeiro: orçamento factual de R$ 30/mês no `rg-usiedu`, limiares de 80% e 100% por Issue protegida e sem canal externo.
+  - [x] Evidência técnica: runs `32035688388`, `32036979098`, `32049698179`, `32059130374` e `32060820073`, com artefatos sanitizados, cópias de Issue reconciliadas, validação PostgreSQL isolada e consulta financeira.
+  - [x] Commits: `feat(azure): adicionar budget financeiro mensal` e `fix(azure): usar issues para limiares de budget`.
+
+## 8. Estratégia de testes e validação
+
+| Camada | Cenário | Automação | Comando / evidência |
+|---|---|---|---|
+| Unitária | Mascaramento, configuração e política de JWT. | Sim | Pytest direcionado, sem segredo real. |
+| Integração | Deploy controlado e persistência de sessão; restore isolado. | Parcial | Ambiente não público com dados demo. |
+| CI | Scan de segredo e validações estáticas. | Sim, após T04.2 | Relatório do workflow sem conteúdo sensível. |
+| Azure | Backup/restore, Key Vault/identidade e alertas. | Manual/automatizado após aprovação | Logs de operação, alertas de teste e smoke. |
+
+## 9. Encerramento
+
+### Gates e reversibilidade
+
+| Gate | Estado documental atual | Condição / evidência futura |
+|---|---|---|
+| G0 — Baseline | Concluído | Bicep, deploy e P0 inventariados. |
+| G1 — Especificação | Concluído | Este documento define Key Vault/MI, RPO/RTO, alertas e gate legal; acesso Azure, fato jurídico e orçamento concreto bloqueiam somente as execuções dependentes. |
+| G2 — Implementação | Concluído | T04.1–T04.5 concluídas. |
+| G3 — Verificação | Em andamento | T04.1 cobre mascaramento; T04.2 cobre migração, JWT, health e ACR; T04.3 cobre logs e tracing minimizados; T04.4 validou restore isolado; T04.5 validou alertas técnicos e orçamento. |
+| G4 — Operação | Em andamento | Migração, minimização, recuperação isolada e alertas foram validados; os gates legais permanecem externos ao recorte técnico. |
+| G5 — Encerramento | Não iniciado | Evidências e checklists legados reconciliados. |
+
+Reversão de secret store/identidade deve preservar o segredo ativo até uma
+migração validada; rotação possui rollback somente enquanto a política permitir
+aceitar a chave anterior. Restores nunca são revertidos sobre produção sem
+procedimento aprovado: validar em cópia isolada primeiro.
+
+### Definition of Done
+
+- [x] Segredos, JWT, dados/telemetria e privacidade possuem decisões, gate legal e evidência sem declarar fato jurídico inexistente.
+- [x] Restore de PostgreSQL e Qdrant foi exercitado isoladamente.
+- [x] Alertas de log aprovados foram disparados de modo controlado e possuem Issues deduplicadas.
+- [x] Alerta PostgreSQL foi disparado e resolvido em ambiente isolado.
+- [x] Alerta financeiro possui orçamento factual e limiares aprovados.
+- [ ] Nenhum segredo ou PII foi introduzido em código, documentação ou evidência.
+- [ ] Checklists legados só foram atualizados junto da implementação validada.

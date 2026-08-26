@@ -1,6 +1,7 @@
 server {
     listen 80;
     server_name localhost;
+    proxy_read_timeout 180s;
 
     location / {
         root /usr/share/nginx/html;
@@ -50,6 +51,12 @@ server {
     }
 
     location /health {
+        proxy_pass ${UPSTREAM_API_URL};
+        proxy_set_header Host $proxy_host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /ready {
         proxy_pass ${UPSTREAM_API_URL};
         proxy_set_header Host $proxy_host;
         proxy_set_header X-Real-IP $remote_addr;

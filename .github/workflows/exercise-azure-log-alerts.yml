@@ -1,0 +1,191 @@
+name: Exercise Azure log alerts
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  simulate:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      LOG_ANALYTICS_WORKSPACE: ${{ vars.AZURE_LOG_ANALYTICS_WORKSPACE }}
+      INGEST_JOB: ${{ vars.AZURE_INGEST_JOB }}
+      SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+    steps:
+      - name: Checkout approved runbook
+        uses: actions/checkout@v4
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Emit controlled log alert signals
+        shell: bash
+        run: |
+          set -euo pipefail
+          ORIGINAL_RETRY_LIMIT=$(az containerapp job show \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$INGEST_JOB" \
+            --query properties.configuration.replicaRetryLimit -o tsv)
+          test "$ORIGINAL_RETRY_LIMIT" = "0"
+          INGEST_JOB_ID=$(az containerapp job show \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$INGEST_JOB" \
+            --query id -o tsv)
+          INGEST_IMAGE=$(az containerapp job show \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$INGEST_JOB" \
+            --query properties.template.containers[0].image -o tsv)
+          test -n "$INGEST_IMAGE"
+
+          restore_retry_limit() {
+            az rest --method patch \
+              --url "https://management.azure.com${INGEST_JOB_ID}?api-version=2024-03-01" \
+              --headers 'Content-Type=application/json' \
+              --body "{\"properties\":{\"configuration\":{\"replicaRetryLimit\":${ORIGINAL_RETRY_LIMIT}}}}" \
+              --output none
+          }
+          trap restore_retry_limit EXIT
+
+          az containerapp job update \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$INGEST_JOB" \
+            --replica-retry-limit 1 \
+            --output none
+          CONTROLLED_FAILURE_ARGUMENT=$'-c\nimport sys; print("Traceback (controlled alert simulation)", file=sys.stderr); raise SystemExit(1)'
+          EXECUTION_NAME=$(az containerapp job start \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$INGEST_JOB" \
+            --container-name ingest \
+            --image "$INGEST_IMAGE" \
+            --command python \
+            --args="$CONTROLLED_FAILURE_ARGUMENT" \
+            --query name -o tsv)
+          test -n "$EXECUTION_NAME"
+
+          for attempt in $(seq 1 30); do
+            EXECUTION_STATUS=$(az containerapp job execution list \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$INGEST_JOB" \
+              --query "[?name=='${EXECUTION_NAME}'].properties.status | [0]" -o tsv)
+            if [ "$EXECUTION_STATUS" = "Failed" ]; then
+              break
+            fi
+            sleep 10
+          done
+          test "${EXECUTION_STATUS:-}" = "Failed"
+
+          WORKSPACE_ID=$(az monitor log-analytics workspace show \
+            --resource-group "$RESOURCE_GROUP" \
+            --workspace-name "$LOG_ANALYTICS_WORKSPACE" \
+            --query customerId -o tsv)
+          for attempt in $(seq 1 30); do
+            TRACEBACK_COUNT=$(az monitor log-analytics query \
+              --workspace "$WORKSPACE_ID" \
+              --analytics-query "ContainerAppConsoleLogs_CL | where TimeGenerated > ago(15m) | where Log_s has 'Traceback (controlled alert simulation)' | count" \
+              --query '[0].Count' -o tsv)
+            INGEST_FAILURE_COUNT=$(az monitor log-analytics query \
+              --workspace "$WORKSPACE_ID" \
+              --analytics-query "ContainerAppSystemLogs_CL | where TimeGenerated > ago(15m) | where JobName_s == '$INGEST_JOB' | where Reason_s == 'BackoffLimitExceeded' | count" \
+              --query '[0].Count' -o tsv)
+            if [ "$TRACEBACK_COUNT" -gt 0 ] && [ "$INGEST_FAILURE_COUNT" -gt 0 ]; then
+              break
+            fi
+            sleep 10
+          done
+          test "${TRACEBACK_COUNT:-0}" -gt 0
+          test "${INGEST_FAILURE_COUNT:-0}" -gt 0
+          jq -n \
+            --arg execution "$EXECUTION_NAME" \
+            --arg original_retry_limit "$ORIGINAL_RETRY_LIMIT" \
+            --arg traceback_count "$TRACEBACK_COUNT" \
+            --arg ingest_failure_count "$INGEST_FAILURE_COUNT" \
+            '{
+              schema_version: "1.0.0",
+              execution: $execution,
+              original_retry_limit: ($original_retry_limit | tonumber),
+              traceback_signal_observed: (($traceback_count | tonumber) > 0),
+              ingest_failure_signal_observed: (($ingest_failure_count | tonumber) > 0)
+            }' > artifacts/log-alert-signal-evidence.json
+
+      - name: Wait for approved log alerts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 36); do
+            az rest --method get \
+              --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.AlertsManagement/alerts?api-version=2019-03-01" \
+              | jq '
+                  [
+                    .value[]
+                    | .properties.essentials
+                    | select(.alertState == "New" or .alertState == "Acknowledged")
+                    | select(
+                        .alertRule
+                        | endswith("/usiedu-containerapp-tracebacks")
+                          or endswith("/usiedu-ingest-failed")
+                      )
+                    | {
+                        rule: (.alertRule | split("/") | last),
+                        severity: .severity,
+                        state: .alertState,
+                        fired_at: .startDateTime
+                      }
+                  ]
+                ' > artifacts/active-log-alerts.json
+            if jq -e '
+              map(.rule) as $rules
+              | ($rules | index("usiedu-containerapp-tracebacks"))
+                and ($rules | index("usiedu-ingest-failed"))
+            ' artifacts/active-log-alerts.json > /dev/null; then
+              break
+            fi
+            sleep 10
+          done
+          jq -e '
+            map(.rule) as $rules
+            | ($rules | index("usiedu-containerapp-tracebacks"))
+              and ($rules | index("usiedu-ingest-failed"))
+          ' artifacts/active-log-alerts.json > /dev/null
+
+      - name: Verify ingest job rollback
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            RESTORED_RETRY_LIMIT=$(az containerapp job show \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$INGEST_JOB" \
+              --query properties.configuration.replicaRetryLimit -o tsv)
+            if [ "$RESTORED_RETRY_LIMIT" = "0" ]; then
+              break
+            fi
+            sleep 10
+          done
+          test "$RESTORED_RETRY_LIMIT" = "0"
+
+      - name: Upload sanitized log alert evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-log-alert-simulation-evidence
+          path: artifacts/
+          if-no-files-found: error

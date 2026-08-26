@@ -87,7 +87,7 @@ class TestLoadManifest:
     def test_manifest_existente(self):
         manifest = load_manifest()
         assert "documents" in manifest
-        assert len(manifest["documents"]) == 4
+        assert len(manifest["documents"]) == 10
 
     def test_manifest_tem_campos_obrigatorios(self):
         manifest = load_manifest()

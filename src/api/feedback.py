@@ -62,7 +62,12 @@ def _db_path() -> str:
     return os.getenv("USIEDU_FEEDBACK_DB", "usiedu_feedback.db")
 
 
-def _envia_feedback_langsmith(message_id: str, rating: str, comment: str | None) -> None:
+def _serializar_created_at(value: str | datetime) -> str:
+    """Normaliza TIMESTAMPTZ do PostgreSQL ao contrato ISO 8601 da API."""
+    return value.isoformat() if isinstance(value, datetime) else value
+
+
+def _envia_feedback_langsmith(message_id: str, rating: str, _comment: str | None) -> None:
     """Anexa o feedback ao trace no LangSmith (melhor esforço)."""
     try:
         from langsmith import Client
@@ -71,7 +76,7 @@ def _envia_feedback_langsmith(message_id: str, rating: str, comment: str | None)
             run_id=uuid.UUID(message_id),
             key="user-feedback",
             score=1.0 if rating == "up" else 0.0,
-            comment=comment,
+            comment=None,
         )
     except Exception:  # noqa: BLE001 — feedback local é a fonte primária
         logger.debug("LangSmith indisponível; feedback mantido apenas em SQLite.")
@@ -143,9 +148,7 @@ async def registrar_feedback(
         "Feedback registrado",
         extra={
             "feedback_id": feedback_id,
-            "message_id": payload.message_id,
             "rating": payload.rating,
-            "user": current_user["email"],
         },
     )
     return FeedbackResponse(feedback_id=feedback_id or 0)
@@ -234,7 +237,7 @@ async def recent_feedback(
             rating=row[0],
             comment=row[1],
             profile=row[2],
-            created_at=row[3],
+            created_at=_serializar_created_at(row[3]),
             message_ref=hashlib.sha256(row[4].encode("utf-8")).hexdigest()[:8],
         )
         for row in rows

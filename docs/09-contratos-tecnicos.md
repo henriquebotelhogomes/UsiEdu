@@ -38,7 +38,11 @@
 | POST | `/chat` | sim | Envia mensagem e recebe resposta (fallback obrigatório do streaming) |
 | POST | `/chat/stream` | sim | Streama a resposta via SSE (T7.3); body idêntico a `ChatRequest` |
 | GET | `/chat/history?session_id={id}` | sim | Retorna histórico da sessão (T7.4): 404 se inexistente, 403 se pertence a outro usuário |
+| POST | `/feedback` | sim | Registra avaliação `up`/`down` de uma resposta |
+| GET | `/feedback/stats` | sim | Retorna totais e taxa agregada de satisfação |
+| GET | `/feedback/recent?limit={1..100}` | sim | Retorna os feedbacks mais recentes sem expor `message_id` |
 | GET | `/health` | não | Liveness: `{ "status": "ok" }` |
+| GET | `/ready` | não | Readiness rasa: `{ "status": "ready" }` somente após processo, configuração e modelos serem inicializados; não consulta LLM, Qdrant ou PostgreSQL |
 
 ### 2.2 Schemas (Pydantic)
 
@@ -87,6 +91,38 @@ class ChatHistoryMessage(BaseModel):
 class ChatHistoryResponse(BaseModel):
     session_id: str
     messages: list[ChatHistoryMessage]  # agentes/fontes omitidos: só texto
+
+
+# feedback
+class FeedbackRequest(BaseModel):
+    session_id: str
+    message_id: str  # run_id recebido no evento SSE meta
+    rating: Literal["up", "down"]
+    comment: str | None = None  # máximo de 500 caracteres
+
+
+class FeedbackResponse(BaseModel):
+    status: str = "ok"
+    feedback_id: int
+
+
+class FeedbackStats(BaseModel):
+    total: int
+    up: int
+    down: int
+    satisfaction: float  # up / total em [0, 1]; zero quando total = 0
+
+
+class FeedbackRecentItem(BaseModel):
+    rating: Literal["up", "down"]
+    comment: str | None
+    profile: str
+    created_at: str  # ISO 8601
+    message_ref: str  # primeiros 8 hex de sha256(message_id)
+
+
+class FeedbackRecentResponse(BaseModel):
+    items: list[FeedbackRecentItem]  # mais recentes primeiro
 ```
 
 ### 2.2.1 Eventos SSE do `POST /chat/stream` (T7.3)

@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "scope": "T05.1",
+  "load_profile": {
+    "concurrent_users": 5,
+    "burst_requests": 10
+  },
+  "temperatures": [
+    "cold",
+    "warm"
+  ],
+  "scenarios": [
+    "health",
+    "login",
+    "chat"
+  ],
+  "metrics": [
+    "total_latency_ms",
+    "ttft",
+    "status_code",
+    "exit_137_observed"
+  ],
+  "required_sample_fields": [
+    "sample_id",
+    "temperature",
+    "scenario",
+    "started_at",
+    "completed_at",
+    "revision",
+    "replica_count",
+    "models",
+    "status_code",
+    "latency_ms",
+    "dependency_outcomes",
+    "exit_137_observed"
+  ],
+  "prohibited_fields": [
+    "answer",
+    "authorization",
+    "content",
+    "email",
+    "jwt",
+    "message",
+    "password",
+    "question",
+    "secret",
+    "session_id",
+    "token"
+  ],
+  "notes": {
+    "ttft": "Aplicável somente a cenário chat; T05.1 mede antes de fixar SLO de primeira resposta.",
+    "dependencies": "Resultados de LLM, Qdrant e PostgreSQL são telemetria separada e não fazem parte de readiness."
+  }
+}

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.rag.retriever import HybridRetriever, _BM25Index
+from src.rag.retriever import HybridRetriever, _BM25Index, qdrant_timeout_seconds
 
 
 @pytest.fixture
@@ -188,6 +188,23 @@ class TestSearch:
         results = retriever.search("pergunta sem resposta")
         assert results == []
 
+    def test_search_retries_qdrant_once_after_timeout(self, retriever, mock_qdrant):
+        class _QueryResponse:
+            points = []
+
+        mock_qdrant.query_points.side_effect = [TimeoutError("slow"), _QueryResponse()]
+
+        assert retriever.search("Qual o prazo de matrícula?") == []
+        assert mock_qdrant.query_points.call_count == 2
+
+
+def test_qdrant_timeout_is_positive_and_configurable(monkeypatch) -> None:
+    monkeypatch.setenv("USIEDU_QDRANT_TIMEOUT_SECONDS", "8.5")
+    assert qdrant_timeout_seconds() == 8.5
+
+    monkeypatch.setenv("USIEDU_QDRANT_TIMEOUT_SECONDS", "0")
+    assert qdrant_timeout_seconds() == 10.0
+
 
 class TestBuildBM25Index:
     """Testes para a construção do índice BM25 a partir do Qdrant."""
@@ -214,9 +231,10 @@ class TestBuildBM25Index:
         results = retriever._bm25_search("feriados calendário")
         assert results and results[0][0] == "id-1"
 
-    def test_scroll_com_falha_nao_derruba(self, retriever, mock_qdrant):
+    def test_scroll_com_falha_expoe_indisponibilidade(self, retriever, mock_qdrant):
         mock_qdrant.scroll.side_effect = RuntimeError("Qdrant fora do ar")
-        retriever.build_bm25_index()
+        with pytest.raises(RuntimeError, match="Qdrant fora do ar"):
+            retriever.build_bm25_index()
         assert retriever._bm25_index is None
 
     def test_colecao_vazia_nao_cria_indice(self, retriever, mock_qdrant):

@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 def get_chat_model(
     provider: str | None = None,
     model_name: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
 ) -> BaseChatModel:
     """Retorna um modelo de chat conforme o provider configurado.
 
@@ -39,7 +41,7 @@ def get_chat_model(
         return FakeChatModel()
 
     if provider == "opencode-go":
-        return _build_opencode_go(model_name)
+        return _build_opencode_go(model_name, temperature, max_tokens)
 
     if provider == "gemini":
         return _build_gemini_stub(model_name)
@@ -48,7 +50,11 @@ def get_chat_model(
     raise ValueError(msg)
 
 
-def _build_opencode_go(model_name: str | None = None) -> BaseChatModel:
+def _build_opencode_go(
+    model_name: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+) -> BaseChatModel:
     """Constrói ChatOpenAI apontando para endpoint OpenCode Go."""
     from langchain_openai import ChatOpenAI
 
@@ -56,8 +62,12 @@ def _build_opencode_go(model_name: str | None = None) -> BaseChatModel:
         model=model_name or os.getenv("USIEDU_ROUTER_MODEL", "deepseek-v4-flash"),
         base_url=os.getenv("OPENCODE_GO_BASE_URL", "https://opencode.ai/zen/go/v1"),
         api_key=os.getenv("OPENCODE_GO_API_KEY", ""),
+        max_retries=0,
         # Console Go/OpenCode Go exige temperature=1 para alguns modelos
-        temperature=1.0,
+        temperature=1.0 if temperature is None else temperature,
+        max_tokens=max_tokens,
+        stream_usage=True,
+        timeout=float(os.getenv("USIEDU_LLM_TIMEOUT_SECONDS", "120")),
     )
 
 

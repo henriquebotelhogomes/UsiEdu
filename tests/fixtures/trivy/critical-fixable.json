@@ -1,0 +1,18 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "usiedu-api",
+  "Results": [
+    {
+      "Target": "python",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-TEST-CRITICAL",
+          "PkgName": "demo-package",
+          "InstalledVersion": "1.0.0",
+          "FixedVersion": "2.0.0",
+          "Severity": "CRITICAL"
+        }
+      ]
+    }
+  ]
+}

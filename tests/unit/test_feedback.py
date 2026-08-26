@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import uuid
+from datetime import UTC, datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -88,6 +89,14 @@ class TestFeedback:
 
 class TestFeedbackRecent:
     """Testes do GET /feedback/recent (T8.2 — página /insights)."""
+
+    def test_recent_serializa_timestamp_do_postgres_em_iso_8601(self) -> None:
+        """TIMESTAMPTZ do PostgreSQL precisa respeitar o contrato de string da API."""
+        from src.api.feedback import _serializar_created_at
+
+        created_at = datetime(2026, 8, 11, 13, 12, 30, tzinfo=UTC)
+
+        assert _serializar_created_at(created_at) == "2026-08-11T13:12:30+00:00"
 
     def test_recent_sem_token_retorna_401(self, client: TestClient) -> None:
         """Recent sem autenticação deve retornar 401."""

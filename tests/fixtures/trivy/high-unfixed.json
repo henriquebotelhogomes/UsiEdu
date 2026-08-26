@@ -1,0 +1,18 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "usiedu-api",
+  "Results": [
+    {
+      "Target": "python",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-TEST-UNFIXED",
+          "PkgName": "demo-package",
+          "InstalledVersion": "1.0.0",
+          "FixedVersion": "",
+          "Severity": "HIGH"
+        }
+      ]
+    }
+  ]
+}

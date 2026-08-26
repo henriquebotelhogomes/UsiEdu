@@ -67,7 +67,13 @@ def _extrair_resposta(result: dict) -> str:
     return last.content if isinstance(last.content, str) else str(last.content)
 
 
-def _carregar_grafo():
+def _carregar_grafo(
+    router_model: str | None = None,
+    agent_model: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+    qdrant_url: str | None = None,
+):
     """Carrega o grafo com LLM fake (offline) ou real + RAG conforme env."""
     from src.llm.fake import FakeChatModel
     from src.orchestration.graph import create_chat_graph
@@ -77,9 +83,15 @@ def _carregar_grafo():
         from src.llm.provider import get_chat_model
 
         router_llm = get_chat_model(
-            model_name=os.getenv("USIEDU_ROUTER_MODEL", "deepseek-v4-flash")
+            model_name=router_model or os.getenv("USIEDU_ROUTER_MODEL", "deepseek-v4-flash"),
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
-        agent_llm = get_chat_model(model_name=os.getenv("USIEDU_AGENT_MODEL", "deepseek-v4-flash"))
+        agent_llm = get_chat_model(
+            model_name=agent_model or os.getenv("USIEDU_AGENT_MODEL", "deepseek-v4-flash"),
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
 
         # Cria retriever RAG conectado ao Qdrant
         from qdrant_client import QdrantClient
@@ -87,7 +99,7 @@ def _carregar_grafo():
         from src.rag.embedder import Embedder
         from src.rag.retriever import HybridRetriever
 
-        qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
+        qdrant_url = qdrant_url or os.getenv("QDRANT_URL", "http://localhost:6333")
         embedder = Embedder()
         retriever = HybridRetriever(
             client=QdrantClient(qdrant_url),

@@ -1,0 +1,136 @@
+name: Roll back Azure candidate
+
+"on":
+  workflow_dispatch:
+    inputs:
+      api_digest:
+        description: Immutable digest of the previously validated API image
+        required: true
+        type: string
+        default: sha256:60330163618ba489df7758e12fe48c8bc03d66d05c0b4f907fed22cdbb3c0836
+      frontend_digest:
+        description: Immutable digest of the previously validated frontend image
+        required: true
+        type: string
+        default: sha256:10bcc0e316848fc4567aa7286152c7b2be2d894acd4894be05f903ed48d18498
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    env:
+      ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      API_APP: ${{ vars.AZURE_API_APP }}
+      FRONTEND_APP: ${{ vars.AZURE_FRONTEND_APP }}
+      API_DIGEST: ${{ inputs.api_digest }}
+      FRONTEND_DIGEST: ${{ inputs.frontend_digest }}
+    steps:
+      - name: Checkout approved runbook
+        uses: actions/checkout@v4
+
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts
+
+      - name: Login to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate preserved rollback digests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for digest in "$API_DIGEST" "$FRONTEND_DIGEST"; do
+            if [[ ! "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+              echo "Rollback requires an immutable sha256 digest." >&2
+              exit 1
+            fi
+          done
+          az acr manifest show-metadata --registry "$ACR_NAME" \
+            --name "usiedu-api@$API_DIGEST" --query digest -o tsv >/dev/null
+          az acr manifest show-metadata --registry "$ACR_NAME" \
+            --name "usiedu-frontend@$FRONTEND_DIGEST" --query digest -o tsv >/dev/null
+          echo "API_ROLLBACK_REF=${ACR_NAME}.azurecr.io/usiedu-api@${API_DIGEST}" >> "$GITHUB_ENV"
+          echo "FRONTEND_ROLLBACK_REF=${ACR_NAME}.azurecr.io/usiedu-frontend@${FRONTEND_DIGEST}" \
+            >> "$GITHUB_ENV"
+
+      - name: Capture rollback baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          az containerapp show --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
+            --query properties.template.containers[0].image -o tsv \
+            > artifacts/previous-api-image.txt
+          az containerapp show --resource-group "$RESOURCE_GROUP" --name "$FRONTEND_APP" \
+            --query properties.template.containers[0].image -o tsv \
+            > artifacts/previous-frontend-image.txt
+          az containerapp revision list --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
+            > artifacts/previous-api-revisions.json
+          az containerapp revision list --resource-group "$RESOURCE_GROUP" --name "$FRONTEND_APP" \
+            > artifacts/previous-frontend-revisions.json
+
+      - name: Deploy preserved rollback digests
+        shell: bash
+        run: |
+          set -euo pipefail
+          az containerapp update --resource-group "$RESOURCE_GROUP" --name "$API_APP" \
+            --image "$API_ROLLBACK_REF" --output none
+          az containerapp update --resource-group "$RESOURCE_GROUP" --name "$FRONTEND_APP" \
+            --image "$FRONTEND_ROLLBACK_REF" --output none
+
+      - name: Smoke test public health
+        shell: bash
+        run: |
+          set -euo pipefail
+          FRONTEND_FQDN=$(az containerapp show --resource-group "$RESOURCE_GROUP" \
+            --name "$FRONTEND_APP" --query properties.configuration.ingress.fqdn -o tsv)
+          echo "FRONTEND_BASE_URL=https://$FRONTEND_FQDN" >> "$GITHUB_ENV"
+          curl --fail --silent --show-error --retry 12 --retry-delay 10 \
+            "https://$FRONTEND_FQDN/health" > artifacts/health.json
+
+      - name: Run authenticated public smoke
+        run: >
+          python -m src.delivery.rollback_smoke
+          --base-url "$FRONTEND_BASE_URL"
+          --output artifacts/authenticated-smoke.json
+
+      - name: Write rollback evidence
+        if: always()
+        shell: bash
+        run: |
+          jq -n \
+            --arg github_sha "$GITHUB_SHA" \
+            --arg workflow_run "$GITHUB_RUN_ID" \
+            --arg previous_api_ref "$(cat artifacts/previous-api-image.txt 2>/dev/null || true)" \
+            --arg previous_frontend_ref "$(cat artifacts/previous-frontend-image.txt 2>/dev/null || true)" \
+            --arg rollback_api_ref "${API_ROLLBACK_REF:-}" \
+            --arg rollback_frontend_ref "${FRONTEND_ROLLBACK_REF:-}" \
+            '{
+              schema_version: "1.0.0",
+              github_sha: $github_sha,
+              workflow_run: $workflow_run,
+              previous_api_ref: $previous_api_ref,
+              previous_frontend_ref: $previous_frontend_ref,
+              rollback_api_ref: $rollback_api_ref,
+              rollback_frontend_ref: $rollback_frontend_ref
+            }' > artifacts/rollback-evidence.json
+
+      - name: Upload rollback evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-rollback-evidence
+          path: artifacts/
+          if-no-files-found: error

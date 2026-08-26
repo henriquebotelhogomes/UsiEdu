@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "policy_id": "image-promotion-v1",
+  "scanner": "trivy",
+  "blocking_severities": [
+    "CRITICAL",
+    "HIGH"
+  ],
+  "only_when_fix_available": true,
+  "exception_max_days": 30,
+  "exceptions": []
+}
