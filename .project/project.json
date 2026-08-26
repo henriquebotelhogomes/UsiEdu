@@ -1,0 +1,19 @@
+{
+  "name": "usiedu",
+  "version": "4.0.0",
+  "description": "Plataforma de Suporte Universitário Multi-Agente com LangGraph, LangChain e RAG Híbrido",
+  "author": "UsiEdu Core AI Squad",
+  "license": "MIT",
+  "stack": {
+    "orchestration": "LangGraph / LangChain",
+    "retrieval": "Qdrant + BM25 + Reciprocal Rank Fusion + Cross-Encoder Reranker",
+    "backend": "FastAPI (Python 3.12)",
+    "frontend": "React / Vite / TypeScript",
+    "observability": "LangSmith + RAGAS",
+    "cloud": "Azure Container Apps + Azure Files + GitHub Container Registry"
+  },
+  "environments": {
+    "production": "https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io",
+    "api_production": "https://usiedu-api.calmtree-d18b7257.brazilsouth.azurecontainerapps.io"
+  }
+}
