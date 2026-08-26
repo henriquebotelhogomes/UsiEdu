@@ -77,38 +77,49 @@ def ensure_collections(client, dimension: int) -> None:
             logger.info("Coleção '%s' já existe.", collection_name)
 
 
-def pick_collection(publico_alvo: str, settings: RagSettings) -> str:
-    """Seleciona a coleção correta com base no público-alvo do documento."""
+def pick_collections(publico_alvo: str, settings: RagSettings) -> list[str]:
+    """Seleciona as coleções com base no público-alvo do documento."""
+    if publico_alvo == "all":
+        return [settings.qdrant_collection_academico, settings.qdrant_collection_institucional]
     if publico_alvo == "staff":
-        return settings.qdrant_collection_institucional
-    return settings.qdrant_collection_academico
+        return [settings.qdrant_collection_institucional]
+    return [settings.qdrant_collection_academico]
+
+
+def pick_collection(publico_alvo: str, settings: RagSettings) -> str:
+    """Seleciona a coleção principal com base no público-alvo do documento."""
+    return pick_collections(publico_alvo, settings)[0]
 
 
 def documento_indexado_no_qdrant(client, doc_entry: dict, settings: RagSettings) -> bool:
     """Confirma que o documento do manifest realmente existe na coleção remota."""
     from qdrant_client.models import FieldCondition, Filter, MatchValue
 
-    collection_name = pick_collection(doc_entry["publico_alvo"], settings)
-    try:
-        result = client.count(
-            collection_name=collection_name,
-            count_filter=Filter(
-                must=[
-                    FieldCondition(
-                        key="documento",
-                        match=MatchValue(value=doc_entry["name"]),
-                    )
-                ]
-            ),
-            exact=True,
-        )
-    except Exception:
-        logger.warning(
-            "Não foi possível confirmar o documento '%s' no Qdrant; reindexando.",
-            doc_entry["name"],
-        )
-        return False
-    return result.count > 0
+    collections = pick_collections(doc_entry.get("publico_alvo", "student"), settings)
+    for collection_name in collections:
+        try:
+            result = client.count(
+                collection_name=collection_name,
+                count_filter=Filter(
+                    must=[
+                        FieldCondition(
+                            key="documento",
+                            match=MatchValue(value=doc_entry["name"]),
+                        )
+                    ]
+                ),
+                exact=True,
+            )
+            if result.count == 0:
+                return False
+        except Exception:
+            logger.warning(
+                "Não foi possível confirmar o documento '%s' em '%s'; reindexando.",
+                doc_entry["name"],
+                collection_name,
+            )
+            return False
+    return True
 
 
 def upload_chunks(
@@ -218,10 +229,13 @@ def ingest_document(
     vectors = embedder.embed(texts)
     logger.info("  %d embeddings calculados.", len(vectors))
 
-    # 3. Upload para Qdrant
-    collection_name = pick_collection(doc_entry["publico_alvo"], settings)
-    uploaded = upload_chunks(client, collection_name, chunks, vectors)
-    logger.info("  %d pontos enviados para '%s'.", uploaded, collection_name)
+    # 3. Upload para Qdrant em todas as coleções do documento
+    collections = pick_collections(doc_entry["publico_alvo"], settings)
+    uploaded = 0
+    for col_name in collections:
+        up = upload_chunks(client, col_name, chunks, vectors)
+        uploaded += up
+        logger.info("  %d pontos enviados para '%s'.", up, col_name)
 
     # 4. Atualiza entrada do manifest
     doc_entry["checksum"] = current_checksum

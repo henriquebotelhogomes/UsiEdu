@@ -63,8 +63,6 @@ def build_run_config(current_user: dict, session_id: str, run_id: uuid.UUID) -> 
         "run_id": run_id,
         "metadata": {
             "message_id": str(run_id),
-            "session_id": session_id,
-            "user_email": current_user["email"],
         },
         "configurable": {
             "thread_id": session_id,
