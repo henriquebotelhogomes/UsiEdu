@@ -1,180 +1,235 @@
-# UsiEdu — Plataforma Multi-Agente de IA Universitária
+<div align="center">
 
-> Plataforma multi-agente de IA conversacional para a jornada acadêmica e administrativa de estudantes e colaboradores universitários.
-> 
-> **Padrão Enterprise / Startup Global (Série B / Scale-up)**
+# 🎓 UsiEdu — Enterprise Multi-Agent AI Platform
 
-[![CI](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
-[![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange)](https://github.com/langchain-ai/langgraph)
-[![LangChain](https://img.shields.io/badge/Framework-LangChain-green)](https://github.com/langchain-ai/langchain)
-[![Tests](https://img.shields.io/badge/Tests-319%20passed-brightgreen)](https://github.com/henriquebotelhogomes/UsiEdu)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+### Plataforma Multi-Agente Universitária com LangGraph, RAG Híbrido, Function Calling & Human-in-the-Loop
 
----
+[![CI/CD Quality Gate](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph%20v0.2%2B-orange?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
+[![LangChain](https://img.shields.io/badge/Framework-LangChain%20v0.3%2B-green?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langchain)
+[![Vector DB](https://img.shields.io/badge/Vector%20DB-Qdrant%20Hybrid-red?logo=qdrant&logoColor=white)](https://qdrant.tech/)
+[![Unit Tests](https://img.shields.io/badge/Tests-319%20passed%20(100%25)-brightgreen?logo=pytest&logoColor=white)](https://github.com/henriquebotelhogomes/UsiEdu)
+[![Linter](https://img.shields.io/badge/Linter-Ruff%20(0%20warnings)-000000?logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
+[![Azure Cloud](https://img.shields.io/badge/Cloud-Azure%20Container%20Apps-0078D4?logo=microsoft-azure&logoColor=white)](https://azure.microsoft.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## 🌟 Visão Geral & Diferenciais
+<br/>
 
-O **UsiEdu** resolve o atendimento universitário complexo unindo estudantes e servidores em um ecossistema multi-agente orquestrado por **LangGraph**, com **RAG Híbrido**, **Function Calling Nativo**, **Human-in-the-Loop**, **FinOps** e **Agent Trajectory Harness**:
+[**🌐 Testar Aplicação Online**](https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/) • [**📖 Documentação Técnica (MkDocs)**](https://henriquebotelhogomes.github.io/UsiEdu/) • [**📊 Relatório de Avaliação RAGAS**](src/evaluation/relatorio_ragas.md) • [**🧪 Agent Trajectory Harness**](src/harness/relatorio_harness.md)
 
-- 🧠 **Orquestração Multi-Agente (LangGraph)**: Nó Supervisor com saídas tipadas via `with_structured_output(SupervisorDecision)`, roteamento resiliente para especialistas (*Acadêmico*, *Financeiro*, *Documental*) e consolidação cognitiva via LLM para consultas compostas multitemáticas.
-- 🛠️ **Chamada Nativa de Ferramentas (`@tool` & `bind_tools`)**: Agentes munidos de ferramentas LangChain fortemente tipadas com execução assíncrona orientada pelo modelo (consultas de notas, faltas, boletos e renegociações).
-- 🛡️ **Human-in-the-Loop (HITL)**: Interrupção controlada de nós sensíveis (`interrupt_before`) no StateGraph com suspensão e retomada segura via `POST /chat/resume`.
-- 🔍 **RAG Híbrido com Re-ranker Local**: Combinação de busca vetorial densa (Qdrant + FastEmbed ONNX) com busca léxica esparsa (BM25) via *Reciprocal Rank Fusion* (RRF) e reordenação com Cross-Encoder (`bge-reranker-base`), sem custo de APIs proprietárias para embeddings.
-- 🔒 **FinOps & Segurança em Camadas**:
-  - **Cache Semântico Plugável**: SQLite para desenvolvimento local e Redis para produção (similaridade de cosseno com threshold configurável).
-  - **Poda de Contexto Inteligente (`trim_messages`)**: Controle de janela para evitar desperdício de tokens.
-  - **Sanitização de PII (`mask_pii`)**: Ofuscação de CPFs, cartões e dados sensíveis antes do envio aos agentes e logs.
-  - **Guardrails Multi-Camada**: Interceptação em tempo real de jailbreaks, XSS e prompt injection.
-- 🧪 **Agent Trajectory & Evaluation Harness**: Motor de avaliação de loop e validação de trajetórias (`scripts/run_harness.py` e `scripts/run_ragas.py`), inspirado em *better-harness* e *deepseek-harness*, integrado ao CI/CD.
-- ⚡ **Streaming em Tempo Real**: Endpoint SSE (`POST /chat/stream`) com eventos tipados via `astream_events(v2)`.
-- 💻 **Frontend Rico em React + TypeScript**: Renderização de Markdown rica com blocos de código copiáveis em 1 clique, tabelas estilizadas e gaveta de fontes citadas.
-- ☁️ **Infraestrutura em Nuvem (Azure)**: Azure Container Apps, Bicep IaC, GHCR e persistência de checkpoints e cache.
+</div>
 
 ---
 
-## 🏗️ Arquitetura do Sistema
+## 📌 Sumário Executivo
+
+O **UsiEdu** é uma plataforma conversacional multi-agente de padrão **Série B / Scale-up Enterprise**, desenhada para unificar o ecossistema de atendimento de instituições de ensino superior. 
+
+Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiEdu opera sob um **Grafo de Estados Determinístico (LangGraph)**, combinando múltiplos agentes especialistas, execução nativa de ferramentas (*Function Calling*), aprovação humana no fluxo (*Human-in-the-Loop*), síntese cognitiva paralela e guardrails em camadas com controle de custos (*FinOps*).
+
+---
+
+## ⚡ Diferenciais Arquiteturais: RAG Tradicional vs. UsiEdu
+
+| Dimensão | Chatbot / RAG Tradicional (MVP) | UsiEdu Enterprise Multi-Agent (Scale-up) |
+|---|---|---|
+| **Orquestração** | Cadeia linear única (sem estado granular) | **StateGraph (LangGraph)** com supervisor e checkpointer persistente |
+| **Roteamento** | Parse frágil de strings / Regex | **`with_structured_output`** tipado com Pydantic v2 |
+| **Execução de Ferramentas** | Funções manuais acopladas no prompt | **`@tool` nativo com `bind_tools`** e validação estrita de tipos |
+| **Ações Sensíveis** | Execução automática sem confirmação | **Human-in-the-Loop (HITL)** via `interrupt_before` e `POST /chat/resume` |
+| **Recuperação de Dados** | Busca vetorial densa isolada | **RAG Híbrido** (Qdrant denso + BM25 esparso + RRF + Re-ranker ONNX) |
+| **FinOps & Tokens** | Histórico infinito com estouro de janela | **Semantic Cache (SQLite/Redis)** + **`trim_messages`** por janela de contexto |
+| **Segurança & Compliance** | Sem tratamento de dados pessoais | **PII Masking (`mask_pii`)** + Guardrails anti-prompt injection multi-nível |
+| **Qualidade & CI/CD** | Testes manuais / ad-hoc | **RAGAS Gate** + **Agent Trajectory Harness** bloqueando deploys em regressões |
+
+---
+
+## 🏛️ Topologia e Fluxo de Execução do Grafo Multi-Agente
 
 ```mermaid
 graph TD
-    User([Usuário / Estudante / Staff]) --> Frontend[Frontend React + Vite]
-    Frontend --> API[FastAPI /chat, /stream, /resume]
+    User([Usuário / Estudante / Colaborador]) -->|POST /chat ou /chat/stream| API[FastAPI Gateway]
+    API --> GuardrailsIn[Guardrail de Entrada & PII Masking]
     
-    API --> GuardrailsIn[Guardrails & PII Masking]
-    GuardrailsIn --> Supervisor[Nó Supervisor\nwith_structured_output]
+    GuardrailsIn --> Cache{Semantic Cache Hit?}
+    Cache -->|Sim (Score >= 0.97)| FastResponse[Resposta Imediata Cacheada]
+    Cache -->|Não| Supervisor[Nó Supervisor\nwith_structured_output]
     
-    Supervisor -->|intent == 'academico'| Academico[Agente Acadêmico\nRAG + @tool Notas/Faltas]
-    Supervisor -->|intent == 'financeiro'| Financeiro[Agente Financeiro\nRAG + @tool Boletos/Renegociação]
-    Supervisor -->|intent == 'institucional' & profile == 'staff'| Documental[Agente Documental\nRAG Institucional]
-    Supervisor -->|intent == 'composta'| Parallel[Execução Paralela de Agentes]
+    Supervisor -->|intent == 'academico'| Academico[Agente Acadêmico\nRAG + @tool get_notas/get_faltas]
+    Supervisor -->|intent == 'financeiro'| Financeiro[Agente Financeiro\nRAG + @tool get_boletos/simular_renegociacao]
+    Supervisor -->|intent == 'institucional' & profile == 'staff'| Documental[Agente Documental\nRAG Base Institucional]
+    Supervisor -->|intent == 'composta'| Parallel[Despacho Paralelo de Agentes]
     Supervisor -->|intent == 'fora_de_escopo'| OutOfScope[Nó Fora de Escopo]
     
     Parallel --> Academico
     Parallel --> Financeiro
     Parallel --> Documental
     
+    Financeiro -->|Ação Sensível: Proposta de Dívida| HITL{HITL Interrupt?}
+    HITL -->|interrupt_before| Suspend[Pausa no Grafo - Aguarda POST /chat/resume]
+    Suspend -->|Aprovação Humana| Consolidation
+    
     Academico --> Consolidation[Nó de Consolidação\nSíntese Cognitiva LLM]
     Financeiro --> Consolidation
     Documental --> Consolidation
     
-    Consolidation --> GuardrailsOut[Guardrails de Saída]
-    GuardrailsOut --> Client([Resposta Final com Citações e Badges])
+    Consolidation --> GuardrailsOut[Guardrail de Saída & Content Filter]
+    GuardrailsOut --> SSE[Cliente Web - Streaming SSE / JSON]
 ```
 
 ---
 
-## 💻 Demonstração e Acesso
+## 🔬 Destaques Técnicos da Implementação
 
-- 🌐 **Aplicação em Produção (Azure):** [https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/](https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/)
-- 🔑 **Credenciais Demo:** `ana@demo.usiedu` / `estudante123` *(visíveis na tela de login)*
-- 📖 **Documentação Técnica (MkDocs):** [https://henriquebotelhogomes.github.io/UsiEdu/](https://henriquebotelhogomes.github.io/UsiEdu/)
+### 1. Roteamento Estruturado com Pydantic (`src/orchestration/supervisor.py`)
+```python
+# Elimina fragilidades de parsing de JSON cru com Structured Output nativo
+decision = await router_model.with_structured_output(SupervisorDecision).ainvoke(prompt)
+```
+
+### 2. Function Calling e Binding Nativo (`src/tools/` & `src/agents/`)
+```python
+@tool
+def get_notas(aluno_id: str) -> dict:
+    """Consulta o histórico de notas e médias semestrais do estudante."""
+    return db.query_grades(aluno_id)
+
+agent_model = model.bind_tools([get_notas, get_faltas])
+```
+
+### 3. Human-in-the-Loop Interrupts (`src/orchestration/graph.py`)
+```python
+# Pausa a execução do grafo antes de executar nós críticos
+graph = builder.compile(
+    checkpointer=checkpointer,
+    interrupt_before=["financeiro_confirmacao", "consolidation"],
+)
+```
+
+### 4. RAG Híbrido com RRF e Cross-Encoder Re-ranker (`src/rag/`)
+- **Qdrant Vector DB:** Busca semântica densa local com FastEmbed ONNX (`all-MiniLM-L6-v2`).
+- **BM25 Lexical Search:** Indexação esparsa para palavras-chave e termos regulatórios.
+- **Reciprocal Rank Fusion (RRF):** Fusão balanceada dos rankings esparso e denso.
+- **Cross-Encoder Re-ranking:** Reclassificação com `BAAI/bge-reranker-base` para máxima precisão.
 
 ---
 
-## 🧰 Stack Tecnológica
+## 🧰 Stack Tecnológica Completa
 
-| Camada | Tecnologias |
+| Camada | Tecnologias Utilizadas |
 |---|---|
-| **Orquestração Multi-Agente** | LangGraph, LangChain, MemorySaver, SQLite/PostgreSQL Checkpointers |
-| **Recuperação & RAG** | Qdrant, BM25, Reciprocal Rank Fusion (RRF), Cross-Encoder Re-ranker (bge-reranker-base) |
-| **Backend & Streaming** | FastAPI, Python 3.12+, Server-Sent Events (SSE), Pydantic v2, SlowAPI |
-| **Modelos (LLMs)** | OpenCode Go (DeepSeek V4 Flash, Kimi K2.7 Code) e FakeChatModel para testes |
-| **Segurança & FinOps** | Semantic Cache (SQLite/Redis), PII Masking, Multi-layer Guardrails, `trim_messages` |
-| **Avaliação & Harness** | Agent Trajectory Harness, RAGAS (LLM-as-a-Judge), LangSmith Tracing |
-| **Frontend** | React 18, Vite, TypeScript, Rich Markdown, Vitest |
-| **Infraestrutura & CI/CD** | Azure Container Apps, Bicep IaC, Docker, GitHub Actions, Scale-to-Zero |
+| **Orquestração Multi-Agente** | **LangGraph v0.2+**, **LangChain v0.3+**, `StateGraph`, `MemorySaver`, Checkpointers SQLite/PostgreSQL |
+| **Recuperação & RAG** | **Qdrant**, BM25, Reciprocal Rank Fusion (RRF), Cross-Encoder Re-ranker (`bge-reranker-base`) |
+| **Backend & APIs** | **FastAPI**, Python 3.12+, Server-Sent Events (SSE via `astream_events`), Pydantic v2, SlowAPI |
+| **Modelos de Linguagem (LLMs)** | OpenCode Go (**DeepSeek V4 Flash**, **Kimi K2.7 Code**) + `FakeChatModel` para testes |
+| **Segurança & FinOps** | Semantic Cache (SQLite/Redis), PII Masking (`mask_pii`), Guardrails Anti-Injection, `trim_messages` |
+| **Avaliação & Harness** | **Agent Trajectory Harness**, Framework **RAGAS** (LLM-as-a-Judge), **LangSmith Tracing** |
+| **Frontend & UI/UX** | **React 18**, **Vite**, **TypeScript**, Rich Markdown com botão de cópia de código, Vitest |
+| **Infraestrutura em Nuvem** | **Azure Container Apps**, **Bicep (IaC)**, Azure Files, GitHub Container Registry (GHCR) |
 
 ---
 
-## 📋 Endpoints da API REST
+## 📋 Contratos da API REST
 
 | Método | Rota | Autenticação | Descrição |
 |---|---|:---:|---|
-| `POST` | `/auth/login` | Não | Autentica usuário e emite JWT com RBAC (`student` / `staff`) |
-| `POST` | `/chat` | Sim | Processa consulta no grafo com resposta JSON estruturada |
-| `POST` | `/chat/stream` | Sim | Streaming SSE token a token em tempo real (`astream_events`) |
-| `POST` | `/chat/resume` | Sim | Retoma thread pausada por Human-in-the-Loop (aprovação humana) |
-| `GET` | `/chat/history` | Sim | Retorna histórico de mensagens persistidas da thread |
-| `POST` | `/feedback` | Sim | Registra feedback 👍/👎 vinculado ao `run_id` no LangSmith |
-| `GET` | `/feedback/stats` | Sim | Retorna métricas de satisfação e taxa de aprovação |
-| `GET` | `/health` | Não | Liveness e readiness check com estatísticas de cache |
+| `POST` | `/auth/login` | Não | Autentica usuário e emite token JWT com RBAC (`student` ou `staff`) |
+| `POST` | `/chat` | Sim | Envio síncrono com execução do grafo de agentes e retorno JSON estruturado |
+| `POST` | `/chat/stream` | Sim | Streaming SSE token a token em tempo real (`astream_events(v2)`) |
+| `POST` | `/chat/resume` | Sim | Retoma execução de uma thread pausada por Human-in-the-Loop (HITL) |
+| `GET` | `/chat/history` | Sim | Recupera o histórico de mensagens persistido no checkpointer da sessão |
+| `POST` | `/feedback` | Sim | Registra feedback 👍/👎 com comentário vinculado ao `run_id` no LangSmith |
+| `GET` | `/feedback/stats` | Sim | Retorna métricas de satisfação agregadas |
+| `GET` | `/health` | Não | Liveness e readiness check com estatísticas de cache e banco |
 
 ---
 
-## 🚀 Quickstart & Desenvolvimento Local
+## 🚀 Guia de Instalação e Execução Local
 
 ### 1. Pré-requisitos
-- Python 3.12+
-- Node.js 20+
-- Docker e Docker Compose
+- **Python 3.12+**
+- **Node.js 20+**
+- **Docker Desktop** (em execução para o Qdrant)
 
-### 2. Instalação e Configuração
+### 2. Configuração do Backend
 
-```bash
-# 1. Clonar o repositório
+```powershell
+# 1. Clone o repositório
 git clone https://github.com/henriquebotelhogomes/UsiEdu.git
 cd UsiEdu
 
-# 2. Criar e ativar o ambiente virtual
-python -m venv .venv
-source .venv/bin/activate        # Linux / macOS
-.venv\Scripts\activate           # Windows
+# 2. Ative o ambiente virtual
+.venv\Scripts\Activate.ps1    # Windows PowerShell
+source .venv/bin/activate     # Linux / macOS
 
-# 3. Instalar dependências em modo de desenvolvimento
+# 3. Instale as dependências
 pip install -e ".[dev]"
 
-# 4. Configurar variáveis de ambiente
+# 4. Configure o arquivo .env
 cp .env.example .env
 
-# 5. Subir o Vector Database (Qdrant)
+# 5. Suba o Vector Database (Qdrant)
 docker compose up -d qdrant
 
-# 6. Ingerir documentos na base de conhecimento
+# 6. Ingestão dos documentos no Qdrant
 python -m src.rag.ingest
-```
 
-### 3. Comandos Essenciais
+# 7. Inicie o servidor FastAPI
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+- **API Swagger / OpenAPI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### 3. Configuração do Frontend
+
+Em outro terminal:
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+- **Acesse a interface web:** [http://localhost:5173](http://localhost:5173)
+
+### 🔑 Credenciais para Demonstração Local:
+
+| Perfil | E-mail | Senha | Acesso / Permissões |
+|---|---|---|---|
+| **Estudante** | `ana@demo.usiedu` | `estudante123` | Agentes Acadêmico e Financeiro (Notas, Faltas, Boletos) |
+| **Servidor / Staff** | `carlos@demo.usiedu` | `staff123` | Agentes Acadêmico, Financeiro e Documental/Institucional |
+
+---
+
+## 🧪 Qualidade Contínua e Quality Gates (CI/CD)
+
+O repositório possui uma pipeline automatizada no GitHub Actions ([.github/workflows/quality_gate.yml](.github/workflows/quality_gate.yml)) executando 4 Quality Gates obrigatórios antes de qualquer deploy:
 
 ```bash
-# Executar a suíte completa de testes unitários (319 testes)
-pytest tests/unit/
-
-# Executar verificação de estilo e lint
+# 1. Verificação de Linter e Estilo (Ruff)
 ruff check src/ tests/ scripts/
 
-# Executar o Agent Trajectory Harness (CI Quality Gate)
-python scripts/run_harness.py --suite all --ci-gate
+# 2. Suíte de Testes Unitários Automatizados (319 testes - 100% aprovados)
+pytest tests/unit/
 
-# Executar a avaliação RAGAS (LLM-as-a-Judge)
+# 3. Quality Gate de Qualidade RAG (RAGAS LLM-as-a-Judge)
 python scripts/run_ragas.py --ci-gate --min-score 0.80
 
-# Iniciar ambiente integrado local (API + Frontend)
-powershell -ExecutionPolicy Bypass -File scripts/dev.ps1   # Windows
-make dev                                                  # Linux / macOS
+# 4. Agent Loop & Trajectory Evaluation Gate (Agent Harness)
+python scripts/run_harness.py --suite all --ci-gate --min-pass-rate 0.90
 ```
 
 ---
 
-## 🧪 Qualidade, CI/CD e Governança
-
-O repositório possui uma pipeline automatizada no GitHub Actions ([.github/workflows/quality_gate.yml](.github/workflows/quality_gate.yml)) executando 4 barreiras obrigatórias:
-1. **Linter & Style:** `ruff check src/ tests/ scripts/` (0 erros permitidos).
-2. **Testes Unitários:** `pytest tests/unit/` (>315 testes automatizados com cobertura).
-3. **RAG Quality Gate:** `python scripts/run_ragas.py --ci-gate --min-score 0.80` (avaliação de fidelidade e relevância).
-4. **Multi-Agent Trajectory Gate:** `python scripts/run_harness.py --suite all --ci-gate --min-pass-rate 0.90` (validação de intenções, ferramentas `@tool` chamadas e guardrails).
-
----
-
-## 👤 Autor
+## 👤 Autor & Contato
 
 **Henrique Botelho Gomes**  
 Engenheiro de IA & Especialista em Sistemas Multi-Agente  
-- [LinkedIn](https://www.linkedin.com/in/henriquebotelhogomes/)
-- [GitHub](https://github.com/henriquebotelhogomes)
-- [Documentação Oficial](https://henriquebotelhogomes.github.io/UsiEdu/)
+
+- 💼 **LinkedIn:** [linkedin.com/in/henriquebotelhogomes](https://www.linkedin.com/in/henriquebotelhogomes/)  
+- 🐙 **GitHub:** [github.com/henriquebotelhogomes](https://github.com/henriquebotelhogomes)  
+- 📚 **Documentação Completa (MkDocs):** [henriquebotelhogomes.github.io/UsiEdu](https://henriquebotelhogomes.github.io/UsiEdu/)  
 
 ---
 
 ## 📄 Licença
 
-Este projeto está sob a licença [MIT](LICENSE).
+Distribuído sob a licença **MIT**. Consulte [LICENSE](LICENSE) para mais detalhes.
