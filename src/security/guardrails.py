@@ -1,19 +1,18 @@
-"""Guardrails contra prompt injection (T9.3).
+"""Guardrails contra prompt injection e proteção de dados PII (T9.3 / PRD v4).
 
-Três camadas de defesa, todas com heurísticas determinísticas (regex) e
-**testáveis sem LLM**:
+Três camadas de defesa com heurísticas determinísticas (regex) e
+sanitização de dados pessoais (PII Masking):
 
 1. **Ingestão:** cada chunk passa por :func:`detect_injection`; chunks
    sinalizados ganham ``suspicious=true`` e são **excluídos do índice**
    com log de auditoria (integrado em ``src/rag/ingest.py``).
-2. **Entrada do usuário:** o mesmo detector roda na pergunta; se sinalizada,
-   o trace recebe ``flagged=true`` — a pergunta NÃO é bloqueada (risco de
-   falso positivo), apenas observada.
+2. **Entrada do usuário:** :func:`mask_pii` sanitiza CPF, cartões e telefones
+   para evitar vazamento em logs e vetores; o detector de injeção monitora
+   comportamentos suspeitos no trace.
 3. **Saída:** :func:`validate_answer` verifica se a resposta final ecoa o
    prompt de sistema, ecoa instruções de jailbreak ou tenta alterar o
    comportamento do usuário ("a partir de agora..."). Se insegura, é
-   substituída por :data:`RESPOSTA_SEGURA_PADRAO` e o evento
-   ``guardrail_triggered`` é registrado (log JSON + LangSmith best-effort).
+   substituída por :data:`RESPOSTA_SEGURA_PADRAO`.
 """
 
 from __future__ import annotations
@@ -24,6 +23,44 @@ import uuid
 from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
+
+# --- PII (Personally Identifiable Information) Patterns (RF4-03) ---
+
+PADROES_PII: dict[str, tuple[re.Pattern[str], str]] = {
+    "cpf": (
+        re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b"),
+        "[CPF_PROTEGIDO]",
+    ),
+    "cartao_credito": (
+        re.compile(r"\b(?:\d{4}[-\s]?){3}\d{4}\b"),
+        "[CARTAO_PROTEGIDO]",
+    ),
+    "telefone": (
+        re.compile(r"\b(?:\+?55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\s?\d{4}|\d{4})[-\s]?\d{4}\b"),
+        "[TELEFONE_PROTEGIDO]",
+    ),
+}
+
+
+def mask_pii(text: str) -> tuple[str, list[str]]:
+    """Identifica e ofusca dados pessoais sensíveis (PII) do texto.
+
+    Args:
+        text: Texto de entrada.
+
+    Returns:
+        Tupla contendo o texto sanitizado e a lista de tipos de PII encontrados.
+    """
+    detected_types: list[str] = []
+    sanitized_text = text
+
+    for pii_type, (pattern, replacement) in PADROES_PII.items():
+        if pattern.search(sanitized_text):
+            detected_types.append(pii_type)
+            sanitized_text = pattern.sub(replacement, sanitized_text)
+
+    return sanitized_text, detected_types
+
 
 # --- Camadas 1 e 2: padrões de injeção (ingestão + entrada do usuário) ---
 
@@ -74,11 +111,7 @@ def detect_injection(text: str) -> list[str]:
 
 
 def separar_chunks_suspeitos(chunks: list) -> tuple[list, list]:
-    """Divide chunks em (limpos, suspeitos) — camada de ingestão (T9.3).
-
-    Chunks suspeitos devem receber ``metadata["suspicious"] = True`` e ser
-    excluídos do índice, com log de auditoria no chamador.
-    """
+    """Divide chunks em (limpos, suspeitos) — camada de ingestão (T9.3)."""
     limpos, suspeitos = [], []
     for chunk in chunks:
         if detect_injection(chunk.text):
@@ -89,10 +122,7 @@ def separar_chunks_suspeitos(chunks: list) -> tuple[list, list]:
 
 
 def _fragmentos_prompt_sistema() -> list[str]:
-    """Trechos distintivos dos prompts de sistema (eco na resposta = vazamento).
-
-    Derivados dos prompts reais na importação para não dessincronizar.
-    """
+    """Trechos distintivos dos prompts de sistema (eco na resposta = vazamento)."""
     from src.agents.prompts.academico import ACADEMICO_SYSTEM_PROMPT
     from src.agents.prompts.documental import DOCUMENTAL_SYSTEM_PROMPT
     from src.agents.prompts.financeiro import FINANCEIRO_SYSTEM_PROMPT
@@ -124,12 +154,7 @@ class GuardrailResult:
 
 
 def validate_answer(answer: str) -> GuardrailResult:
-    """Valida a resposta final antes de entregá-la ao usuário.
-
-    Insegura quando: ecoa trecho do prompt de sistema, ecoa instruções de
-    injeção/jailbreak, ou tenta alterar o comportamento ("a partir de
-    agora..."). Nunca bloqueia respostas limpas.
-    """
+    """Valida a resposta final antes de entregá-la ao usuário."""
     reasons: list[str] = []
     lower = answer.lower()
 
@@ -149,11 +174,7 @@ def validate_answer(answer: str) -> GuardrailResult:
 
 
 def registrar_guardrail_langsmith(run_id: uuid.UUID, reasons: list[str]) -> None:
-    """Registra ``guardrail_triggered`` no LangSmith (melhor esforço).
-
-    Espelha o padrão de ``feedback.py``: falha do LangSmith nunca afeta a
-    resposta ao usuário — o log JSON já contém o evento.
-    """
+    """Registra ``guardrail_triggered`` no LangSmith (melhor esforço)."""
     try:
         from langsmith import Client
 
@@ -163,11 +184,11 @@ def registrar_guardrail_langsmith(run_id: uuid.UUID, reasons: list[str]) -> None
             score=0.0,
             comment=", ".join(reasons),
         )
-    except Exception:  # noqa: BLE001 — LangSmith é observabilidade, não bloqueio
+    except Exception:  # noqa: BLE001
         logger.debug("LangSmith indisponível; guardrail registrado apenas no log JSON.")
 
 
-def log_guardrail(run_id: uuid.UUID, reasons: list[str], origem: str, **extra) -> None:
+def log_guardrail(run_id: uuid.UUID, reasons: list[str], origem: str, **extra: object) -> None:
     """Evento estruturado ``guardrail_triggered`` no log JSON (T9.3)."""
     logger.warning(
         "Guardrail triggered",

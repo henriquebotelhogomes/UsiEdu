@@ -35,6 +35,14 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000, description="Mensagem do usuário")
 
 
+class ResumeRequest(BaseModel):
+    """Payload para aprovação / retomada de execução de uma sessão pausada (RF4-01 / RF4-02)."""
+
+    session_id: str = Field(..., description="ID da sessão com execução pausada")
+    approved: bool = Field(True, description="True para aprovar a ação; False para rejeitar")
+    user_input: str | None = Field(default=None, description="Instrução adicional opcional")
+
+
 class ChatResponse(BaseModel):
     """Resposta do chat."""
 

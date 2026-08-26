@@ -66,12 +66,15 @@ def test_azure_bicep_declares_public_stack_and_ingest_job() -> None:
         assert f"resource {resource_name}" in content
 
 
-def test_azure_deploy_expands_acr_credentials_in_powershell() -> None:
-    """O script deve expandir as propriedades das credenciais antes do deploy."""
+def test_azure_deploy_supports_ghcr_images() -> None:
+    """O script de deploy publica as imagens para o GHCR com usuário GitHub configurável."""
     script = Path("infra/azure/deploy.ps1").read_text(encoding="utf-8")
 
-    assert "registryUsername=$($registryCredentials.username)" in script
-    assert "registryPassword=$($registryCredentials.password)" in script
+    assert "$apiImage = \"ghcr.io/$($GitHubUser.ToLower())/usiedu-api:$ImageTag\"" in script
+    expected_frontend = (
+        "$frontendImage = \"ghcr.io/$($GitHubUser.ToLower())/usiedu-frontend:$ImageTag\""
+    )
+    assert expected_frontend in script
 
 
 def test_azure_deploy_does_not_report_success_after_arm_failure() -> None:
@@ -137,10 +140,13 @@ def test_api_image_declares_jwt_library_used_by_authentication() -> None:
     assert '"PyJWT>=' in pyproject
 
 
-def test_azure_deploy_declares_postgres_url_for_persistent_state() -> None:
-    """O piloto em nuvem usa PostgreSQL, não SQLite sobre Azure Files."""
+def test_azure_deploy_declares_sqlite_on_azure_files() -> None:
+    """O piloto em nuvem usa SQLite em Azure Files, eliminando custos de Postgres."""
     content = Path("infra/azure/main.bicep").read_text(encoding="utf-8")
 
-    assert "resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers" in content
-    assert "name: 'USIEDU_DATABASE_URL'" in content
-    assert "name: 'USIEDU_CHECKPOINTER_DB'" not in content
+    assert "resource postgresServer" not in content
+    assert "name: 'USIEDU_DATABASE_URL'" not in content
+    assert "name: 'USIEDU_FEEDBACK_DB'" in content
+    assert "name: 'USIEDU_CACHE_DB'" in content
+    assert "name: 'api-data'" in content
+

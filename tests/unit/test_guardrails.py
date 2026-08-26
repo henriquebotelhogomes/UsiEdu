@@ -297,3 +297,32 @@ class TestRegistroLangSmith:
         assert chamadas[0]["run_id"] == run_id
         assert chamadas[0]["key"] == "guardrail_triggered"
         assert chamadas[0]["comment"] == "eco_prompt_sistema"
+
+
+class TestMaskPII:
+    """Testes de identificação e ofuscação de PII (RF4-03)."""
+
+    def test_mascaramento_cpf(self) -> None:
+        from src.security.guardrails import mask_pii
+
+        texto = "Meu CPF é 123.456.789-00 para consulta."
+        sanitizado, detectados = mask_pii(texto)
+        assert "[CPF_PROTEGIDO]" in sanitizado
+        assert "123.456.789-00" not in sanitizado
+        assert "cpf" in detectados
+
+    def test_mascaramento_cartao(self) -> None:
+        from src.security.guardrails import mask_pii
+
+        texto = "Paguei com o cartão 4532-1234-5678-9012 ontem."
+        sanitizado, detectados = mask_pii(texto)
+        assert "[CARTAO_PROTEGIDO]" in sanitizado
+        assert "cartao_credito" in detectados
+
+    def test_texto_sem_pii(self) -> None:
+        from src.security.guardrails import mask_pii
+
+        texto = "Como vejo minhas notas do semestre?"
+        sanitizado, detectados = mask_pii(texto)
+        assert sanitizado == texto
+        assert detectados == []

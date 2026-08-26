@@ -1,13 +1,17 @@
-"""Ferramentas mockadas do Agente Acadêmico.
+"""Ferramentas mockadas do Agente Acadêmico (RF3-03).
 
-Conforme doc 09 seção 4 — funções assíncronas puras sobre dados mockados.
+Conforme PRD v3 — funções puras assíncronas e instâncias @tool do LangChain.
 """
+
+from __future__ import annotations
+
+from langchain_core.tools import tool
 
 from src.tools.mock_data import STUDENTS
 
 
 async def get_notas(aluno_id: str) -> dict[str, float]:
-    """Retorna {disciplina: nota} para um aluno."""
+    """Consulta o histórico escolar e retorna as notas do estudante por disciplina."""
     student = STUDENTS.get(aluno_id)
     if not student:
         return {}
@@ -15,16 +19,7 @@ async def get_notas(aluno_id: str) -> dict[str, float]:
 
 
 async def get_faltas(aluno_id: str, disciplina: str | None = None) -> int | dict[str, int]:
-    """Retorna faltas de um aluno.
-
-    Args:
-        aluno_id: ID do aluno.
-        disciplina: Nome da disciplina. Se None, retorna todas.
-
-    Returns:
-        Total de faltas (int) se disciplina for especificada,
-        ou dict[str, int] com todas as disciplinas.
-    """
+    """Consulta a frequência e total de faltas do estudante em uma ou todas as disciplinas."""
     student = STUDENTS.get(aluno_id)
     if not student:
         return 0 if disciplina else {}
@@ -32,3 +27,9 @@ async def get_faltas(aluno_id: str, disciplina: str | None = None) -> int | dict
     if disciplina:
         return student["faltas"].get(disciplina, 0)
     return dict(student["faltas"])
+
+
+# Instâncias @tool para binding com LLMs
+get_notas_tool = tool(get_notas)
+get_faltas_tool = tool(get_faltas)
+ACADEMICO_TOOLS = [get_notas_tool, get_faltas_tool]

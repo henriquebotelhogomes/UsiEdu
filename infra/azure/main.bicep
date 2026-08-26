@@ -9,14 +9,14 @@ param apiImage string
 @description('Imagem já publicada do frontend, incluindo tag imutável.')
 param frontendImage string
 
-@description('Servidor de login do Azure Container Registry.')
-param registryLoginServer string
+@description('Servidor de login do Azure Container Registry (opcional se imagem pública).')
+param registryLoginServer string = ''
 
 @secure()
-param registryUsername string
+param registryUsername string = ''
 
 @secure()
-param registryPassword string
+param registryPassword string = ''
 
 @secure()
 param jwtSecret string
@@ -27,13 +27,6 @@ param opencodeApiKey string
 @secure()
 param langsmithApiKey string
 
-@secure()
-@description('Senha do administrador do PostgreSQL. O deploy gera um valor URL-safe quando omitido.')
-param postgresAdminPassword string
-
-@description('Login administrador do PostgreSQL gerenciado.')
-param postgresAdminLogin string = 'usieduadmin'
-
 @description('URL do endpoint OpenCode Go compatível com OpenAI.')
 param opencodeBaseUrl string = 'https://opencode.ai/zen/go/v1'
 
@@ -42,9 +35,6 @@ param agentModel string = 'kimi-k2.7-code'
 
 @description('Nome globalmente único da conta de armazenamento.')
 param storageAccountName string = toLower('usiedu${uniqueString(subscription().id, resourceGroup().id)}')
-
-@description('Nome globalmente único do PostgreSQL Flexible Server.')
-param postgresServerName string = toLower('${namePrefix}-pg-${uniqueString(subscription().id, resourceGroup().id)}')
 
 resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: '${namePrefix}-logs'
@@ -97,6 +87,14 @@ resource qdrantShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023
   }
 }
 
+resource apiShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
+  parent: fileService
+  name: 'apidata'
+  properties: {
+    accessTier: 'TransactionOptimized'
+  }
+}
+
 resource qdrantStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
   parent: environment
   name: 'qdrant-data'
@@ -110,50 +108,16 @@ resource qdrantStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' =
   }
 }
 
-resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
-  name: postgresServerName
-  location: location
-  sku: {
-    name: 'Standard_B1ms'
-    tier: 'Burstable'
-  }
+resource apiStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
+  parent: environment
+  name: 'api-data'
   properties: {
-    administratorLogin: postgresAdminLogin
-    administratorLoginPassword: postgresAdminPassword
-    version: '16'
-    storage: {
-      storageSizeGB: 32
+    azureFile: {
+      accountKey: storageAccount.listKeys().keys[0].value
+      accountName: storageAccount.name
+      accessMode: 'ReadWrite'
+      shareName: apiShare.name
     }
-    backup: {
-      backupRetentionDays: 7
-      geoRedundantBackup: 'Disabled'
-    }
-    highAvailability: {
-      mode: 'Disabled'
-    }
-    network: {
-      publicNetworkAccess: 'Enabled'
-    }
-  }
-}
-
-resource postgresDatabase 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-08-01' = {
-  parent: postgresServer
-  name: 'usiedu'
-  properties: {
-    charset: 'UTF8'
-    collation: 'en_US.utf8'
-  }
-}
-
-// Container Apps não compartilha VNet neste piloto. Esta regra permite somente
-// recursos Azure; acesso administrativo adicional deve ser temporário e explícito.
-resource postgresAllowAzureServices 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = {
-  parent: postgresServer
-  name: 'allow-azure-services'
-  properties: {
-    startIpAddress: '0.0.0.0'
-    endIpAddress: '0.0.0.0'
   }
 }
 
@@ -194,7 +158,7 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
         }
       ]
       scale: {
-        minReplicas: 1
+        minReplicas: 0
         maxReplicas: 1
       }
       volumes: [
@@ -215,7 +179,20 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
     managedEnvironmentId: environment.id
     configuration: {
       activeRevisionsMode: 'Single'
-      secrets: [
+      secrets: empty(registryLoginServer) ? [
+        {
+          name: 'jwt-secret'
+          value: jwtSecret
+        }
+        {
+          name: 'opencode-api-key'
+          value: opencodeApiKey
+        }
+        {
+          name: 'langsmith-api-key'
+          value: langsmithApiKey
+        }
+      ] : [
         {
           name: 'registry-password'
           value: registryPassword
@@ -232,12 +209,8 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
           name: 'langsmith-api-key'
           value: langsmithApiKey
         }
-        {
-          name: 'database-url'
-          value: 'postgresql://${postgresAdminLogin}:${postgresAdminPassword}@${postgresServer.properties.fullyQualifiedDomainName}:5432/${postgresDatabase.name}?sslmode=require'
-        }
       ]
-      registries: [
+      registries: empty(registryLoginServer) ? [] : [
         {
           server: registryLoginServer
           username: registryUsername
@@ -265,6 +238,12 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             cpu: json('2.0')
             memory: '4Gi'
           }
+          volumeMounts: [
+            {
+              volumeName: 'api-data'
+              mountPath: '/app/data'
+            }
+          ]
           env: [
             {
               name: 'USIEDU_ENV'
@@ -323,8 +302,12 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: 'http://${qdrantApp.name}:80'
             }
             {
-              name: 'USIEDU_DATABASE_URL'
-              secretRef: 'database-url'
+              name: 'USIEDU_FEEDBACK_DB'
+              value: '/app/data/usiedu_feedback.db'
+            }
+            {
+              name: 'USIEDU_CACHE_DB'
+              value: '/app/data/usiedu_cache.db'
             }
             {
               name: 'USIEDU_CACHE_ENABLED'
@@ -361,6 +344,13 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
         minReplicas: 0
         maxReplicas: 1
       }
+      volumes: [
+        {
+          name: 'api-data'
+          storageType: 'AzureFile'
+          storageName: apiStorage.name
+        }
+      ]
     }
   }
 }
@@ -372,13 +362,13 @@ resource frontendApp 'Microsoft.App/containerApps@2024-03-01' = {
     managedEnvironmentId: environment.id
     configuration: {
       activeRevisionsMode: 'Single'
-      secrets: [
+      secrets: empty(registryLoginServer) ? [] : [
         {
           name: 'registry-password'
           value: registryPassword
         }
       ]
-      registries: [
+      registries: empty(registryLoginServer) ? [] : [
         {
           server: registryLoginServer
           username: registryUsername
@@ -435,13 +425,13 @@ resource ingestJob 'Microsoft.App/jobs@2024-03-01' = {
         parallelism: 1
         replicaCompletionCount: 1
       }
-      secrets: [
+      secrets: empty(registryLoginServer) ? [] : [
         {
           name: 'registry-password'
           value: registryPassword
         }
       ]
-      registries: [
+      registries: empty(registryLoginServer) ? [] : [
         {
           server: registryLoginServer
           username: registryUsername

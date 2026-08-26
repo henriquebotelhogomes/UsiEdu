@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Publica o UsiEdu no Azure Container Apps.
+  Publica o UsiEdu no Azure Container Apps utilizando GitHub Container Registry (GHCR) e SQLite no Azure Files.
 
 .EXAMPLE
   .\infra\azure\deploy.ps1 -ResourceGroup rg-usiedu -Prefix usiedu -Location brazilsouth
@@ -18,10 +18,10 @@ param(
 
     [string]$Location = 'brazilsouth',
     [string]$ImageTag = 'v1',
+    [string]$GitHubUser = 'henriquebotelhogomes',
     [string]$OpenCodeApiKey,
     [string]$LangSmithApiKey,
-    [string]$JwtSecret,
-    [string]$PostgresAdminPassword
+    [string]$JwtSecret
 )
 
 $ErrorActionPreference = 'Stop'
@@ -47,36 +47,45 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..')
 Set-Location $repoRoot
 
-az extension add --name containerapp --upgrade --only-show-errors | Out-Null
-az group create --name $ResourceGroup --location $Location --only-show-errors | Out-Null
+# Carrega chaves de .env se não informadas
+$envPath = Join-Path $repoRoot '.env'
+if (Test-Path $envPath) {
+    Get-Content $envPath | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -and -not $line.StartsWith('#') -and $line.Contains('=')) {
+            $parts = $line.Split('=', 2)
+            $k = $parts[0].Trim()
+            $v = $parts[1].Split('#')[0].Trim()
+            if ($k -eq 'OPENCODE_GO_API_KEY' -and -not $OpenCodeApiKey) { $OpenCodeApiKey = $v }
+            if ($k -eq 'LANGSMITH_API_KEY' -and -not $LangSmithApiKey) { $LangSmithApiKey = $v }
+            if ($k -eq 'JWT_SECRET' -and -not $JwtSecret) { $JwtSecret = $v }
+        }
+    }
+}
 
-$registryName = ("{0}acr{1}" -f $Prefix.Replace('-', ''), (Get-Random -Minimum 100000 -Maximum 999999)).ToLower()
-$registry = az deployment group create `
-    --resource-group $ResourceGroup `
-    --template-file infra/azure/registry.bicep `
-    --parameters registryName=$registryName location=$Location `
-    --query properties.outputs.loginServer.value -o tsv
-
-az acr login --name $registryName --only-show-errors | Out-Null
-$apiImage = "$registry/usiedu-api:$ImageTag"
-$frontendImage = "$registry/usiedu-frontend:$ImageTag"
-
-docker build --file Dockerfile.api --tag $apiImage .
-docker push $apiImage
-docker build --file Dockerfile.frontend --tag $frontendImage .
-docker push $frontendImage
-
-$registryCredentials = az acr credential show --name $registryName --query '{username:username,password:passwords[0].value}' -o json | ConvertFrom-Json
 if (-not $OpenCodeApiKey) { $OpenCodeApiKey = Read-RequiredSecret 'OPENCODE_GO_API_KEY' }
 if (-not $LangSmithApiKey) { $LangSmithApiKey = Read-RequiredSecret 'LANGSMITH_API_KEY' }
 if (-not $JwtSecret) {
     $JwtSecret = python -c "import secrets; print(secrets.token_urlsafe(32))"
     Write-Host 'JWT_SECRET gerado para este deploy. Guarde-o em um gerenciador de segredos.' -ForegroundColor Yellow
 }
-if (-not $PostgresAdminPassword) {
-    $PostgresAdminPassword = python -c "import secrets; print(secrets.token_urlsafe(32))"
-    Write-Host 'Senha PostgreSQL gerada para este deploy. Guarde-a em um gerenciador de segredos.' -ForegroundColor Yellow
-}
+
+az extension add --name containerapp --upgrade --only-show-errors | Out-Null
+az group create --name $ResourceGroup --location $Location --only-show-errors | Out-Null
+
+$apiImage = "ghcr.io/$($GitHubUser.ToLower())/usiedu-api:$ImageTag"
+$frontendImage = "ghcr.io/$($GitHubUser.ToLower())/usiedu-frontend:$ImageTag"
+
+Write-Host "Construindo e enviando imagens para o GHCR: $apiImage e $frontendImage..." -ForegroundColor Cyan
+
+docker build --file Dockerfile.api --tag $apiImage .
+docker push $apiImage
+docker build --file Dockerfile.frontend --tag $frontendImage .
+docker push $frontendImage
+
+Write-Host "Aplicando infraestrutura Bicep no Azure..." -ForegroundColor Cyan
+
+$ghToken = gh auth token
 
 $deploymentJson = az deployment group create `
     --resource-group $ResourceGroup `
@@ -86,13 +95,12 @@ $deploymentJson = az deployment group create `
         location=$Location `
         apiImage=$apiImage `
         frontendImage=$frontendImage `
-        registryLoginServer=$registry `
-        registryUsername=$($registryCredentials.username) `
-        registryPassword=$($registryCredentials.password) `
+        registryLoginServer='ghcr.io' `
+        registryUsername=$GitHubUser `
+        registryPassword=$ghToken `
         jwtSecret=$JwtSecret `
         opencodeApiKey=$OpenCodeApiKey `
         langsmithApiKey=$LangSmithApiKey `
-        postgresAdminPassword=$PostgresAdminPassword `
     --query properties.outputs -o json
 if ($LASTEXITCODE -ne 0) {
     throw 'Deploy ARM falhou. Consulte as operacoes do deployment para obter detalhes.'
@@ -104,5 +112,6 @@ if (-not $result.frontendUrl.value -or -not $result.ingestJobName.value) {
 }
 
 Write-Host "Deploy concluído: $($result.frontendUrl.value)" -ForegroundColor Green
-Write-Host "Execute agora: az containerapp job start --name $($result.ingestJobName.value) --resource-group $ResourceGroup"
-Write-Host "Depois, acompanhe: az containerapp job execution list --name $($result.ingestJobName.value) --resource-group $ResourceGroup"
+Write-Host "Iniciando ingestão de vetores..." -ForegroundColor Cyan
+az containerapp job start --name $($result.ingestJobName.value) --resource-group $ResourceGroup
+Write-Host "Acompanhe a ingestão com: az containerapp job execution list --name $($result.ingestJobName.value) --resource-group $ResourceGroup"

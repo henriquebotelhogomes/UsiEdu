@@ -1,12 +1,48 @@
+import { useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 
 /**
- * Mapeamento de componentes do Markdown (T7.1 / RF2-01).
- * - Links abrem em nova aba com rel seguro (noopener noreferrer).
- * - Tabelas ganham wrapper com rolagem horizontal.
- * - HTML cru nunca é executado (sem rehype-raw; conteúdo passa como texto).
+ * Componente para blocos de código com botão de cópia (RF4-05).
+ */
+function CodeBlock({ className, children }: { className?: string; children: React.ReactNode }) {
+  const [copied, setCopied] = useState(false);
+  const codeString = String(children).replace(/\n$/, "");
+  const isInline = !className && !codeString.includes("\n");
+
+  if (isInline) {
+    return <code className="inline-code">{children}</code>;
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(codeString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="code-block-container">
+      <div className="code-block-header">
+        <span className="code-lang">{className ? className.replace("language-", "") : "text"}</span>
+        <button
+          type="button"
+          className="copy-btn"
+          onClick={handleCopy}
+          aria-label="Copiar código"
+        >
+          {copied ? "✓ Copiado" : "Copiar"}
+        </button>
+      </div>
+      <pre className="code-pre">
+        <code className={className}>{children}</code>
+      </pre>
+    </div>
+  );
+}
+
+/**
+ * Mapeamento de componentes do Markdown (T7.1 / RF4-05).
  */
 const mdComponents: Components = {
   h1: ({ node: _node, children }) => <h1>{children}</h1>,
@@ -18,16 +54,19 @@ const mdComponents: Components = {
   li: ({ node: _node, children }) => <li>{children}</li>,
   table: ({ node: _node, children }) => (
     <div className="md-table-wrap">
-      <table>{children}</table>
+      <table className="styled-table">{children}</table>
     </div>
   ),
   code: ({ node: _node, className, children }) => (
-    <code className={className}>{children}</code>
+    <CodeBlock className={className}>{children}</CodeBlock>
   ),
   a: ({ node: _node, children, ...props }) => (
     <a target="_blank" rel="noopener noreferrer" {...props}>
       {children}
     </a>
+  ),
+  blockquote: ({ node: _node, children }) => (
+    <blockquote className="styled-blockquote">{children}</blockquote>
   ),
 };
 

@@ -2,7 +2,7 @@
 
 > Plataforma multi-agente de IA conversacional para a jornada do estudante e do colaborador.
 >
-> **Projeto piloto — candidatura Engenheiro(a) de IA | Cruzeiro do Sul Educacional**
+> **Projeto piloto**
 
 [![CI](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/ci.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)

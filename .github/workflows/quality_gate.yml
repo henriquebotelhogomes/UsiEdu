@@ -1,0 +1,39 @@
+name: UsiEdu AI Quality & Test Gate
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-quality-gate:
+    name: Lint, Test & RAG Quality Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: 1. Code Style & Lint (Ruff)
+        run: |
+          ruff check src/ tests/ scripts/
+
+      - name: 2. Automated Unit Tests (Pytest)
+        run: |
+          pytest tests/unit/ -v --cov=src
+
+      - name: 3. RAG Quality Gate (RAGAS Evaluation Gate)
+        run: |
+          python scripts/run_ragas.py --ci-gate --min-score 0.80 --limit 5

@@ -1,6 +1,6 @@
 """Construtor e compilador do grafo LangGraph de orquestração.
 
-Conforme doc 02 seção 1 e doc 09 seção 5.
+Conforme PRD v3 (RF3-01 a RF3-06) e PRD v4 (RF4-01).
 """
 
 from __future__ import annotations
@@ -14,8 +14,8 @@ from src.agents.academico import make_academico_node
 from src.agents.documental import make_documental_node
 from src.agents.financeiro import make_financeiro_node
 from src.orchestration.consolidation import (
-    consolidation_node,
     fora_de_escopo_node,
+    make_consolidation_node,
     should_continue,
 )
 from src.orchestration.state import AgentState
@@ -34,24 +34,26 @@ def create_chat_graph(
     agent_llm: BaseChatModel,
     financeiro_llm: BaseChatModel | None = None,
     documental_llm: BaseChatModel | None = None,
+    synthesis_llm: BaseChatModel | None = None,
     retriever: HybridRetriever | None = None,
     documental_retriever: HybridRetriever | None = None,
     checkpointer: BaseCheckpointSaver | None = None,
+    interrupt_before: list[str] | None = None,
+    interrupt_after: list[str] | None = None,
 ) -> CompiledStateGraph:
-    """Cria e compila o grafo de orquestração do chat.
+    """Cria e compila o grafo de orquestração do chat (UsiEdu v3 / v4).
 
     Args:
-        router_llm: Modelo LLM para o supervisor (classificação de intenção).
+        router_llm: Modelo LLM para o supervisor (classificação estruturada).
         agent_llm: Modelo LLM para os agentes (execução de tarefas).
-        financeiro_llm: Modelo LLM para o agente financeiro (opcional;
-            usa agent_llm se None).
-        documental_llm: Modelo LLM para o agente documental (opcional;
-            usa agent_llm se None).
-        retriever: Retriever RAG híbrido da coleção acadêmica (opcional;
-            sem RAG se None). Usado pelos agentes acadêmico e financeiro.
-        documental_retriever: Retriever da coleção institucional para o agente
-            documental (opcional; usa retriever se None).
-        checkpointer: Checkpointer LangGraph (opcional; MemorySaver se None).
+        financeiro_llm: Modelo LLM para o agente financeiro (opcional).
+        documental_llm: Modelo LLM para o agente documental (opcional).
+        synthesis_llm: Modelo LLM para síntese de respostas compostas (opcional).
+        retriever: Retriever RAG híbrido da coleção acadêmica.
+        documental_retriever: Retriever da coleção institucional.
+        checkpointer: Checkpointer LangGraph (MemorySaver por padrão).
+        interrupt_before: Lista de nós para pausar antes da execução (Human-in-the-Loop).
+        interrupt_after: Lista de nós para pausar após a execução.
 
     Returns:
         Grafo LangGraph compilado e pronto para invocação.
@@ -68,12 +70,12 @@ def create_chat_graph(
 
     # Se documental_llm não for fornecido, usa o mesmo agent_llm
     documental_llm = documental_llm or agent_llm
-    # Documental busca na coleção institucional; usa retriever como fallback
     builder.add_node(
         "documental", make_documental_node(documental_llm, documental_retriever or retriever)
     )
 
-    builder.add_node("consolidation", consolidation_node)
+    # Consolidação com suporte a Síntese Cognitiva (RF3-06)
+    builder.add_node("consolidation", make_consolidation_node(synthesis_llm))
     builder.add_node("fora_de_escopo", fora_de_escopo_node)
 
     # === Arestas ===
@@ -89,10 +91,11 @@ def create_chat_graph(
     if checkpointer is None:
         checkpointer = MemorySaver()
 
-    # === Compilação ===
+    # === Compilação com suporte a Human-in-the-Loop (RF4-01) ===
     graph = builder.compile(
         checkpointer=checkpointer,
-        interrupt_after=[],
+        interrupt_before=interrupt_before or [],
+        interrupt_after=interrupt_after or [],
     )
 
     return graph

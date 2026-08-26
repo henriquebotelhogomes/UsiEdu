@@ -13,7 +13,6 @@ import os
 import uuid
 from datetime import UTC, datetime
 
-import aiosqlite
 from fastapi import APIRouter, Depends, Query, Request, Response
 
 from src.api.auth import get_current_user
@@ -26,7 +25,7 @@ from src.api.schemas import (
     FeedbackResponse,
     FeedbackStats,
 )
-from src.storage.database import database_url, postgres_connection
+from src.storage.database import database_url, postgres_connection, sqlite_connection
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +116,7 @@ async def registrar_feedback(
             )
             feedback_id = (await cursor.fetchone())[0]
     else:
-        async with aiosqlite.connect(_db_path()) as db:
+        async with sqlite_connection(_db_path()) as db:
             await db.execute(_CREATE_TABLE)
             cursor = await db.execute(
                 """
@@ -170,7 +169,7 @@ async def stats_feedback(
             cursor = await db.execute("SELECT rating, COUNT(*) FROM feedback GROUP BY rating")
             counts = {row[0]: row[1] for row in await cursor.fetchall()}
     else:
-        async with aiosqlite.connect(_db_path()) as db:
+        async with sqlite_connection(_db_path()) as db:
             await db.execute(_CREATE_TABLE)
             async with db.execute(
                 "SELECT rating, COUNT(*) FROM feedback GROUP BY rating"
@@ -217,7 +216,7 @@ async def recent_feedback(
             )
             rows = await cursor.fetchall()
     else:
-        async with aiosqlite.connect(_db_path()) as db:
+        async with sqlite_connection(_db_path()) as db:
             await db.execute(_CREATE_TABLE)
             async with db.execute(
                 """

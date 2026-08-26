@@ -4,6 +4,14 @@
 > portfólio técnico e piloto público a uma solução mais próxima de produção.
 > Atualizado em 11/08/2026.
 
+## Como usar este plano
+
+Este arquivo é o **índice executivo** do programa. Os requisitos, tarefas,
+evidências e decisões de cada iniciativa ficam em
+[`docs/profissionalizacao/`](docs/profissionalizacao/README.md). Antes de
+implementar uma iniciativa, leia o PRD do programa, o documento da iniciativa
+e os documentos legados que ele referencia.
+
 ## Avaliacao atual
 
 O UsiEdu está em nível profissional para **portfólio técnico** e **piloto

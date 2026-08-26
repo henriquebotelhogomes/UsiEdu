@@ -111,7 +111,7 @@ export default function LandingPage() {
       <header className="landing-hero">
         <div className="landing-hero-content">
           <span className="landing-badge">
-            Projeto piloto — candidatura Engenheiro(a) de IA
+            Projeto piloto
           </span>
           <h1>
             Plataforma multi-agente de IA conversacional para a jornada do

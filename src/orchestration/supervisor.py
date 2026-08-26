@@ -1,6 +1,7 @@
 """Nó Supervisor do grafo LangGraph.
 
-Conforme doc 02 seção 2 — classificação de intenção, guardrails e roteamento.
+Conforme PRD v3 (RF3-01) — classificação de intenção estruturada via Pydantic,
+guardrails e roteamento determinístico.
 """
 
 from __future__ import annotations
@@ -32,13 +33,16 @@ def make_supervisor_node(router_llm: BaseChatModel) -> callable:
         msg = "router_llm não pode ser None"
         raise ValueError(msg)
 
-    def supervisor_node(state: AgentState, config: RunnableConfig) -> dict:
-        """Nó do supervisor: classifica intenção e decide roteamento.
+    # Tenta instanciar router estruturado nativo do LangChain
+    structured_router = None
+    try:
+        if hasattr(router_llm, "with_structured_output"):
+            structured_router = router_llm.with_structured_output(SupervisorDecision)
+    except Exception:
+        structured_router = None
 
-        Lê a última mensagem do usuário, consulta o LLM de roteamento
-        e retorna a decisão estruturada (SupervisorDecision).
-        """
-        # Extrai histórico recente para o prompt
+    def supervisor_node(state: AgentState, config: RunnableConfig) -> dict:
+        """Nó do supervisor: classifica intenção e decide roteamento."""
         messages_text = _format_messages(state["messages"])
 
         profile = state.get("profile", "student")
@@ -57,33 +61,49 @@ def make_supervisor_node(router_llm: BaseChatModel) -> callable:
             HumanMessage(content=state["messages"][-1].content if state["messages"] else ""),
         ]
 
-        response = router_llm.invoke(llm_messages)
-        raw = response.content.strip()
+        decision = None
 
-        # Remove delimitadores de código markdown se presentes
-        if raw.startswith("```"):
-            raw = raw.split("\n", 1)[-1]
-            if raw.endswith("```"):
-                raw = raw.rsplit("```", 1)[0]
-            raw = raw.strip()
+        # 1. Tenta via structured_router (Padrão Enterprise LangChain)
+        if structured_router is not None:
+            try:
+                res = structured_router.invoke(llm_messages)
+                if isinstance(res, SupervisorDecision):
+                    decision = res
+                elif isinstance(res, dict):
+                    decision = SupervisorDecision(**res)
+            except Exception:
+                decision = None
 
-        try:
-            decision: SupervisorDecision = json.loads(raw)  # type: ignore[assignment]
-        except json.JSONDecodeError:
-            # Fallback seguro: academico
-            decision = SupervisorDecision(
-                intent="academico",
-                plan=None,
-                reasoning=f"Falha ao parsear resposta do LLM. Raw: {raw[:200]}",
-            )
+        # 2. Fallback resiliente via parsing JSON
+        if decision is None:
+            response = router_llm.invoke(llm_messages)
+            if hasattr(response, "content"):
+                raw = response.content.strip()
+            else:
+                raw = str(response).strip()
+
+            if raw.startswith("```"):
+                raw = raw.split("\n", 1)[-1]
+                if raw.endswith("```"):
+                    raw = raw.rsplit("```", 1)[0]
+                raw = raw.strip()
+
+            try:
+                data = json.loads(raw)
+                decision = SupervisorDecision(**data)
+            except Exception:
+                decision = SupervisorDecision(
+                    intent="academico",
+                    plan=None,
+                    reasoning=f"Fallback seguro. Raw: {raw[:200]}",
+                )
 
         # Incrementa contador de ciclo
         cycle_count = state.get("cycle_count", 0) + 1
 
-        # Cria delegação
         delegation = {
-            "agent": decision.get("intent", "unknown"),
-            "task": decision.get("reasoning", ""),
+            "agent": decision.intent,
+            "task": decision.reasoning,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
@@ -99,7 +119,7 @@ def make_supervisor_node(router_llm: BaseChatModel) -> callable:
 def _format_messages(messages: list) -> str:
     """Formata as últimas mensagens para o prompt."""
     text_parts = []
-    for msg in messages[-6:]:  # últimas 6 mensagens
+    for msg in messages[-6:]:
         role = "Usuário" if isinstance(msg, HumanMessage) else "Assistente"
         content = msg.content[:500] if isinstance(msg.content, str) else str(msg.content)[:500]
         text_parts.append(f"{role}: {content}")
@@ -107,15 +127,15 @@ def _format_messages(messages: list) -> str:
 
 
 def route_from_supervisor(state: AgentState) -> str | list[str]:
-    """Função de roteamento condicional: decide qual(is) agente(s) acionar.
-
-    Retorna o nome do(s) próximo(s) nó(s) ou END.
-    """
+    """Função de roteamento condicional: decide qual(is) agente(s) acionar."""
     decision = state.get("supervisor_decision")
     if not decision:
         return "__end__"
 
-    intent = decision.get("intent", "fora_de_escopo")
+    if hasattr(decision, "intent"):
+        intent = decision.intent
+    else:
+        intent = decision.get("intent", "fora_de_escopo")
     profile = state.get("profile", "student")
 
     # Guardrail: perfil staff tem acesso a institucional
@@ -135,7 +155,6 @@ def route_from_supervisor(state: AgentState) -> str | list[str]:
         return "documental"
 
     if intent == "composta":
-        profile = state.get("profile", "student")
         if profile == "staff":
             return ["academico", "financeiro", "documental"]
         return ["academico", "financeiro"]

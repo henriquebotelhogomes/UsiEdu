@@ -24,3 +24,23 @@ async def postgres_connection() -> AsyncIterator[object]:
 
     async with await AsyncConnection.connect(url) as connection:
         yield connection
+
+
+@asynccontextmanager
+async def sqlite_connection(path: str) -> AsyncIterator[object]:
+    """Abre conexão SQLite com timeout e suporte a Azure Files (CIFS/SMB)."""
+    import aiosqlite
+
+    dirname = os.path.dirname(path)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
+
+    if path.startswith("/") or path.startswith("file:"):
+        conn_path = path if path.startswith("file:") else f"file:{path}?nolock=1"
+        uri = True
+    else:
+        conn_path = path
+        uri = False
+
+    async with aiosqlite.connect(conn_path, uri=uri, timeout=30.0) as conn:
+        yield conn

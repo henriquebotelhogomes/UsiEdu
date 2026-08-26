@@ -1,6 +1,6 @@
 """Estado do grafo LangGraph (AgentState).
 
-Conforme doc 02 seção 1.2 e doc 09 seção 5.
+Conforme doc 02 seção 1.2, doc 09 seção 5 e PRD v3.
 """
 
 from __future__ import annotations
@@ -54,29 +54,39 @@ class AgentResult(TypedDict):
     error: str | None
 
 
-class SupervisorDecision(TypedDict):
-    """Decisão do nó supervisor."""
+class SupervisorDecision(dict):
+    """Decisão estruturada do nó supervisor para classificação e roteamento (RF3-01).
 
-    intent: Literal["academico", "financeiro", "institucional", "composta", "fora_de_escopo"]
-    plan: list[str] | None
-    reasoning: str
+    Compatível com Pydantic, TypedDict e serialização JSON nativa.
+    """
+
+    def __init__(
+        self,
+        intent: Literal[
+            "academico", "financeiro", "institucional", "composta", "fora_de_escopo"
+        ] = "academico",
+        plan: list[str] | None = None,
+        reasoning: str = "",
+        **kwargs: object,
+    ) -> None:
+        super().__init__(intent=intent, plan=plan, reasoning=reasoning, **kwargs)
+
+    @property
+    def intent(self) -> str:
+        return str(self.get("intent", "academico"))
+
+    @property
+    def plan(self) -> list[str] | None:
+        p = self.get("plan")
+        return list(p) if isinstance(p, list) else None
+
+    @property
+    def reasoning(self) -> str:
+        return str(self.get("reasoning", ""))
 
 
 class AgentState(TypedDict):
-    """Estado completo do grafo de orquestração.
-
-    Attributes:
-        user_id: Identificador único do usuário.
-        profile: Perfil de acesso (student, staff).
-        messages: Histórico da conversa (reducer add_messages).
-        plan: Sub-tarefas para perguntas compostas.
-        delegations: Registro de quem foi acionado e por quê.
-        agent_results: Resultados parciais de cada agente.
-        retrieved_sources: Fontes RAG usadas (para citação).
-        needs_more_info: Se o grafo deve continuar para mais informações.
-        cycle_count: Contador de ciclos (limite RF-11: máximo 2).
-        supervisor_decision: Última decisão do supervisor.
-    """
+    """Estado completo do grafo de orquestração."""
 
     user_id: str
     profile: Literal["student", "staff"]

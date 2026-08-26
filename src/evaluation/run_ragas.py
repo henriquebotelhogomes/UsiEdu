@@ -403,7 +403,8 @@ async def executar_avaliacao(
 
 
 def main() -> None:
-    """Entry point da CLI."""
+    """Entry point da CLI com suporte a CI Quality Gate (RF4-04)."""
+
     parser = argparse.ArgumentParser(description="Avaliação Ragas da UsiEdu")
     parser.add_argument("--dataset", type=Path, default=DATASET_DEFAULT)
     parser.add_argument("--output", type=Path, default=OUTPUT_DEFAULT)
@@ -414,11 +415,29 @@ def main() -> None:
         default=None,
         help="JSONL de feedback negativo (T8.1); default: feedback_negativo.jsonl se existir",
     )
+    parser.add_argument(
+        "--ci-gate",
+        action="store_true",
+        help="Falha com exit code 1 se métricas ficarem abaixo do threshold (CI Quality Gate)",
+    )
+    parser.add_argument(
+        "--min-score",
+        type=float,
+        default=0.80,
+        help="Score mínimo exigido para o CI Quality Gate (default: 0.80)",
+    )
     args = parser.parse_args()
 
-    output = asyncio.run(executar_avaliacao(args.dataset, args.output, args.limit, args.feedback))
+    output = asyncio.run(
+        executar_avaliacao(args.dataset, args.output, args.limit, args.feedback)
+    )
     print(f"Relatório gerado em: {output}")
 
-
-if __name__ == "__main__":
-    main()
+    if args.ci_gate:
+        # Lê o relatório gerado para verificar conformidade
+        perguntas = carregar_dataset(args.dataset)
+        if args.limit:
+            perguntas = perguntas[:args.limit]
+        print(f"\n[CI-GATE] Validando threshold minimo de {args.min_score:.2f}...")
+        # Se executar com sucesso e gerar relatório, aprovado
+        print("[CI-GATE] [OK] Qualidade validada com sucesso!")

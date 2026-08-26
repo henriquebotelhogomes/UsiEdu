@@ -1,20 +1,17 @@
-"""Ferramentas mockadas do Agente Financeiro.
+"""Ferramentas mockadas do Agente Financeiro (RF3-03).
 
-Conforme doc 09 seção 4 — funções assíncronas puras sobre dados mockados.
+Conforme PRD v3 — funções puras assíncronas e instâncias @tool do LangChain.
 """
+
+from __future__ import annotations
+
+from langchain_core.tools import tool
 
 from src.tools.mock_data import BOLETOS, POLITICA_RENEGOCIACAO
 
 
 async def get_boletos(aluno_id: str) -> list[dict]:
-    """Retorna lista de boletos de um aluno.
-
-    Args:
-        aluno_id: ID do aluno.
-
-    Returns:
-        Lista de dicionários com id, valor, vencimento, status.
-    """
+    """Consulta boletos emitidos, valores, vencimentos e status financeiro."""
     return list(BOLETOS.get(aluno_id, []))
 
 
@@ -22,19 +19,7 @@ async def simular_renegociacao(
     aluno_id: str,
     boleto_ids: list[str] | None = None,
 ) -> dict:
-    """Simula uma proposta de renegociação com base na política vigente.
-
-    Aplica a política de renegociação (desconto máximo, parcelas máximas)
-    aos boletos vencidos do aluno.
-
-    Args:
-        aluno_id: ID do aluno.
-        boleto_ids: Lista de IDs de boletos para renegociar.
-            Se None, considera todos os boletos vencidos.
-
-    Returns:
-        Dicionário com proposta de renegociação.
-    """
+    """Simula proposta de renegociação de débitos com base na política vigente."""
     boletos = BOLETOS.get(aluno_id, [])
 
     if boleto_ids:
@@ -75,5 +60,12 @@ async def simular_renegociacao(
 
 
 async def get_politica_renegociacao() -> dict:
-    """Retorna a política de renegociação vigente."""
+    """Consulta as regras e percentuais máximos de desconto da política de renegociação vigente."""
     return dict(POLITICA_RENEGOCIACAO)
+
+
+# Instâncias @tool para binding com LLMs
+get_boletos_tool = tool(get_boletos)
+simular_renegociacao_tool = tool(simular_renegociacao)
+get_politica_renegociacao_tool = tool(get_politica_renegociacao)
+FINANCEIRO_TOOLS = [get_boletos_tool, simular_renegociacao_tool, get_politica_renegociacao_tool]

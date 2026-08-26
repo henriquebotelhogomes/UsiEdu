@@ -32,10 +32,9 @@ import unicodedata
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-import aiosqlite
 import numpy as np
 
-from src.storage.database import database_url, postgres_connection
+from src.storage.database import database_url, postgres_connection, sqlite_connection
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +65,11 @@ CREATE TABLE IF NOT EXISTS chat_cache (
 
 def _cache_db_path() -> str:
     return os.getenv("USIEDU_CACHE_DB", "usiedu_cache.db")
+
+
+def redis_url() -> str | None:
+    """Retorna URL do cluster Redis se configurado (RF4-04)."""
+    return os.getenv("REDIS_URL") or os.getenv("USIEDU_REDIS_URL")
 
 
 def cache_ativo() -> bool:
@@ -176,7 +180,7 @@ class ChatCache:
                 self.misses += 1
                 logger.info("Cache miss", extra={"cache_hit": False})
                 return None
-            async with aiosqlite.connect(_cache_db_path()) as db:
+            async with sqlite_connection(_cache_db_path()) as db:
                 await db.execute(_CREATE_TABLE)
 
                 # Camada 1 — cache exato
@@ -323,7 +327,7 @@ class ChatCache:
             if database_url():
                 await self._store_postgres(profile, question, answer, versao, chave, embedding)
                 return True
-            async with aiosqlite.connect(_cache_db_path()) as db:
+            async with sqlite_connection(_cache_db_path()) as db:
                 await db.execute(_CREATE_TABLE)
                 await db.execute(
                     """

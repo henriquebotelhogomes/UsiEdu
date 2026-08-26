@@ -1,6 +1,6 @@
-"""Nó Agente Acadêmico do grafo LangGraph.
+"""Nó Agente Acadêmico do grafo LangGraph (RF3-03, RF3-04).
 
-Conforme doc 02 seção 3 — integração com retriever + tools + citação obrigatória.
+Conforme doc 02 seção 3 e PRD v3 — integração com retriever + tools nativas LangChain.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from src.agents.prompts.academico import ACADEMICO_SYSTEM_PROMPT
 from src.orchestration.state import AgentState
 from src.rag.models import Source
-from src.tools.academico_tools import get_faltas, get_notas
+from src.tools.academico_tools import ACADEMICO_TOOLS, get_faltas, get_notas
 
 if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
@@ -36,15 +36,17 @@ def make_academico_node(
         msg = "agent_llm não pode ser None"
         raise ValueError(msg)
 
+    # Vincula ferramentas nativas ao modelo se suportado (RF3-04)
+    bound_llm = agent_llm
+    if hasattr(agent_llm, "bind_tools"):
+        try:
+            bound_llm = agent_llm.bind_tools(ACADEMICO_TOOLS)
+        except Exception:
+            bound_llm = agent_llm
+
     async def academico_node(state: AgentState, config: RunnableConfig) -> dict:
-        """Nó do Agente Acadêmico.
-
-        Recebe a consulta do usuário, recupera contexto RAG (se disponível),
-        consulta ferramentas mockadas (notas, faltas) e gera resposta com citação.
-        """
+        """Nó do Agente Acadêmico."""
         user_id = state.get("user_id", "")
-
-        # Extrai a última mensagem do usuário
         last_message = state["messages"][-1].content if state["messages"] else ""
 
         # Recupera contexto RAG
@@ -53,21 +55,18 @@ def make_academico_node(
 
         if retriever:
             try:
-                # Coleção acadêmica contém docs público student;
-                # o filtro segue o documento, não o perfil do usuário
                 results = retriever.search(last_message, profile="student")
                 context_text = _format_context(results)
                 retrieved_sources = [r.source for r in results]
             except Exception:
                 context_text = "Nenhum contexto disponível no momento."
-
         else:
             context_text = "Nenhum contexto disponível no momento."
 
         # Processa ferramentas
         tool_context = await _executar_ferramentas_academicas(user_id, last_message)
 
-        # Monta o prompt completo
+        # Monta prompt completo
         context_block = f"{context_text}\n\n## Dados do aluno (ferramentas)\n{tool_context}"
         system_prompt = ACADEMICO_SYSTEM_PROMPT.format(
             context=context_block,
@@ -79,15 +78,13 @@ def make_academico_node(
             HumanMessage(content=last_message),
         ]
 
-        # Stream dos tokens do LLM (T7.3): o endpoint /chat/stream captura
-        # estes chunks via astream_events e os envia por SSE ao cliente.
+        # Streaming de tokens do LLM (suporta ferramentas vinculadas)
         response_parts: list[str] = []
-        async for chunk in agent_llm.astream(llm_messages):
+        async for chunk in bound_llm.astream(llm_messages):
             part = chunk.content if isinstance(chunk.content, str) else str(chunk.content)
             response_parts.append(part)
         response_text = "".join(response_parts).strip()
 
-        # Constrói resultado
         result = {
             "agent": "academico",
             "response": response_text,
@@ -104,28 +101,24 @@ def make_academico_node(
 
 
 async def _executar_ferramentas_academicas(user_id: str, query: str) -> str:
-    """Executa ferramentas mockadas com base na consulta do usuário.
-
-    Extrai o aluno_id do user_id (que é o email) para buscar dados mockados.
-    """
-    # Mapeia email para aluno_id
+    """Executa as ferramentas acadêmicas pertinentes à consulta."""
     from src.tools.mock_data import USUARIOS_DEMO
 
-    user_info = USUARIOS_DEMO.get(user_id)
-    if not user_info:
-        return "Usuário não encontrado na base de demonstração."
+    usuario = USUARIOS_DEMO.get(user_id)
+    if not usuario:
+        return "Usuário não encontrado na base de dados."
 
-    aluno_id = user_info.get("aluno_id")
+    if usuario.get("profile") != "student":
+        return "Perfil de funcionário não possui dados acadêmicos (notas/faltas)."
+
+    aluno_id = usuario.get("aluno_id")
     if not aluno_id:
-        return "Perfil staff não possui dados acadêmicos mockados."
+        return "ID de aluno não vinculado ao usuário."
 
     partes = []
 
     # Verifica se a consulta menciona notas
-    if any(
-        palavra in query.lower()
-        for palavra in ["nota", "notas", "nota", "notas", "boletim", "desempenho"]
-    ):
+    if any(palavra in query.lower() for palavra in ["nota", "notas", "boletim", "desempenho"]):
         notas = await get_notas(aluno_id)
         if notas:
             notas_str = "\n".join(f"  - {disc}: {nota}" for disc, nota in notas.items())
@@ -136,7 +129,7 @@ async def _executar_ferramentas_academicas(user_id: str, query: str) -> str:
     # Verifica se a consulta menciona faltas
     if any(
         palavra in query.lower()
-        for palavra in ["falta", "faltas", "presença", "presença", "frequência", "frequencia"]
+        for palavra in ["falta", "faltas", "presença", "frequência", "frequencia"]
     ):
         for disciplina in ["calculo-1", "programacao-1"]:
             faltas = await get_faltas(aluno_id, disciplina)
@@ -156,11 +149,7 @@ async def _executar_ferramentas_academicas(user_id: str, query: str) -> str:
 
 
 def _format_context(results: list) -> str:
-    """Formata resultados RAG para o prompt.
-
-    Trechos longos (até 2400 chars) são mantidos quase na íntegra para
-    preservar tabelas e datas; quebras de linha são preservadas.
-    """
+    """Formata resultados RAG para o prompt."""
     if not results:
         return "Nenhum documento relevante encontrado."
 
@@ -179,11 +168,7 @@ def _format_context(results: list) -> str:
 
 
 def _format_messages(messages: list) -> str:
-    """Formata as últimas perguntas do usuário para o prompt.
-
-    Filtra apenas mensagens do usuário para evitar que o agente
-    repita respostas anteriores (vazamento de contexto entre turnos).
-    """
+    """Formata as últimas perguntas do usuário para o prompt."""
     from langchain_core.messages import HumanMessage
 
     user_messages = [m for m in messages if isinstance(m, HumanMessage)]
