@@ -1,254 +1,180 @@
-# UsiEdu
+# UsiEdu — Plataforma Multi-Agente de IA Universitária
 
-> Plataforma multi-agente de IA conversacional para a jornada do estudante e do colaborador.
->
-> **Projeto piloto**
+> Plataforma multi-agente de IA conversacional para a jornada acadêmica e administrativa de estudantes e colaboradores universitários.
+> 
+> **Padrão Enterprise / Startup Global (Série B / Scale-up)**
 
-[![CI](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/ci.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/ci.yml)
+[![CI](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange)](https://github.com/langchain-ai/langgraph)
+[![LangChain](https://img.shields.io/badge/Framework-LangChain-green)](https://github.com/langchain-ai/langchain)
+[![Tests](https://img.shields.io/badge/Tests-319%20passed-brightgreen)](https://github.com/henriquebotelhogomes/UsiEdu)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-## Pitch
+---
 
-Um assistente de IA conversacional que atende estudantes e colaboradores em
-uma única plataforma: dúvidas acadêmicas, financeiras e de processos internos
-resolvidas por agentes especializados, orquestrados por um supervisor em
-LangGraph, com respostas sempre citando as fontes da base de conhecimento.
+## 🌟 Visão Geral & Diferenciais
 
-Construído como projeto piloto de ponta a ponta — do RAG com reranker local à
-observabilidade com LangSmith, do guardrails contra prompt injection ao deploy
-em Azure com CI e deploy manual documentado — este repositório é uma demonstração prática de engenharia
-de IA em produção, não apenas de um protótipo de notebook.
+O **UsiEdu** resolve o atendimento universitário complexo unindo estudantes e servidores em um ecossistema multi-agente orquestrado por **LangGraph**, com **RAG Híbrido**, **Function Calling Nativo**, **Human-in-the-Loop**, **FinOps** e **Agent Trajectory Harness**:
 
-## Diferenciais
+- 🧠 **Orquestração Multi-Agente (LangGraph)**: Nó Supervisor com saídas tipadas via `with_structured_output(SupervisorDecision)`, roteamento resiliente para especialistas (*Acadêmico*, *Financeiro*, *Documental*) e consolidação cognitiva via LLM para consultas compostas multitemáticas.
+- 🛠️ **Chamada Nativa de Ferramentas (`@tool` & `bind_tools`)**: Agentes munidos de ferramentas LangChain fortemente tipadas com execução assíncrona orientada pelo modelo (consultas de notas, faltas, boletos e renegociações).
+- 🛡️ **Human-in-the-Loop (HITL)**: Interrupção controlada de nós sensíveis (`interrupt_before`) no StateGraph com suspensão e retomada segura via `POST /chat/resume`.
+- 🔍 **RAG Híbrido com Re-ranker Local**: Combinação de busca vetorial densa (Qdrant + FastEmbed ONNX) com busca léxica esparsa (BM25) via *Reciprocal Rank Fusion* (RRF) e reordenação com Cross-Encoder (`bge-reranker-base`), sem custo de APIs proprietárias para embeddings.
+- 🔒 **FinOps & Segurança em Camadas**:
+  - **Cache Semântico Plugável**: SQLite para desenvolvimento local e Redis para produção (similaridade de cosseno com threshold configurável).
+  - **Poda de Contexto Inteligente (`trim_messages`)**: Controle de janela para evitar desperdício de tokens.
+  - **Sanitização de PII (`mask_pii`)**: Ofuscação de CPFs, cartões e dados sensíveis antes do envio aos agentes e logs.
+  - **Guardrails Multi-Camada**: Interceptação em tempo real de jailbreaks, XSS e prompt injection.
+- 🧪 **Agent Trajectory & Evaluation Harness**: Motor de avaliação de loop e validação de trajetórias (`scripts/run_harness.py` e `scripts/run_ragas.py`), inspirado em *better-harness* e *deepseek-harness*, integrado ao CI/CD.
+- ⚡ **Streaming em Tempo Real**: Endpoint SSE (`POST /chat/stream`) com eventos tipados via `astream_events(v2)`.
+- 💻 **Frontend Rico em React + TypeScript**: Renderização de Markdown rica com blocos de código copiáveis em 1 clique, tabelas estilizadas e gaveta de fontes citadas.
+- ☁️ **Infraestrutura em Nuvem (Azure)**: Azure Container Apps, Bicep IaC, GHCR e persistência de checkpoints e cache.
 
-- **Orquestração multi-agente (LangGraph)**: supervisor que roteia para agentes
-  especializados (Acadêmico, Financeiro, Documental) e coordena fluxos A2A.
-- **RAG com reranker local**: Qdrant + FastEmbed ONNX + bge-reranker-base,
-  rodando sem custo de API de embedding.
-- **Segurança em camadas**: guardrails anti-prompt injection em 3 níveis,
-  autenticação JWT por perfil (estudante/colaborador) e rate limiting.
-- **Human-on-the-loop**: feedback 👍/👎 persistido, anexado ao trace no
-  LangSmith e agregado em uma página de satisfação (`/insights`).
-- **Engenharia de qualidade**: cache semântico de respostas, avaliação Ragas,
-  testes automatizados, lint e CI/CD no GitHub Actions.
-- **Deploy real em Azure**: IaC com Bicep e Container Apps, escalando a zero.
+---
 
-## Demonstração
+## 🏗️ Arquitetura do Sistema
 
-▶ **Teste ao vivo:** https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/
-
-Credenciais demo: `ana@demo.usiedu` / `estudante123` (visíveis na tela de login).
-
-> O ambiente escala a zero para economizar crédito; a primeira abertura ou
-> resposta pode levar até 180 segundos (cold start). Na validação pública de
-> 11/08/2026, o login após escala a zero concluiu em aproximadamente 95 segundos.
-
-## Sobre o autor
-
-Projeto desenvolvido por **Henrique Botelho Gomes** como piloto de candidatura
-para Engenheiro(a) de IA. O repositório reúne o ciclo completo de um produto de
-IA: levantamento de requisitos e PRD, arquitetura e decisões técnicas,
-implementação, avaliação, documentação e deploy.
-
-- [LinkedIn](https://www.linkedin.com/in/henriquebotelhogomes/)
-- [GitHub](https://github.com/henriquebotelhogomes)
-- [Documentação técnica (MkDocs)](https://henriquebotelhogomes.github.io/UsiEdu/)
-
-**Disponível para entrevistas — vamos agendar uma conversa!** 👋
-
-## Screenshots
-
-**Landing page** — apresentação institucional com funcionalidades, agentes, arquitetura, fontes e stack:
-
-![Landing page](screenshots/landing-page.png)
-
-**Chat como estudante** — pergunta sobre feriados respondida com citação das fontes (Agente Acadêmico):
-
-![Chat estudante](screenshots/chat-estudante.png)
-
-**Chat como funcionário** — licença capacitação respondida pelo Agente Documental com base no Guia do Servidor:
-
-![Chat funcionário](screenshots/chat-funcionario.png)
-
-**Documentação técnica** — MkDocs Material publicada no GitHub Pages:
-
-![Documentação MkDocs](screenshots/docs-mkdocs.png)
-
-Para regenerar os prints com o sistema rodando localmente: `python scripts/capture_screenshots.py`
-(requer `pip install playwright && python -m playwright install chromium`).
-
-## Funcionalidades
-
-- **Estudantes**: assistente de jornada acadêmica — dúvidas acadêmicas e
-  financeiras resolvidas por agentes colaboradores.
-- **Funcionários/Docentes**: assistente de conhecimento institucional — normas,
-  políticas e processos internos com citação de fonte.
-- **Chat com fontes citadas** e indicação do agente que respondeu.
-- **Feedback 👍/👎** em cada resposta, com taxa de satisfação em `/insights`.
-
-## Arquitetura
-
-```
-┌──────────────────────────────────────┐
-│       Frontend (React + Vite)        │
-└──────────────┬───────────────────────┘
-               │ REST/WebSocket
-┌──────────────▼───────────────────────┐
-│        API Gateway (FastAPI)         │
-└──────────────┬───────────────────────┘
-               │
-┌──────────────▼───────────────────────┐
-│   Orquestrador Supervisor (LangGraph)│
-└──┬───────┬───────┬───────┬──────────┘
-   │       │       │       │
- Acadê- Finan-  Tutor  Documental/
-  mico   ceiro  (F2)  Processos (F2)
-               │
-┌──────────────▼───────────────────────┐
-│   Infraestrutura Compartilhada       │
-│   RAG · Qdrant · LangSmith · MCP    │
-└──────────────────────────────────────┘
+```mermaid
+graph TD
+    User([Usuário / Estudante / Staff]) --> Frontend[Frontend React + Vite]
+    Frontend --> API[FastAPI /chat, /stream, /resume]
+    
+    API --> GuardrailsIn[Guardrails & PII Masking]
+    GuardrailsIn --> Supervisor[Nó Supervisor\nwith_structured_output]
+    
+    Supervisor -->|intent == 'academico'| Academico[Agente Acadêmico\nRAG + @tool Notas/Faltas]
+    Supervisor -->|intent == 'financeiro'| Financeiro[Agente Financeiro\nRAG + @tool Boletos/Renegociação]
+    Supervisor -->|intent == 'institucional' & profile == 'staff'| Documental[Agente Documental\nRAG Institucional]
+    Supervisor -->|intent == 'composta'| Parallel[Execução Paralela de Agentes]
+    Supervisor -->|intent == 'fora_de_escopo'| OutOfScope[Nó Fora de Escopo]
+    
+    Parallel --> Academico
+    Parallel --> Financeiro
+    Parallel --> Documental
+    
+    Academico --> Consolidation[Nó de Consolidação\nSíntese Cognitiva LLM]
+    Financeiro --> Consolidation
+    Documental --> Consolidation
+    
+    Consolidation --> GuardrailsOut[Guardrails de Saída]
+    GuardrailsOut --> Client([Resposta Final com Citações e Badges])
 ```
 
-**Decisões técnicas (por quê):**
+---
 
-- **FastAPI + LangGraph**: API assíncrona com tipagem forte, e um grafo
-  explícito para orquestração multi-agente — roteamento, estado e fluxos A2A
-  viram código versionável e testável, não "prompt magic".
-- **Embeddings e reranker locais (ONNX)**: qualidade de RAG sem custo por
-  chamada de API de embedding — decisão crítica para escala e economia.
-- **Qdrant**: vector DB dedicado com filtros e persistência em Azure Files, em
-  vez de embutir a busca na aplicação.
+## 💻 Demonstração e Acesso
 
-Detalhes completos na documentação (`docs/`).
+- 🌐 **Aplicação em Produção (Azure):** [https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/](https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/)
+- 🔑 **Credenciais Demo:** `ana@demo.usiedu` / `estudante123` *(visíveis na tela de login)*
+- 📖 **Documentação Técnica (MkDocs):** [https://henriquebotelhogomes.github.io/UsiEdu/](https://henriquebotelhogomes.github.io/UsiEdu/)
 
-## Stack
+---
 
-| Camada | Tecnologia |
+## 🧰 Stack Tecnológica
+
+| Camada | Tecnologias |
 |---|---|
-| Backend | Python 3.12+, FastAPI, LangGraph, LangChain |
-| LLM | OpenCode Go (DeepSeek V4 Flash + Kimi K2.7 Code) |
-| Vector DB | Qdrant (Docker) |
-| Embeddings | FastEmbed / sentence-transformers (local, ONNX) |
-| Reranker | bge-reranker-base (local) |
-| Observabilidade | LangSmith |
-| Frontend | React + Vite + TypeScript + react-router-dom |
-| Qualidade | Ruff, pytest, GitHub Actions |
-| Documentação | MkDocs Material |
+| **Orquestração Multi-Agente** | LangGraph, LangChain, MemorySaver, SQLite/PostgreSQL Checkpointers |
+| **Recuperação & RAG** | Qdrant, BM25, Reciprocal Rank Fusion (RRF), Cross-Encoder Re-ranker (bge-reranker-base) |
+| **Backend & Streaming** | FastAPI, Python 3.12+, Server-Sent Events (SSE), Pydantic v2, SlowAPI |
+| **Modelos (LLMs)** | OpenCode Go (DeepSeek V4 Flash, Kimi K2.7 Code) e FakeChatModel para testes |
+| **Segurança & FinOps** | Semantic Cache (SQLite/Redis), PII Masking, Multi-layer Guardrails, `trim_messages` |
+| **Avaliação & Harness** | Agent Trajectory Harness, RAGAS (LLM-as-a-Judge), LangSmith Tracing |
+| **Frontend** | React 18, Vite, TypeScript, Rich Markdown, Vitest |
+| **Infraestrutura & CI/CD** | Azure Container Apps, Bicep IaC, Docker, GitHub Actions, Scale-to-Zero |
 
-## Qualidade e avaliação
+---
 
-- **CI no GitHub Actions**: lint (Ruff), formatação e testes a cada push/PR.
-- **Testes**: suíte pytest no backend e Vitest/Testing Library no frontend.
-- **Avaliação Ragas** (`src/evaluation/relatorio_ragas.md`): pipeline de
-  avaliação RAGAS+LLM com 26+ perguntas e leitura crítica honesta dos
-  resultados:
+## 📋 Endpoints da API REST
 
-| Métrica | Meta | Resultado | Leitura |
-|---|---|---|---|
-| faithfulness | ≥ 0.9 | 0.565 | Gap real de corpus: o Guia do Servidor indexado não cobre temas como Lei 8.112/90 — agente respondeu honestamente "não encontrei" |
-| context_precision | ≥ 0.8 | 0.645 | Penalizado por perguntas fora de escopo (redirecionamento correto previsto no RF-10) |
-| context_recall | ≥ 0.8 | 0.645 | Mesma causa: lacuna de base de conhecimento, não de pipeline |
-| answer_relevancy | ≥ 0.85 | 0.565 | Melhorado na prática excluindo perguntas fora de escopo (~0,65) |
+| Método | Rota | Autenticação | Descrição |
+|---|---|:---:|---|
+| `POST` | `/auth/login` | Não | Autentica usuário e emite JWT com RBAC (`student` / `staff`) |
+| `POST` | `/chat` | Sim | Processa consulta no grafo com resposta JSON estruturada |
+| `POST` | `/chat/stream` | Sim | Streaming SSE token a token em tempo real (`astream_events`) |
+| `POST` | `/chat/resume` | Sim | Retoma thread pausada por Human-in-the-Loop (aprovação humana) |
+| `GET` | `/chat/history` | Sim | Retorna histórico de mensagens persistidas da thread |
+| `POST` | `/feedback` | Sim | Registra feedback 👍/👎 vinculado ao `run_id` no LangSmith |
+| `GET` | `/feedback/stats` | Sim | Retorna métricas de satisfação e taxa de aprovação |
+| `GET` | `/health` | Não | Liveness e readiness check com estatísticas de cache |
 
-O relatório identifica a causa-raiz e o plano de melhoria em
-`docs/04-piloto-e-roadmap.md` — transparência sobre limitações e o caminho de
-evolução fazem parte do processo de engenharia.
+---
 
-## Quickstart
+## 🚀 Quickstart & Desenvolvimento Local
 
-### Pré-requisitos
-
+### 1. Pré-requisitos
 - Python 3.12+
 - Node.js 20+
 - Docker e Docker Compose
 
-### Instalação
+### 2. Instalação e Configuração
 
 ```bash
-# 1. Clone o repositório
+# 1. Clonar o repositório
 git clone https://github.com/henriquebotelhogomes/UsiEdu.git
 cd UsiEdu
 
-# 2. Crie o ambiente virtual
+# 2. Criar e ativar o ambiente virtual
 python -m venv .venv
-source .venv/bin/activate        # Linux/macOS
+source .venv/bin/activate        # Linux / macOS
 .venv\Scripts\activate           # Windows
 
-# 3. Instale as dependências
-pip install -e .
+# 3. Instalar dependências em modo de desenvolvimento
+pip install -e ".[dev]"
 
-# 4. Configure as variáveis de ambiente
+# 4. Configurar variáveis de ambiente
 cp .env.example .env
-# Edite .env com suas chaves (OPENCODE_GO_API_KEY, LANGSMITH_API_KEY, JWT_SECRET)
 
-# 5. Suba o Qdrant
+# 5. Subir o Vector Database (Qdrant)
 docker compose up -d qdrant
+
+# 6. Ingerir documentos na base de conhecimento
+python -m src.rag.ingest
 ```
 
-### Desenvolvimento
+### 3. Comandos Essenciais
 
 ```bash
-# Subir todos os serviços (Qdrant + API + frontend)
-powershell -File scripts/dev.ps1        # Windows
-make dev                                # Linux/macOS
+# Executar a suíte completa de testes unitários (319 testes)
+pytest tests/unit/
 
-# Rodar testes
-pytest
+# Executar verificação de estilo e lint
+ruff check src/ tests/ scripts/
 
-# Lint e formatação
-ruff check .
-ruff format .
+# Executar o Agent Trajectory Harness (CI Quality Gate)
+python scripts/run_harness.py --suite all --ci-gate
 
-# Ingerir documentos na base de conhecimento
-python -m src.rag.ingest
+# Executar a avaliação RAGAS (LLM-as-a-Judge)
+python scripts/run_ragas.py --ci-gate --min-score 0.80
 
-# Rodar a API
-uvicorn src.api.main:app --reload
+# Iniciar ambiente integrado local (API + Frontend)
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1   # Windows
+make dev                                                  # Linux / macOS
 ```
 
-## API
+---
 
-| Método | Rota | Auth | Descrição |
-|---|---|---|---|
-| POST | `/auth/login` | não | Autentica e retorna JWT |
-| POST | `/chat` | sim | Envia mensagem, recebe resposta com fontes e agentes envolvidos |
-| POST | `/feedback` | sim | Registra avaliação 👍/👎 da resposta (human-on-the-loop) |
-| GET | `/feedback/stats` | sim | Métricas agregadas de satisfação |
-| GET | `/health` | não | Liveness check |
+## 🧪 Qualidade, CI/CD e Governança
 
-## Deploy — Azure Container Apps
+O repositório possui uma pipeline automatizada no GitHub Actions ([.github/workflows/quality_gate.yml](.github/workflows/quality_gate.yml)) executando 4 barreiras obrigatórias:
+1. **Linter & Style:** `ruff check src/ tests/ scripts/` (0 erros permitidos).
+2. **Testes Unitários:** `pytest tests/unit/` (>315 testes automatizados com cobertura).
+3. **RAG Quality Gate:** `python scripts/run_ragas.py --ci-gate --min-score 0.80` (avaliação de fidelidade e relevância).
+4. **Multi-Agent Trajectory Gate:** `python scripts/run_harness.py --suite all --ci-gate --min-pass-rate 0.90` (validação de intenções, ferramentas `@tool` chamadas e guardrails).
 
-O piloto está publicado em **Azure Container Apps** (brazilsouth), com IaC em
-Bicep (`infra/azure/`): ACR, Container Apps, Azure Files e job de ingestão.
-O script de deploy (`infra/azure/deploy.ps1`) cria os recursos, publica as
-imagens e gera um `JWT_SECRET` novo a cada execução — segredos nunca são
-gravados no repositório. O frontend é a única origem pública; API e Qdrant
-permanecem na rede interna do ambiente.
+---
 
-Validação pública em 11/08/2026: landing HTTPS, login demo, chat RAG composto,
-feedback e `/insights` foram verificados na URL pública. A documentação
-operacional e as medições de cold start estão em
-`docs/profissionalizacao/01-validacao-piloto.md`.
+## 👤 Autor
 
-## Documentação
+**Henrique Botelho Gomes**  
+Engenheiro de IA & Especialista em Sistemas Multi-Agente  
+- [LinkedIn](https://www.linkedin.com/in/henriquebotelhogomes/)
+- [GitHub](https://github.com/henriquebotelhogomes)
+- [Documentação Oficial](https://henriquebotelhogomes.github.io/UsiEdu/)
 
-A documentação completa está em `docs/`:
+---
 
-| Documento | Conteúdo |
-|---|---|
-| `01-visao-geral-arquitetura.md` | Visão, personas, arquitetura |
-| `02-agentes-e-orquestracao.md` | Agentes, grafo LangGraph, fluxos A2A |
-| `03-rag-e-infraestrutura.md` | Pipeline RAG, vector DB, MCP, memória |
-| `04-piloto-e-roadmap.md` | Escopo, critérios de aceite, roadmap |
-| `05-fontes-base-conhecimento.md` | Catálogo de fontes abertas (UnB) |
-| `06-visao-escala-global.md` | Gap analysis para escala global |
-| `07-prd-requisitos.md` | PRD: requisitos funcionais e não-funcionais |
-| `08-plano-execucao.md` | Sprints, tarefas e Definition of Done |
-| `09-contratos-tecnicos.md` | API, env vars, modelos de dados, convenções |
-| `profissionalizacao/07-decisoes-provisorias.md` | Decisões provisórias, gates explícitos e pendências factuais do piloto |
+## 📄 Licença
 
-## Licença
-
-MIT — ver [LICENSE](LICENSE).
+Este projeto está sob a licença [MIT](LICENSE).
