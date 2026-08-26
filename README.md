@@ -49,33 +49,33 @@ Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiE
 
 ```mermaid
 graph TD
-    User([Usuário / Estudante / Colaborador]) -->|POST /chat ou /chat/stream| API[FastAPI Gateway]
+    User([Usuário / Estudante / Colaborador]) -->|POST /chat| API[FastAPI Gateway]
     API --> GuardrailsIn[Guardrail de Entrada & PII Masking]
     
     GuardrailsIn --> Cache{Semantic Cache Hit?}
-    Cache -->|Sim (Score >= 0.97)| FastResponse[Resposta Imediata Cacheada]
-    Cache -->|Não| Supervisor[Nó Supervisor\nwith_structured_output]
+    Cache -->|"Sim (Hit)"| FastResponse[Resposta Imediata do Cache]
+    Cache -->|"Não (Miss)"| Supervisor["Nó Supervisor (Structured Output)"]
     
-    Supervisor -->|intent == 'academico'| Academico[Agente Acadêmico\nRAG + @tool get_notas/get_faltas]
-    Supervisor -->|intent == 'financeiro'| Financeiro[Agente Financeiro\nRAG + @tool get_boletos/simular_renegociacao]
-    Supervisor -->|intent == 'institucional' & profile == 'staff'| Documental[Agente Documental\nRAG Base Institucional]
-    Supervisor -->|intent == 'composta'| Parallel[Despacho Paralelo de Agentes]
-    Supervisor -->|intent == 'fora_de_escopo'| OutOfScope[Nó Fora de Escopo]
+    Supervisor -->|intent = academico| Academico["Agente Acadêmico (@tool Notas/Faltas)"]
+    Supervisor -->|intent = financeiro| Financeiro["Agente Financeiro (@tool Boletos/Renegociação)"]
+    Supervisor -->|intent = institucional| Documental["Agente Documental (RAG Institucional)"]
+    Supervisor -->|intent = composta| Parallel["Despacho Paralelo de Agentes"]
+    Supervisor -->|intent = fora_de_escopo| OutOfScope["Nó Fora de Escopo"]
     
     Parallel --> Academico
     Parallel --> Financeiro
     Parallel --> Documental
     
-    Financeiro -->|Ação Sensível: Proposta de Dívida| HITL{HITL Interrupt?}
-    HITL -->|interrupt_before| Suspend[Pausa no Grafo - Aguarda POST /chat/resume]
-    Suspend -->|Aprovação Humana| Consolidation
+    Financeiro -->|Ação Crítica| HITL{HITL Interrupt?}
+    HITL -->|interrupt_before| Suspend["Pausa no Grafo (Aguarda Aprovação)"]
+    Suspend -->|Retomada| Consolidation
     
-    Academico --> Consolidation[Nó de Consolidação\nSíntese Cognitiva LLM]
+    Academico --> Consolidation["Nó de Consolidação (Síntese Cognitiva LLM)"]
     Financeiro --> Consolidation
     Documental --> Consolidation
     
-    Consolidation --> GuardrailsOut[Guardrail de Saída & Content Filter]
-    GuardrailsOut --> SSE[Cliente Web - Streaming SSE / JSON]
+    Consolidation --> GuardrailsOut[Guardrail de Saída]
+    GuardrailsOut --> Client([Cliente Web - Streaming SSE / JSON])
 ```
 
 ---
