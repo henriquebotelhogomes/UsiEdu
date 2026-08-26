@@ -37,3 +37,7 @@ jobs:
       - name: 3. RAG Quality Gate (RAGAS Evaluation Gate)
         run: |
           python scripts/run_ragas.py --ci-gate --min-score 0.80 --limit 5
+
+      - name: 4. Multi-Agent Loop & Trajectory Gate (Agent Harness)
+        run: |
+          python scripts/run_harness.py --suite all --ci-gate --min-pass-rate 0.90

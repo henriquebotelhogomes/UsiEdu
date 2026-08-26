@@ -1,0 +1,19 @@
+[
+  {
+    "id": "SCEN-HITL-01",
+    "name": "Simulação de Renegociação Financeira com Pausa HITL",
+    "description": "Proposta de parcelamento de dívida exige confirmação e pausa no grafo",
+    "category": "hitl",
+    "input_message": "Gostaria de renegociar meus boletos vencidos em 3 vezes.",
+    "profile": "student",
+    "user_id": "ana@demo.usiedu",
+    "expected_intent": "financeiro",
+    "expected_nodes": ["supervisor"],
+    "expected_tools": ["simular_renegociacao"],
+    "forbidden_tools": [],
+    "expect_pii_masking": false,
+    "expect_guardrail_trigger": false,
+    "expect_hitl_interrupt": true,
+    "max_cycles": 2
+  }
+]

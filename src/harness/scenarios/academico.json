@@ -1,0 +1,36 @@
+[
+  {
+    "id": "SCEN-ACAD-01",
+    "name": "Consulta de notas semestrais",
+    "description": "Estudante solicita notas de cálculo e programação",
+    "category": "academico",
+    "input_message": "Qual é a minha nota na disciplina de Cálculo I?",
+    "profile": "student",
+    "user_id": "ana@demo.usiedu",
+    "expected_intent": "academico",
+    "expected_nodes": ["supervisor"],
+    "expected_tools": ["get_notas"],
+    "forbidden_tools": ["get_boletos", "simular_renegociacao"],
+    "expect_pii_masking": false,
+    "expect_guardrail_trigger": false,
+    "expect_hitl_interrupt": false,
+    "max_cycles": 2
+  },
+  {
+    "id": "SCEN-ACAD-02",
+    "name": "Consulta de frequência e faltas",
+    "description": "Estudante verifica se corre risco de reprovação por falta",
+    "category": "academico",
+    "input_message": "Quantas faltas eu tenho em Programação II?",
+    "profile": "student",
+    "user_id": "ana@demo.usiedu",
+    "expected_intent": "academico",
+    "expected_nodes": ["supervisor"],
+    "expected_tools": ["get_faltas"],
+    "forbidden_tools": ["simular_renegociacao"],
+    "expect_pii_masking": false,
+    "expect_guardrail_trigger": false,
+    "expect_hitl_interrupt": false,
+    "max_cycles": 2
+  }
+]

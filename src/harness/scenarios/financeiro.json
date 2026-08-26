@@ -1,0 +1,19 @@
+[
+  {
+    "id": "SCEN-FIN-01",
+    "name": "Consulta de boletos em aberto",
+    "description": "Estudante solicita lista de mensalidades e status",
+    "category": "financeiro",
+    "input_message": "Quais boletos meus estão em aberto ou vencidos?",
+    "profile": "student",
+    "user_id": "ana@demo.usiedu",
+    "expected_intent": "financeiro",
+    "expected_nodes": ["supervisor"],
+    "expected_tools": ["get_boletos"],
+    "forbidden_tools": ["get_notas"],
+    "expect_pii_masking": false,
+    "expect_guardrail_trigger": false,
+    "expect_hitl_interrupt": false,
+    "max_cycles": 2
+  }
+]
