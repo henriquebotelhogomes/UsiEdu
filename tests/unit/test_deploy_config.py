@@ -70,9 +70,9 @@ def test_azure_deploy_supports_ghcr_images() -> None:
     """O script de deploy publica as imagens para o GHCR com usuário GitHub configurável."""
     script = Path("infra/azure/deploy.ps1").read_text(encoding="utf-8")
 
-    assert "$apiImage = \"ghcr.io/$($GitHubUser.ToLower())/usiedu-api:$ImageTag\"" in script
+    assert '$apiImage = "ghcr.io/$($GitHubUser.ToLower())/usiedu-api:$ImageTag"' in script
     expected_frontend = (
-        "$frontendImage = \"ghcr.io/$($GitHubUser.ToLower())/usiedu-frontend:$ImageTag\""
+        '$frontendImage = "ghcr.io/$($GitHubUser.ToLower())/usiedu-frontend:$ImageTag"'
     )
     assert expected_frontend in script
 
@@ -213,4 +213,3 @@ def test_azure_deploy_declares_sqlite_on_azure_files() -> None:
     assert "name: 'USIEDU_FEEDBACK_DB'" in content
     assert "name: 'USIEDU_CACHE_DB'" in content
     assert "name: 'api-data'" in content
-

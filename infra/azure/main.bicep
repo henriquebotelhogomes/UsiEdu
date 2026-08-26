@@ -294,6 +294,14 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               secretRef: 'langsmith-api-key'
             }
             {
+              name: 'LANGSMITH_HIDE_INPUTS'
+              value: 'true'
+            }
+            {
+              name: 'LANGSMITH_HIDE_OUTPUTS'
+              value: 'true'
+            }
+            {
               name: 'LANGCHAIN_PROJECT'
               value: '${namePrefix}-pilot'
             }
@@ -336,6 +344,26 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'USIEDU_CORS_ORIGINS'
               value: 'https://${namePrefix}-frontend.${environment.properties.defaultDomain}'
+            }
+          ]
+          probes: [
+            {
+              type: 'Liveness'
+              httpGet: {
+                path: '/health'
+                port: 8000
+              }
+              initialDelaySeconds: 15
+              periodSeconds: 30
+            }
+            {
+              type: 'Readiness'
+              httpGet: {
+                path: '/ready'
+                port: 8000
+              }
+              initialDelaySeconds: 5
+              periodSeconds: 10
             }
           ]
         }

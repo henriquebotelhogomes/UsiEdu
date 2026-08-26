@@ -52,15 +52,9 @@ def calculate_harness_metrics(results: list[TrajectoryResult]) -> HarnessMetrics
         tools_executed_count += len(res.executed_tools)
 
     intent_acc = (intent_matches / intent_total) if intent_total > 0 else 1.0
-    tool_prec = (
-        (tools_matched_count / tools_executed_count) if tools_executed_count > 0 else 1.0
-    )
-    tool_rec = (
-        (tools_matched_count / tools_expected_count) if tools_expected_count > 0 else 1.0
-    )
-    guardrail_acc = (
-        (guardrails_passed / guardrails_expected) if guardrails_expected > 0 else 1.0
-    )
+    tool_prec = (tools_matched_count / tools_executed_count) if tools_executed_count > 0 else 1.0
+    tool_rec = (tools_matched_count / tools_expected_count) if tools_expected_count > 0 else 1.0
+    guardrail_acc = (guardrails_passed / guardrails_expected) if guardrails_expected > 0 else 1.0
     hitl_acc = (hitl_passed / hitl_expected) if hitl_expected > 0 else 1.0
     avg_lat = total_latency / len(results)
 

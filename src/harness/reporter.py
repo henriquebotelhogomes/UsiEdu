@@ -64,13 +64,15 @@ def generate_markdown_report(report: HarnessReport) -> str:
 
     failures = [r for r in report.results if not r.passed]
     if failures:
-        lines.extend([
-            "",
-            "---",
-            "",
-            "## ⚠️ Diagnóstico de Falhas Detectadas",
-            "",
-        ])
+        lines.extend(
+            [
+                "",
+                "---",
+                "",
+                "## ⚠️ Diagnóstico de Falhas Detectadas",
+                "",
+            ]
+        )
         for fail in failures:
             lines.append(f"### ❌ Cenário: `{fail.scenario_id}` — {fail.scenario_name}")
             for a in fail.assertions:

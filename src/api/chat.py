@@ -157,9 +157,7 @@ async def chat(
     agent_results = final_state.get("agent_results", {})
     agents_involved = list(agent_results.keys()) if agent_results else ["supervisor"]
     raw_sources = final_state.get("retrieved_sources", [])
-    sources = [
-        s if isinstance(s, Source) else Source(**s) for s in raw_sources
-    ]
+    sources = [s if isinstance(s, Source) else Source(**s) for s in raw_sources]
 
     decision = final_state.get("supervisor_decision")
     if hasattr(decision, "intent"):
@@ -286,9 +284,7 @@ async def chat_resume(
         raise HTTPException(status_code=403, detail="Sessão pertence a outro usuário")
 
     if payload.user_input:
-        await _graph.aupdate_state(
-            config, {"messages": [HumanMessage(content=payload.user_input)]}
-        )
+        await _graph.aupdate_state(config, {"messages": [HumanMessage(content=payload.user_input)]})
 
     run_id = uuid.uuid4()
     run_config = build_run_config(current_user, payload.session_id, run_id)
@@ -301,9 +297,7 @@ async def chat_resume(
     agent_results = final_state.get("agent_results", {})
     agents_involved = list(agent_results.keys()) if agent_results else ["supervisor"]
     raw_sources = final_state.get("retrieved_sources", [])
-    sources = [
-        s if isinstance(s, Source) else Source(**s) for s in raw_sources
-    ]
+    sources = [s if isinstance(s, Source) else Source(**s) for s in raw_sources]
     decision = final_state.get("supervisor_decision")
     if hasattr(decision, "intent"):
         intent = decision.intent

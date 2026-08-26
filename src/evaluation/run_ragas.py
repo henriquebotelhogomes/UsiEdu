@@ -440,16 +440,14 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    output = asyncio.run(
-        executar_avaliacao(args.dataset, args.output, args.limit, args.feedback)
-    )
+    output = asyncio.run(executar_avaliacao(args.dataset, args.output, args.limit, args.feedback))
     print(f"Relatório gerado em: {output}")
 
     if args.ci_gate:
         # Lê o relatório gerado para verificar conformidade
         perguntas = carregar_dataset(args.dataset)
         if args.limit:
-            perguntas = perguntas[:args.limit]
+            perguntas = perguntas[: args.limit]
         print(f"\n[CI-GATE] Validando threshold minimo de {args.min_score:.2f}...")
         # Se executar com sucesso e gerar relatório, aprovado
         print("[CI-GATE] [OK] Qualidade validada com sucesso!")

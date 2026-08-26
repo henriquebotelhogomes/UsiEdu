@@ -83,10 +83,12 @@ def make_consolidation_node(synthesis_llm: BaseChatModel | None = None) -> calla
                 "Sintetize uma resposta unificada e fluida:"
             )
             try:
-                res = await synthesis_llm.ainvoke([
-                    SystemMessage(content=SYNTHESIS_SYSTEM_PROMPT),
-                    HumanMessage(content=prompt),
-                ])
+                res = await synthesis_llm.ainvoke(
+                    [
+                        SystemMessage(content=SYNTHESIS_SYSTEM_PROMPT),
+                        HumanMessage(content=prompt),
+                    ]
+                )
                 consolidated = res.content if hasattr(res, "content") else str(res)
             except Exception:
                 consolidated = "\n\n".join(responses)
