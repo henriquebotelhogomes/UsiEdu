@@ -21,6 +21,7 @@ function formatarData(iso: string): string {
 export default function InsightsPage({ user, onLogout }: InsightsPageProps) {
   const [stats, setStats] = useState<FeedbackStats | null>(null);
   const [recent, setRecent] = useState<FeedbackRecentItem[]>([]);
+  const [filterRating, setFilterRating] = useState<"all" | "up" | "down">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,82 +51,151 @@ export default function InsightsPage({ user, onLogout }: InsightsPageProps) {
 
   const satisfacaoPct = stats && stats.total > 0 ? Math.round(stats.satisfaction * 100) : null;
 
+  const filteredRecent = recent.filter((item) => {
+    if (filterRating === "all") return true;
+    return item.rating === filterRating;
+  });
+
   return (
     <>
       <header className="header">
         <h1>UsiEdu — Satisfação</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link to="/chat" className="insights-back-link">
+          <Link to="/chat" className="insights-back-link" aria-label="Voltar ao chat">
             ← Voltar ao chat
           </Link>
           <span className="header-user">
             {user.display_name} ({user.profile})
           </span>
-          <button className="logout-btn" onClick={onLogout}>
+          <button className="logout-btn" onClick={onLogout} aria-label="Sair da conta">
             Sair
           </button>
         </div>
       </header>
 
       <div className="insights-page">
-        {loading && <div className="loading">Carregando métricas</div>}
-        {error && <div className="insights-error">{error}</div>}
+        {loading && <div className="loading" role="status">Carregando métricas</div>}
+        {error && <div className="insights-error" role="alert">{error}</div>}
 
         {!loading && !error && stats && (
           <>
             <div className="insights-cards">
-              <div className="insights-card">
+              <div className="insights-card total">
+                <div className="insights-card-header">
+                  <span className="insights-card-icon">📊</span>
+                  <span className="insights-card-label">Total de avaliações</span>
+                </div>
                 <div className="insights-card-value">{stats.total}</div>
-                <div className="insights-card-label">Total de avaliações</div>
               </div>
+
               <div className="insights-card up">
-                <div className="insights-card-value">👍 {stats.up}</div>
-                <div className="insights-card-label">Respostas aprovadas</div>
+                <div className="insights-card-header">
+                  <span className="insights-card-icon">👍</span>
+                  <span className="insights-card-label">Respostas aprovadas</span>
+                </div>
+                <div className="insights-card-value">{stats.up}</div>
               </div>
+
               <div className="insights-card down">
-                <div className="insights-card-value">👎 {stats.down}</div>
-                <div className="insights-card-label">Respostas reprovadas</div>
+                <div className="insights-card-header">
+                  <span className="insights-card-icon">👎</span>
+                  <span className="insights-card-label">Respostas reprovadas</span>
+                </div>
+                <div className="insights-card-value">{stats.down}</div>
               </div>
+
               <div className="insights-card satisfaction">
+                <div className="insights-card-header">
+                  <span className="insights-card-icon">⭐</span>
+                  <span className="insights-card-label">Taxa de satisfação</span>
+                </div>
                 <div className="insights-card-value">
                   {satisfacaoPct === null ? "—" : `${satisfacaoPct}%`}
                 </div>
-                <div className="insights-card-label">Taxa de satisfação</div>
+                {satisfacaoPct !== null && (
+                  <div className="csat-progress-bar" role="progressbar" aria-valuenow={satisfacaoPct} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="csat-progress-fill" style={{ width: `${satisfacaoPct}%` }} />
+                  </div>
+                )}
               </div>
             </div>
 
-            <h2 className="insights-section-title">Últimos feedbacks</h2>
-            {recent.length === 0 ? (
+            <div className="insights-section-header">
+              <h2 className="insights-section-title">Últimos feedbacks</h2>
+              <div className="insights-filter-chips" role="group" aria-label="Filtrar por avaliação">
+                <button
+                  className={`filter-chip ${filterRating === "all" ? "active" : ""}`}
+                  onClick={() => setFilterRating("all")}
+                  aria-pressed={filterRating === "all"}
+                >
+                  Todos ({recent.length})
+                </button>
+                <button
+                  className={`filter-chip ${filterRating === "up" ? "active" : ""}`}
+                  onClick={() => setFilterRating("up")}
+                  aria-pressed={filterRating === "up"}
+                >
+                  👍 Úteis ({recent.filter((r) => r.rating === "up").length})
+                </button>
+                <button
+                  className={`filter-chip ${filterRating === "down" ? "active" : ""}`}
+                  onClick={() => setFilterRating("down")}
+                  aria-pressed={filterRating === "down"}
+                >
+                  👎 Ajustar ({recent.filter((r) => r.rating === "down").length})
+                </button>
+              </div>
+            </div>
+
+            {filteredRecent.length === 0 ? (
               <div className="empty-state insights-empty">
                 <div className="icon">💬</div>
-                <h2>Ainda não há feedback registrado</h2>
-                <p>Avalie respostas no chat com 👍/👎 para vê-las aqui.</p>
+                <h2>
+                  {recent.length === 0
+                    ? "Ainda não há feedback registrado"
+                    : "Nenhum feedback neste filtro"}
+                </h2>
+                <p>
+                  {recent.length === 0
+                    ? "Avalie respostas no chat com 👍/👎 para vê-las aqui."
+                    : "Não há registros para a categoria selecionada."}
+                </p>
               </div>
             ) : (
-              <table className="insights-table">
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Perfil</th>
-                    <th>Avaliação</th>
-                    <th>Comentário</th>
-                    <th>Ref.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recent.map((item) => (
-                    <tr key={`${item.message_ref}-${item.created_at}`}>
-                      <td className="insights-cell-date">{formatarData(item.created_at)}</td>
-                      <td>{PERFIL_LABEL[item.profile] ?? item.profile}</td>
-                      <td>{item.rating === "up" ? "👍" : "👎"}</td>
-                      <td className="insights-cell-comment">{item.comment ?? "—"}</td>
-                      <td>
-                        <code className="insights-ref">{item.message_ref}</code>
-                      </td>
+              <div className="insights-table-container">
+                <table className="insights-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Perfil</th>
+                      <th>Avaliação</th>
+                      <th>Comentário</th>
+                      <th>Ref.</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredRecent.map((item) => (
+                      <tr key={`${item.message_ref}-${item.created_at}`}>
+                        <td className="insights-cell-date">{formatarData(item.created_at)}</td>
+                        <td>
+                          <span className={`profile-badge ${item.profile}`}>
+                            {PERFIL_LABEL[item.profile] ?? item.profile}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`rating-pill ${item.rating}`}>
+                            {item.rating === "up" ? "👍 Positivo" : "👎 Negativo"}
+                          </span>
+                        </td>
+                        <td className="insights-cell-comment">{item.comment ?? "—"}</td>
+                        <td>
+                          <code className="insights-ref">{item.message_ref}</code>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </>
         )}
@@ -133,3 +203,4 @@ export default function InsightsPage({ user, onLogout }: InsightsPageProps) {
     </>
   );
 }
+

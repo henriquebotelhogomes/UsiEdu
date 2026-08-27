@@ -96,3 +96,10 @@ export type ChatStreamEvent =
   | { event: "token"; delta: string }
   | ({ event: "final" } & ChatStreamFinal)
   | { event: "error"; detail: string };
+
+export interface ChatSessionSummary {
+  id: string;
+  title: string;
+  createdAt: number;
+  lastMessage?: string;
+}
