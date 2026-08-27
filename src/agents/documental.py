@@ -62,13 +62,13 @@ def make_documental_node(
             context_text = "Nenhum contexto disponível no momento."
 
         # Monta o prompt completo
-        from src.tools.academico_tools import get_data_atual_formatada
+        from src.orchestration.context import get_system_context
 
         context_block = (
             f"{context_text}\n\n## Histórico da conversa\n{_format_messages(state['messages'])}"
         )
         system_prompt = DOCUMENTAL_SYSTEM_PROMPT.format(
-            data_atual=get_data_atual_formatada(),
+            system_context=get_system_context(profile="staff"),
             context=context_block,
             messages=_format_messages(state["messages"]),
         )

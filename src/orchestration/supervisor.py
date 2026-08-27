@@ -51,11 +51,10 @@ def make_supervisor_node(router_llm: BaseChatModel) -> callable:
         else:
             profile_desc = "student (estudante)"
 
-        from src.tools.academico_tools import get_data_atual_formatada
+        from src.orchestration.context import get_system_context
 
         system_prompt = SUPERVISOR_SYSTEM_PROMPT.format(
-            data_atual=get_data_atual_formatada(),
-            profile=profile_desc,
+            system_context=get_system_context(profile=profile_desc),
             messages=messages_text,
         )
 
