@@ -188,6 +188,20 @@ def main() -> None:
         json.dumps(result, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    if result["decision"] == "block":
+        total_findings = len(result["blocking_findings"])
+        img_name = args.image or ""
+        msg = f"[IMAGE POLICY BLOCKED] Imagem {img_name} bloqueada: {total_findings} finding(s)"
+        print(msg)
+        for finding in result["blocking_findings"]:
+            cve = finding["vulnerability_id"]
+            sev = finding["severity"]
+            pkg = finding["package"]
+            inst = finding["installed_version"]
+            fix = finding["fixed_version"]
+            print(f"  - {cve} ({sev}) em {pkg} {inst} -> Fix: {fix}")
+    else:
+        print(f"[IMAGE POLICY PASSED] Imagem {args.image or ''} aprovada para promoção.")
     raise SystemExit(1 if result["decision"] == "block" else 0)
 
 
