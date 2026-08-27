@@ -49,13 +49,17 @@ def make_academico_node(
         user_id = state.get("user_id", "")
         last_message = state["messages"][-1].content if state["messages"] else ""
 
-        # Recupera contexto RAG
+        # Recupera contexto RAG com resolução coreferencial de consulta
+        from src.rag.query_rewriter import rewrite_query_for_rag
+
+        search_query = await rewrite_query_for_rag(state.get("messages", []), agent_llm)
+
         context_text = ""
         retrieved_sources: list[Source] = []
 
         if retriever:
             try:
-                results = retriever.search(last_message, profile="student")
+                results = retriever.search(search_query, profile="student")
                 context_text = _format_context(results)
                 retrieved_sources = [r.source for r in results]
             except Exception:

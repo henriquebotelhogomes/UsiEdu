@@ -45,7 +45,11 @@ def make_documental_node(
         # Extrai a última mensagem do usuário
         last_message = state["messages"][-1].content if state["messages"] else ""
 
-        # Recupera contexto RAG
+        # Recupera contexto RAG com resolução coreferencial de consulta
+        from src.rag.query_rewriter import rewrite_query_for_rag
+
+        search_query = await rewrite_query_for_rag(state.get("messages", []), agent_llm)
+
         context_text = ""
         retrieved_sources: list[Source] = []
 
@@ -53,7 +57,7 @@ def make_documental_node(
             try:
                 # Coleção institucional contém docs público staff;
                 # o filtro segue o documento, não o perfil do usuário
-                results = retriever.search(last_message, profile="staff")
+                results = retriever.search(search_query, profile="staff")
                 context_text = _format_context(results)
                 retrieved_sources = [r.source for r in results]
             except Exception:
