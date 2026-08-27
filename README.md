@@ -95,6 +95,7 @@ def get_notas(aluno_id: str) -> dict:
     """Consulta o histórico de notas e médias semestrais do estudante."""
     return db.query_grades(aluno_id)
 
+
 agent_model = model.bind_tools([get_notas, get_faltas])
 ```
 

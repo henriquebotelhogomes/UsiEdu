@@ -32,6 +32,9 @@ env/
 htmlcov/
 .coverage
 coverage.xml
+artifacts/
+frontend/e2e-report.json
+
 
 # Ruff
 .ruff_cache/
