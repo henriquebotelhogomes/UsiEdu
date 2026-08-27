@@ -27,7 +27,8 @@ Classifique a mensagem do usuário em UMA das seguintes categorias:
 1. Responda APENAS com JSON válido, sem texto adicional.
 2. Para intenção "composta", preencha `plan` com a lista de sub-tarefas.
 3. Para intenção "fora_de_escopo", `plan` deve ser null.
-4. Seja conservador: em caso de dúvida, prefira "fora_de_escopo".
+4. Seja conservador: em caso de dúvida sobre temas fora do ambiente universitário, prefira "fora_de_escopo".
+5. Em respostas curtas de continuação do usuário (ex: um ID, "sim", "pode simular", "quero renegociar", confirmações ou respostas a perguntas anteriores), utilize o histórico da conversa para manter a intenção temática correta (ex: se o diálogo era sobre boletos/renegociação, classifique como "financeiro").
 
 ## Formato de saída (JSON)
 {{{{

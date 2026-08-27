@@ -68,8 +68,13 @@ def make_financeiro_node(
         else:
             context_text = "Nenhum contexto disponível no momento."
 
-        # Processa ferramentas
-        tool_context = await _executar_ferramentas_financeiras(user_id, last_message)
+        # Processa ferramentas considerando histórico recente de intenção
+        combined_query = " ".join(
+            m.content
+            for m in state["messages"][-3:]
+            if hasattr(m, "content") and isinstance(m.content, str)
+        )
+        tool_context = await _executar_ferramentas_financeiras(user_id, combined_query)
 
         # Monta prompt completo
         context_block = f"{context_text}\n\n## Dados do aluno (ferramentas)\n{tool_context}"
