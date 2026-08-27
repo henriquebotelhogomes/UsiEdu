@@ -132,3 +132,40 @@ class TestExecutarFerramentasAcademicas:
             "carlos@demo.usiedu", "Quero minhas notas"
         )
         assert "não possui dados acadêmicos" in resultado
+
+    @pytest.mark.asyncio
+    async def test_consulta_dias_letivos_retorna_calculo(self) -> None:
+        """Consulta mencionando dias letivos deve acionar cálculo de calendário."""
+        resultado = await _executar_ferramentas_academicas(
+            "ana@demo.usiedu", "quantos dias letivos teremos ainda este ano?"
+        )
+        assert "Cálculo exato de dias e calendário acadêmico" in resultado
+        assert "Último dia de aulas" in resultado
+        assert "14/12/2026" in resultado
+        assert "Dias de aulas restantes" in resultado
+
+
+class TestCalendarTools:
+    """Testes dos utilitários de calendário e data."""
+
+    @pytest.mark.asyncio
+    async def test_get_data_atual_retorna_data(self) -> None:
+        """get_data_atual deve retornar data no formato esperado."""
+        from src.tools.academico_tools import get_data_atual
+
+        res = await get_data_atual()
+        assert "data" in res
+        assert "formatada" in res
+        assert res["ano"] >= 2026
+
+    @pytest.mark.asyncio
+    async def test_calcular_dias_letivos_restantes_calculo_determinístico(self) -> None:
+        """calcular_dias_letivos_restantes com data base determinística."""
+        from src.tools.academico_tools import calcular_dias_letivos_restantes
+
+        res = await calcular_dias_letivos_restantes("2026-08-27")
+        assert res["ultimo_dia_aulas"] == "14/12/2026"
+        assert res["ultimo_dia_periodo_letivo"] == "19/12/2026"
+        assert res["dias_de_aulas_restantes"] > 0
+        assert res["dias_letivos_totais_restantes"] >= res["dias_de_aulas_restantes"]
+        assert len(res["feriados_restantes"]) > 0

@@ -72,8 +72,11 @@ def make_academico_node(
         tool_context = await _executar_ferramentas_academicas(user_id, combined_query)
 
         # Monta prompt completo
+        from src.tools.academico_tools import get_data_atual_formatada
+
         context_block = f"{context_text}\n\n## Dados do aluno (ferramentas)\n{tool_context}"
         system_prompt = ACADEMICO_SYSTEM_PROMPT.format(
+            data_atual=get_data_atual_formatada(),
             context=context_block,
             messages=_format_messages(state["messages"]),
         )
@@ -107,6 +110,7 @@ def make_academico_node(
 
 async def _executar_ferramentas_academicas(user_id: str, query: str) -> str:
     """Executa as ferramentas acadêmicas pertinentes à consulta."""
+    from src.tools.academico_tools import calcular_dias_letivos_restantes
     from src.tools.mock_data import USUARIOS_DEMO
 
     usuario = USUARIOS_DEMO.get(user_id)
@@ -121,6 +125,45 @@ async def _executar_ferramentas_academicas(user_id: str, query: str) -> str:
         return "ID de aluno não vinculado ao usuário."
 
     partes = []
+
+    # Verifica se a consulta envolve dias letivos, aulas restantes ou datas do calendário
+    if any(
+        palavra in query.lower()
+        for palavra in [
+            "dia letivo",
+            "dias letivos",
+            "dias de aula",
+            "aulas restam",
+            "quantos dias",
+            "dias faltam",
+            "término das aulas",
+            "termino das aulas",
+            "fim do semestre",
+            "fim das aulas",
+            "fim do ano",
+            "quando acaba",
+            "quando terminam",
+            "dias de aula restantes",
+            "dias letivos restantes",
+        ]
+    ):
+        dias_info = await calcular_dias_letivos_restantes()
+        feriados_txt = (
+            ", ".join(dias_info["feriados_restantes"])
+            if dias_info["feriados_restantes"]
+            else "Nenhum feriado restante"
+        )
+        partes.append(
+            f"Cálculo exato de dias e calendário acadêmico vigente (2026.2):\n"
+            f"  - Data atual de referência: {dias_info['data_referencia']}\n"
+            f"  - Último dia de aulas: {dias_info['ultimo_dia_aulas']}\n"
+            f"  - Último dia do período letivo: {dias_info['ultimo_dia_periodo_letivo']}\n"
+            f"  - Dias de aulas restantes (segunda a sexta, excluindo feriados): "
+            f"{dias_info['dias_de_aulas_restantes']} dias\n"
+            f"  - Dias letivos totais restantes (segunda a sábado, excluindo feriados): "
+            f"{dias_info['dias_letivos_totais_restantes']} dias\n"
+            f"  - Feriados descontados no período restante: {feriados_txt}"
+        )
 
     # Verifica se a consulta menciona notas
     if any(palavra in query.lower() for palavra in ["nota", "notas", "boletim", "desempenho"]):

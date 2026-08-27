@@ -77,8 +77,11 @@ def make_financeiro_node(
         tool_context = await _executar_ferramentas_financeiras(user_id, combined_query)
 
         # Monta prompt completo
+        from src.tools.academico_tools import get_data_atual_formatada
+
         context_block = f"{context_text}\n\n## Dados do aluno (ferramentas)\n{tool_context}"
         system_prompt = FINANCEIRO_SYSTEM_PROMPT.format(
+            data_atual=get_data_atual_formatada(),
             context=context_block,
             messages=_format_messages(state["messages"]),
         )
