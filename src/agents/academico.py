@@ -93,7 +93,7 @@ def make_academico_node(
         }
 
         return {
-            "agent_results": {**state.get("agent_results", {}), "academico": result},
+            "agent_results": {"academico": result},
             "retrieved_sources": retrieved_sources,
         }
 

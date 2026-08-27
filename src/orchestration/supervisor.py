@@ -111,6 +111,8 @@ def make_supervisor_node(router_llm: BaseChatModel) -> callable:
             "supervisor_decision": decision,
             "cycle_count": cycle_count,
             "delegations": state.get("delegations", []) + [delegation],
+            "agent_results": {},
+            "retrieved_sources": [],
         }
 
     return supervisor_node

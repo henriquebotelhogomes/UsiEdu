@@ -94,7 +94,7 @@ def make_documental_node(
         }
 
         return {
-            "agent_results": {**state.get("agent_results", {}), "documental": result},
+            "agent_results": {"documental": result},
             "retrieved_sources": retrieved_sources,
         }
 

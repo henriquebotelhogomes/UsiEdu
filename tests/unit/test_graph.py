@@ -297,3 +297,39 @@ class TestGraphState:
         """Delegações devem ser preservadas no estado final."""
         result = await chat_graph.ainvoke(default_state, default_config)
         assert len(result.get("delegations", [])) > 0
+
+    @pytest.mark.asyncio
+    async def test_multi_turn_isolamento_de_agentes(self, default_state, default_config) -> None:
+        """Turno 2 não deve herdar agent_results do Turno 1 na mesma sessão."""
+        # Turno 1: Academico
+        router_llm_1 = FakeChatModel(
+            default_response=json.dumps(
+                SupervisorDecision(intent="academico", plan=None, reasoning="notas")
+            )
+        )
+        agent_llm_1 = FakeChatModel(default_response="Notas do aluno: 9.0")
+        graph_1 = create_chat_graph(router_llm=router_llm_1, agent_llm=agent_llm_1)
+        state_1 = await graph_1.ainvoke(default_state, default_config)
+
+        assert "academico" in state_1["agent_results"]
+
+        # Turno 2: Financeiro no mesmo estado / sessão
+        router_llm_2 = FakeChatModel(
+            default_response=json.dumps(
+                SupervisorDecision(intent="financeiro", plan=None, reasoning="boletos")
+            )
+        )
+        agent_llm_2 = FakeChatModel(default_response="Boletos do aluno: R$ 500")
+        graph_2 = create_chat_graph(router_llm=router_llm_2, agent_llm=agent_llm_2)
+
+        state_2_input = {
+            **state_1,
+            "messages": state_1["messages"] + [HumanMessage(content="Qual o valor do meu boleto?")],
+        }
+        state_2 = await graph_2.ainvoke(state_2_input, default_config)
+
+        # No Turno 2, apenas financeiro deve estar em agent_results e na resposta
+        assert "financeiro" in state_2["agent_results"]
+        assert "academico" not in state_2["agent_results"]
+        assert "Notas do aluno" not in state_2["messages"][-1].content
+        assert "Boletos do aluno" in state_2["messages"][-1].content

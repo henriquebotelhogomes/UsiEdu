@@ -17,11 +17,13 @@ def reduce_agent_results(
     current: dict[str, AgentResult] | None,
     update: dict[str, AgentResult] | None,
 ) -> dict[str, AgentResult]:
-    """Reducer para agent_results: merge de dicionários (suporta paralelo)."""
+    """Reducer para agent_results: merge de dicionários (suporta paralelo e reset)."""
+    if update is None:
+        return current or {}
+    if update == {}:
+        return {}
     if current is None:
         current = {}
-    if update is None:
-        return current
     return {**current, **update}
 
 
@@ -29,11 +31,13 @@ def reduce_retrieved_sources(
     current: list[Source] | None,
     update: list[Source] | None,
 ) -> list[Source]:
-    """Reducer para retrieved_sources: concatena listas (suporta paralelo)."""
+    """Reducer para retrieved_sources: concatena listas (suporta paralelo e reset)."""
+    if update is None:
+        return current or []
+    if update == []:
+        return []
     if current is None:
         current = []
-    if update is None:
-        return current
     return current + [s for s in update if s not in current]
 
 

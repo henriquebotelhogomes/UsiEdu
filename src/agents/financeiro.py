@@ -98,7 +98,7 @@ def make_financeiro_node(
         }
 
         return {
-            "agent_results": {**state.get("agent_results", {}), "financeiro": result},
+            "agent_results": {"financeiro": result},
             "retrieved_sources": retrieved_sources,
         }
 
