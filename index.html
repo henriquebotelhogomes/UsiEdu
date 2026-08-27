@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#usiedu-documentacao-tecnica" class="md-skip">
+        <a href="#usiedu-documentacao-tecnica-e-arquitetural" class="md-skip">
           Pular para conteúdo
         </a>
       
@@ -320,10 +320,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#o-que-a-plataforma-faz" class="md-nav__link">
+  <a href="#pilares-da-arquitetura" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O que a plataforma faz
+        🎯 Pilares da Arquitetura
       
     </span>
   </a>
@@ -334,7 +334,7 @@
   <a href="#navegacao-recomendada" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Navegação recomendada
+        🧭 Navegação Recomendada
       
     </span>
   </a>
@@ -342,10 +342,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#stack-principal" class="md-nav__link">
+  <a href="#stack-tecnologica-principal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Stack principal
+        🧰 Stack Tecnológica Principal
       
     </span>
   </a>
@@ -353,10 +353,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#repositorio" class="md-nav__link">
+  <a href="#repositorio-oficial" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Repositório
+        🐙 Repositório Oficial
       
     </span>
   </a>
@@ -1070,10 +1070,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#o-que-a-plataforma-faz" class="md-nav__link">
+  <a href="#pilares-da-arquitetura" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O que a plataforma faz
+        🎯 Pilares da Arquitetura
       
     </span>
   </a>
@@ -1084,7 +1084,7 @@
   <a href="#navegacao-recomendada" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Navegação recomendada
+        🧭 Navegação Recomendada
       
     </span>
   </a>
@@ -1092,10 +1092,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#stack-principal" class="md-nav__link">
+  <a href="#stack-tecnologica-principal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Stack principal
+        🧰 Stack Tecnológica Principal
       
     </span>
   </a>
@@ -1103,10 +1103,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#repositorio" class="md-nav__link">
+  <a href="#repositorio-oficial" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Repositório
+        🐙 Repositório Oficial
       
     </span>
   </a>
@@ -1133,64 +1133,98 @@
   
 
 
-<h1 id="usiedu-documentacao-tecnica">UsiEdu — Documentação Técnica<a class="headerlink" href="#usiedu-documentacao-tecnica" title="Permanent link">&para;</a></h1>
-<p><strong>UsiEdu</strong> é uma plataforma multi-agente de IA conversacional para educação,
-desenvolvida como piloto para atendimento de dúvidas acadêmicas, financeiras e
-institucionais com respostas fundamentadas em documentos oficiais.</p>
-<h2 id="o-que-a-plataforma-faz">O que a plataforma faz<a class="headerlink" href="#o-que-a-plataforma-faz" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Responde perguntas de <strong>estudantes</strong> (matrícula, notas, faltas, calendário, boletos)
-  e de <strong>servidores</strong> (normas internas, direitos, políticas institucionais).</li>
-<li>Usa <strong>RAG híbrido</strong> (busca vetorial + BM25 + reranking) sobre documentos reais,
-  sempre <strong>citando a fonte</strong> de cada resposta.</li>
-<li>Orquestra agentes especializados via <strong>LangGraph</strong> com supervisor de intenções,
-  memória de sessão e tratamento educado de perguntas fora de escopo.</li>
-</ul>
-<h2 id="navegacao-recomendada">Navegação recomendada<a class="headerlink" href="#navegacao-recomendada" title="Permanent link">&para;</a></h2>
+<h1 id="usiedu-documentacao-tecnica-e-arquitetural">UsiEdu — Documentação Técnica e Arquitetural<a class="headerlink" href="#usiedu-documentacao-tecnica-e-arquitetural" title="Permanent link">&para;</a></h1>
+<p><strong>UsiEdu</strong> é uma plataforma conversacional multi-agente de padrão <strong>Scale-up Enterprise</strong>, projetada para unificar o atendimento e autosserviço de instituições de ensino superior com respostas determinísticas, fundamentadas e auditáveis.</p>
+<hr />
+<h2 id="pilares-da-arquitetura">🎯 Pilares da Arquitetura<a class="headerlink" href="#pilares-da-arquitetura" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Orquestração Multi-Agente com LangGraph:</strong></li>
+<li>Grafo de estados determinístico (<code>StateGraph</code>) com supervisor com saída estruturada tipada (<code>with_structured_output</code>), checkpointers SQLite/Postgres e suporte a <code>interrupt_before</code> para <strong>Human-in-the-Loop (HITL)</strong>.</li>
+<li>
+<p>Reducers de estado resilientes a conversas multi-turnos com reset explícito de contexto.</p>
+</li>
+<li>
+<p><strong>RAG Híbrido em 4 Estágios:</strong></p>
+</li>
+<li><strong>Busca Densa:</strong> Qdrant Vector DB com embeddings locais otimizados via ONNX.</li>
+<li><strong>Busca Esparsa:</strong> BM25 lexical search para precisão em termos regulatórios e leis.</li>
+<li><strong>Fusão RRF:</strong> Reciprocal Rank Fusion ($k=60$) combinando os rankings.</li>
+<li>
+<p><strong>Re-ranking:</strong> Cross-Encoder com <code>BAAI/bge-reranker-base</code> para seleção cirúrgica dos Top Chunks.</p>
+</li>
+<li>
+<p><strong>Middleware de Contexto do Sistema (Grounding Universal):</strong></p>
+</li>
+<li>
+<p>Injeção dinâmica de data/hora oficial no fuso de Brasília, fuso horário, semestre letivo e perfil de sessão antes de qualquer chamada LLM.</p>
+</li>
+<li>
+<p><strong>FinOps &amp; AI Safety:</strong></p>
+</li>
+<li>Semantic Caching vetorial com limiar de similaridade $\ge 0.92$ (respostas em &lt;15ms e custo zero de tokens).</li>
+<li>
+<p>Mascaramento de dados sensíveis (PII Masking) e poda dinâmica de tokens (<code>trim_messages</code>).</p>
+</li>
+<li>
+<p><strong>Qualidade Contínua e LLM-as-a-Judge:</strong></p>
+</li>
+<li>Suíte com mais de <strong>450 testes unitários automatizados</strong> (100% aprovados).</li>
+<li>Quality Gate de CI/CD baseado no framework <strong>RAGAS</strong> (<em>Faithfulness $\ge 0.85$</em>) e <strong>Agent Trajectory Harness</strong>.</li>
+</ol>
+<hr />
+<h2 id="navegacao-recomendada">🧭 Navegação Recomendada<a class="headerlink" href="#navegacao-recomendada" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Seção</th>
-<th>Por onde começar</th>
+<th>Descrição</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Arquitetura geral</td>
 <td><a href="01-visao-geral-arquitetura/">Visão Geral da Arquitetura</a></td>
+<td>Topologia de nós, fluxo de dados e decisões arquiteturais</td>
 </tr>
 <tr>
-<td>Agentes e fluxo de conversa</td>
 <td><a href="02-agentes-e-orquestracao/">Agentes e Orquestração</a></td>
+<td>Papéis dos agentes especialistas, supervisor e consolidação</td>
 </tr>
 <tr>
-<td>Pipeline RAG e infraestrutura</td>
 <td><a href="03-rag-e-infraestrutura/">RAG e Infraestrutura</a></td>
+<td>Pipeline de ingestão, chunking semântico e Qdrant</td>
 </tr>
 <tr>
-<td>Escopo do piloto e critérios de aceite</td>
 <td><a href="04-piloto-e-roadmap/">Piloto e Roadmap</a></td>
+<td>Escopo funcional, público-alvo e cronograma de evolução</td>
 </tr>
 <tr>
-<td>Requisitos (PRD)</td>
+<td><a href="05-fontes-base-conhecimento/">Fontes da Base de Conhecimento</a></td>
+<td>Documentos institucionais, resoluções e normas</td>
+</tr>
+<tr>
 <td><a href="07-prd-requisitos/">PRD e Requisitos</a></td>
+<td>Requisitos funcionais, não-funcionais e critérios de aceite</td>
 </tr>
 <tr>
-<td>Contratos de API</td>
-<td><a href="09-contratos-tecnicos/">Contratos Técnicos</a></td>
+<td><a href="09-contratos-tecnicos/">Contratos Técnicos de API</a></td>
+<td>Especificação das rotas REST, schemas Pydantic e SSE</td>
 </tr>
 </tbody>
 </table>
-<h2 id="stack-principal">Stack principal<a class="headerlink" href="#stack-principal" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="stack-tecnologica-principal">🧰 Stack Tecnológica Principal<a class="headerlink" href="#stack-tecnologica-principal" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Backend:</strong> Python 3.12, FastAPI, LangGraph, LangChain</li>
-<li><strong>RAG:</strong> Qdrant (2 coleções), sentence-transformers, BM25, reranker cross-encoder</li>
-<li><strong>Frontend:</strong> React + Vite (TypeScript)</li>
-<li><strong>Qualidade:</strong> pytest (cobertura ≥ 80%), Ruff, avaliação Ragas, MkDocs Material</li>
+<li><strong>Backend:</strong> Python 3.12, FastAPI, LangGraph, LangChain, Pydantic v2</li>
+<li><strong>Recuperação:</strong> Qdrant (Vetorial), BM25 (Léxico), FastEmbed, Cross-Encoder Re-ranker</li>
+<li><strong>Segurança &amp; FinOps:</strong> SQLite Semantic Cache, PII Masking, SlowAPI Rate Limiter</li>
+<li><strong>Frontend:</strong> React 18, Vite, TypeScript, SSE Streaming, Vitest</li>
+<li><strong>Qualidade &amp; Observabilidade:</strong> pytest, Ruff, RAGAS (LLM-as-a-Judge), LangSmith Tracing</li>
+<li><strong>Cloud &amp; Deploy:</strong> Azure Container Apps, Bicep IaC, Docker</li>
 </ul>
-<h2 id="repositorio">Repositório<a class="headerlink" href="#repositorio" title="Permanent link">&para;</a></h2>
-<p>O código-fonte e a documentação estão em
-<a href="https://github.com/henriquebotelhogomes/UsiEdu">github.com/henriquebotelhogomes/UsiEdu</a>.</p>
+<hr />
+<h2 id="repositorio-oficial">🐙 Repositório Oficial<a class="headerlink" href="#repositorio-oficial" title="Permanent link">&para;</a></h2>
+<p>Código-fonte, issues e releases estão disponíveis em:<br />
+<a href="https://github.com/henriquebotelhogomes/UsiEdu">github.com/henriquebotelhogomes/UsiEdu</a></p>
 
 
 
