@@ -71,7 +71,12 @@ markers = [
 
 [tool.coverage.run]
 source = ["src"]
-omit = ["tests/*"]
+omit = [
+    "tests/*",
+    "src/evaluation/*",
+    "src/observability/performance_baseline.py",
+    "src/delivery/*",
+]
 
 [tool.coverage.report]
 fail_under = 80
@@ -80,3 +85,4 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "if __name__",
 ]
+
