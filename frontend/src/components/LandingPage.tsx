@@ -8,19 +8,19 @@ const AGENTES = [
     nome: "Agente Acadêmico",
     fase: "Piloto",
     descricao:
-      "Calendário, matrículas, trancamentos e processos de secretaria via RAG, além de notas e faltas por tools.",
+      "Calendário, matrículas, trancamentos e processos de secretaria via RAG, além de notas e faltas integradas por tools.",
   },
   {
     nome: "Agente Financeiro",
     fase: "Piloto",
     descricao:
-      "Consulta de boletos e simulação de renegociação com dados mockados e identificação segura do aluno.",
+      "Consulta de boletos, prazos de pagamento e simulação de renegociação com dados mockados e identificação segura do aluno.",
   },
   {
     nome: "Agente Documental",
     fase: "Piloto",
     descricao:
-      "Conhecimento institucional para funcionários e docentes: normas, políticas e processos com citação de fonte.",
+      "Conhecimento institucional para funcionários e docentes: normas, portarias e processos internos com citação estrita de fontes.",
   },
   {
     nome: "Agente Tutor",
@@ -31,14 +31,14 @@ const AGENTES = [
 ];
 
 const STACK = [
-  ["Backend", "Python 3.12 · FastAPI · LangGraph · LangChain"],
-  ["LLM", "DeepSeek V4 Flash (OpenCode Go)"],
-  ["Vector DB", "Qdrant (Docker)"],
-  ["Embeddings", "sentence-transformers local (ONNX)"],
-  ["Reranker", "bge-reranker-base local"],
-  ["Observabilidade", "LangSmith"],
-  ["Frontend", "React + Vite + TypeScript"],
-  ["Qualidade", "Ruff · pytest (96,7% cobertura) · GitHub Actions"],
+  ["Backend", "Python 3.12 · FastAPI · LangGraph · LangChain · Pydantic v2"],
+  ["LLM", "OpenCode Go (DeepSeek V4 Flash / Kimi K2.7 Code)"],
+  ["Vector DB", "Qdrant (Docker HNSW + Payload Filter)"],
+  ["Embeddings", "sentence-transformers local (FastEmbed ONNX)"],
+  ["Reranker", "BAAI/bge-reranker-base local"],
+  ["Observabilidade", "LangSmith Tracing + Distributed Logs"],
+  ["Frontend", "React 18 + Vite + TypeScript + SSE Streaming"],
+  ["Qualidade", "Ruff · pytest (457 testes - 100%) · RAGAS Gate"],
 ];
 
 const FONTES = [
@@ -111,16 +111,14 @@ export default function LandingPage() {
       <header className="landing-hero">
         <div className="landing-hero-content">
           <span className="landing-badge">
-            Projeto piloto
+            Série B / Scale-up Enterprise
           </span>
           <h1>
-            Plataforma multi-agente de IA conversacional para a jornada do
-            estudante e do colaborador
+            Plataforma multi-agente de IA conversacional para a jornada universitária
           </h1>
           <p>
-            Orquestração com <strong>LangGraph</strong>, RAG híbrido com{" "}
-            <strong>Qdrant</strong> e respostas rastreáveis com citação de
-            fontes oficiais — sem alucinação.
+            Orquestração determinística com <strong>LangGraph</strong>, RAG híbrido de 4 estágios com{" "}
+            <strong>Qdrant + BM25 + Re-ranker</strong>, Middleware de Contexto do Sistema e respostas auditáveis com citação oficial.
           </p>
           <div className="landing-hero-actions">
             <Link to="/login" className="btn-primary">
@@ -140,38 +138,37 @@ export default function LandingPage() {
             <span>FastAPI</span>
             <span>LangGraph</span>
             <span>Qdrant</span>
-            <span>React + Vite</span>
-            <span>LangSmith</span>
+            <span>Semantic Cache</span>
+            <span>Human-in-the-Loop</span>
+            <span>RAGAS Gate</span>
           </div>
         </div>
       </header>
 
       {/* Funcionalidades (duplo público) */}
       <section id="funcionalidades" className="landing-section">
-        <h2>Dois públicos, uma plataforma</h2>
+        <h2>Dois públicos, uma plataforma integrada</h2>
         <p className="landing-section-sub">
-          Um supervisor único roteia cada pergunta para o agente especialista
-          certo.
+          Um supervisor cognitivo estruturado roteia cada pergunta para o agente especialista certo com isolamento de contexto.
         </p>
         <div className="landing-grid-2">
           <div className="landing-card">
             <div className="landing-card-icon navy">🎓</div>
             <h3>Para Estudantes</h3>
             <p>
-              Assistente de jornada acadêmica: dúvidas sobre calendário,
+              Assistente de jornada acadêmica e financeira: dúvidas sobre calendário,
               matrícula e regimento respondidas com base em documentos
-              oficiais, e vida financeira com consulta de boletos e simulação
-              de renegociação. Perguntas compostas são resolvidas por agentes
-              em colaboração.
+              oficiais, além de consulta de notas, faltas e simulação de renegociação
+              de boletos. Perguntas compostas são resolvidas de forma colaborativa e paralela.
             </p>
           </div>
           <div className="landing-card">
             <div className="landing-card-icon teal">🏛️</div>
             <h3>Para Funcionários &amp; Docentes</h3>
             <p>
-              Assistente de conhecimento institucional: normas, políticas e
+              Assistente de conhecimento institucional: normas, portarias e
               processos internos recuperados por busca híbrida (vetorial +
-              BM25 + reranking) e respondidos sempre com citação do documento
+              BM25 + Cross-Encoder Re-ranker) e respondidos sempre com citação obrigatória do documento
               e da seção de origem.
             </p>
           </div>
@@ -180,10 +177,9 @@ export default function LandingPage() {
 
       {/* Agentes */}
       <section id="agentes" className="landing-section alt">
-        <h2>Especialização por agentes</h2>
+        <h2>Especialização e Autonomia Multi-Agente</h2>
         <p className="landing-section-sub">
-          Múltiplas IAs coordenadas por um supervisor, cada uma com seu
-          domínio de conhecimento e ferramentas.
+          Múltiplos agentes orquestrados por um nó supervisor central tipado com Pydantic, cada um com suas ferramentas e bases especializadas.
         </p>
         <div className="landing-grid-4">
           {AGENTES.map((agente) => (
@@ -203,19 +199,18 @@ export default function LandingPage() {
       <section id="arquitetura" className="landing-section">
         <div className="landing-split">
           <div>
-            <h2>Orquestração supervisor: além de um wrapper de LLM</h2>
+            <h2>Orquestração com LangGraph: Muito além de um simples wrapper</h2>
             <p>
-              O grafo <strong>LangGraph</strong> classifica a intenção da
-              pergunta no <strong>supervisor</strong>, aplica guardrails
-              (fora de escopo, recusa honesta quando o documento não responde)
-              e roteia para o agente especialista, que consulta a base de
-              conhecimento via RAG híbrido antes de responder.
+              O grafo <strong>LangGraph</strong> executa o fluxo com gerenciamento de estado persistente,
+              roteamento via <code>with_structured_output</code>, injeção de contexto temporal e pontos de interrupção
+              para <strong>Human-in-the-Loop (HITL)</strong> em ações sensíveis.
             </p>
             <ul className="landing-list">
-              <li>Busca híbrida: vetorial + BM25 + reranking local</li>
-              <li>Citação explícita de fonte em cada resposta</li>
-              <li>Memória de conversa por sessão (checkpointer SQLite)</li>
-              <li>Tracing completo no LangSmith: supervisor → agente → LLM</li>
+              <li><strong>RAG Híbrido 4 Estágios:</strong> Qdrant + BM25 + Fusão RRF + Re-ranker local</li>
+              <li><strong>Middleware Universal:</strong> Injeção de data/hora oficial, fuso horário e perfil de sessão</li>
+              <li><strong>Isolamento de Estado:</strong> Reducers inteligentes que evitam vazamento de contexto multi-turno</li>
+              <li><strong>FinOps &amp; Cache:</strong> Semantic Cache vetorial com respostas em menos de 15ms</li>
+              <li><strong>Tracing LangSmith:</strong> Rastreabilidade ponta a ponta com observabilidade profunda</li>
             </ul>
           </div>
           <div className="landing-split-img">
@@ -229,35 +224,30 @@ export default function LandingPage() {
 
       {/* Pipeline RAG */}
       <section className="landing-section dark">
-        <h2>Pipeline RAG de alta precisão</h2>
+        <h2>Pipeline RAG Híbrido de Alta Precisão</h2>
         <p className="landing-section-sub">
-          Recuperação com rastreabilidade e avaliação contínua.
+          Recuperação com rastreabilidade, re-ranking contextual e avaliação contínua.
         </p>
         <div className="landing-grid-3">
           <div className="landing-step">
             <span>01</span>
-            <h4>Ingestão</h4>
+            <h4>Ingestão Semântica</h4>
             <p>
-              Documentos oficiais (PDF/HTML) processados e fatiados com
-              overlap, embeddings locais com sentence-transformers (ONNX).
+              Documentos oficiais fatiados com overlap e metadados ricos, vetorizados via FastEmbed ONNX local com suporte a Qdrant.
             </p>
           </div>
           <div className="landing-step">
             <span>02</span>
-            <h4>Recuperação</h4>
+            <h4>Busca Híbrida &amp; Re-ranking</h4>
             <p>
-              Qdrant com busca semântica + BM25, reranking com
-              bge-reranker-base e janela deslizante sobre os trechos mais
-              relevantes.
+              Combinação vetorial e BM25 fundidos via Reciprocal Rank Fusion (RRF), reclassificados pelo Cross-Encoder BAAI/bge-reranker.
             </p>
           </div>
           <div className="landing-step">
             <span>03</span>
-            <h4>Resposta</h4>
+            <h4>Geração &amp; Guardrails</h4>
             <p>
-              Geração fiel ao contexto com citação de fonte; quando não há
-              resposta no documento, o agente admite não saber — sem
-              alucinar.
+              Streaming token a token via SSE, citação rigorosa de fontes e validação de grounding (recusa honesta quando não há dados).
             </p>
           </div>
         </div>
@@ -265,7 +255,7 @@ export default function LandingPage() {
 
       {/* Fontes da base de conhecimento */}
       <section id="fontes" className="landing-section">
-        <h2>Fontes da base de conhecimento</h2>
+        <h2>Fontes da Base de Conhecimento</h2>
         <p className="landing-section-sub">
           Documentos oficiais reais (UnB + legislação federal) que alimentam o
           RAG — baixe os PDFs ou acesse as fontes originais.
@@ -321,7 +311,7 @@ export default function LandingPage() {
 
       {/* Stack */}
       <section id="stack" className="landing-section alt">
-        <h2>Stack e qualidade</h2>
+        <h2>Stack Tecnológico &amp; Qualidade</h2>
         <div className="landing-split">
           <div className="landing-table-wrap">
             <table className="landing-table">
@@ -344,21 +334,20 @@ export default function LandingPage() {
           <div>
             <div className="landing-quality-badges">
               <div className="quality-badge">
-                <strong>206</strong> testes passando
+                <strong>457</strong> testes unitários (100% aprovados)
               </div>
               <div className="quality-badge">
-                <strong>96,7%</strong> cobertura (orquestração/RAG)
+                <strong>RAGAS</strong> Quality Gate automatizado
               </div>
               <div className="quality-badge">
-                <strong>CI</strong> GitHub Actions + Ruff
+                <strong>CI/CD</strong> GitHub Actions + Ruff Linter
               </div>
               <div className="quality-badge">
-                <strong>MkDocs</strong> documentação navegável
+                <strong>MkDocs</strong> documentação navegável completa
               </div>
             </div>
             <p className="landing-quality-note">
-              Avaliação com Ragas e tracing LangSmith documentados na seção de
-              avaliação do projeto.
+              Qualidade validada por suítes contínuas de regressão, testes de trajetória de agentes e LLM-as-a-Judge.
             </p>
             <a
               href={DOCS_URL}
@@ -379,8 +368,7 @@ export default function LandingPage() {
             <span className="landing-logo-mark">U</span> UsiEdu
           </span>
           <span className="footer-license">
-            © 2026 — Licença MIT · Projeto piloto para candidatura Cruzeiro do
-            Sul Educacional
+            © 2026 — Licença MIT · Plataforma Multi-Agente Universitária
           </span>
           <div className="footer-links">
             <Link to="/insights">Satisfação</Link>
