@@ -23,13 +23,18 @@ class RagSettings(BaseSettings):
     # Reranker
     reranker_model: str = "BAAI/bge-reranker-base"
 
-    # Chunking
+    # Chunking & Contextual Retrieval (Padrão Anthropic)
     chunk_max_chars: int = 3200  # ~800 tokens (estimativa: 4 chars/token)
     chunk_overlap_chars: int = 480  # ~15% do chunk_max_chars
+    enable_contextual_retrieval: bool = True
 
     # Retrieval
     search_top_k: int = 20
     rerank_top_k: int = 5
+
+    # Corrective RAG (CRAG) & Grader
+    min_relevance_score: float = 0.35
+    enable_crag_filter: bool = True
 
     @property
     def collections(self) -> dict[str, str]:

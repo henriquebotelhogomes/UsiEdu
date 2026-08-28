@@ -31,16 +31,18 @@ class DocumentChunker:
         self,
         max_chars: int = 3200,
         overlap_chars: int = 480,
+        contextualize: bool = True,
     ) -> None:
         self.max_chars = max_chars
         self.overlap_chars = overlap_chars
+        self.contextualize = contextualize
 
     def chunk_document(
         self,
         file_path: Path,
         metadata: DocumentMetadata,
     ) -> list[Chunk]:
-        """Extrai texto de um arquivo e retorna chunks com metadados."""
+        """Extrai texto de um arquivo e retorna chunks com metadados e contextualização."""
         text = self._extract_text(file_path)
         if not text.strip():
             return []
@@ -51,12 +53,18 @@ class DocumentChunker:
 
         for section_name, section_text in sections:
             parts = self._split_text(section_text)
+            context_prefix = (
+                self._build_context_prefix(metadata, section_name)
+                if self.contextualize
+                else ""
+            )
             for part in parts:
                 chunk_id = self._make_chunk_id(metadata, chunk_index)
+                final_text = f"{context_prefix}{part}" if context_prefix else part
                 chunks.append(
                     Chunk(
                         id=chunk_id,
-                        text=part,
+                        text=final_text,
                         metadata={
                             "instituicao": metadata.instituicao,
                             "documento": metadata.documento,
@@ -65,12 +73,26 @@ class DocumentChunker:
                             "url_fonte": metadata.url_fonte,
                             "publico_alvo": metadata.publico_alvo,
                             "chunk_index": chunk_index,
+                            "original_text": part,
                         },
                     )
                 )
                 chunk_index += 1
 
         return chunks
+
+    @staticmethod
+    def _build_context_prefix(metadata: DocumentMetadata, section_name: str) -> str:
+        """Gera o prefixo de contextualização (padrão Anthropic Contextual Retrieval)."""
+        prefix = f"Este trecho pertence ao documento '{metadata.documento}'"
+        if metadata.instituicao:
+            prefix += f" da instituição '{metadata.instituicao}'"
+        if section_name and section_name not in ("documento", "preâmbulo"):
+            prefix += f", seção '{section_name}'"
+        elif section_name == "preâmbulo":
+            prefix += ", preâmbulo introdutório"
+        prefix += ".\n\n"
+        return prefix
 
     def _extract_text(self, file_path: Path) -> str:
         """Extrai texto de PDF ou HTML."""
@@ -81,33 +103,37 @@ class DocumentChunker:
         elif suffix in (".html", ".htm"):
             return self._extract_html(file_path)
         else:
-            return file_path.read_text(encoding="utf-8")
+            try:
+                return file_path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                return file_path.read_text(encoding="latin-1")
 
     @staticmethod
     def _extract_pdf(file_path: Path) -> str:
-        """Extrai texto de PDF usando PyMuPDF, preservando tabelas.
+        """Extrai texto de PDF usando PyMuPDF, preservando tabelas."""
+        try:
+            import pymupdf as fitz
+        except ImportError:
+            import fitz
 
-        Usa find_tables() para converter tabelas (ex.: calendários,
-        feriados) em linhas legíveis em vez de números soltos.
-        """
-        import fitz  # PyMuPDF
+        try:
+            fitz.TOOLS.mupdf_display_errors(False)
+        except Exception:
+            pass
 
-        doc = fitz.open(str(file_path))
-        parts = []
-        for page in doc:
-            parts.append(page.get_text())
+        parts: list[str] = []
+        try:
+            with fitz.open(str(file_path)) as doc:
+                for page in doc:
+                    try:
+                        txt = page.get_text()
+                        if txt and txt.strip():
+                            parts.append(txt)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
 
-            # Extrai tabelas de forma estruturada (linhas de texto legíveis)
-            try:
-                for table in page.find_tables():
-                    rows = table.extract()
-                    for row in rows:
-                        cells = [str(c).strip() for c in row if c is not None]
-                        if cells:
-                            parts.append(" | ".join(cells))
-            except Exception:
-                pass  # sem tabelas detectáveis — texto simples basta
-        doc.close()
         return "\n".join(parts)
 
     @staticmethod

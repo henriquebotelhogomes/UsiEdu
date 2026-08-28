@@ -206,11 +206,13 @@ export default function LandingPage() {
               para <strong>Human-in-the-Loop (HITL)</strong> em ações sensíveis.
             </p>
             <ul className="landing-list">
-              <li><strong>RAG Híbrido 4 Estágios:</strong> Qdrant + BM25 + Fusão RRF + Re-ranker local</li>
-              <li><strong>Middleware Universal:</strong> Injeção de data/hora oficial, fuso horário e perfil de sessão</li>
-              <li><strong>Isolamento de Estado:</strong> Reducers inteligentes que evitam vazamento de contexto multi-turno</li>
-              <li><strong>FinOps &amp; Cache:</strong> Semantic Cache vetorial com respostas em menos de 15ms</li>
-              <li><strong>Tracing LangSmith:</strong> Rastreabilidade ponta a ponta com observabilidade profunda</li>
+              <li><strong>Contextual Retrieval (Anthropic):</strong> Prefixos contextuais com metadados do documento pai no chunk (reduz falhas em até 49%)</li>
+              <li><strong>Query Rewriting &amp; Coreferência:</strong> Resolução de pronomes no histórico antes do Qdrant/BM25</li>
+              <li><strong>Corrective RAG (CRAG):</strong> Retrieval Grader com pontuação de corte para eliminar ruídos pós-reranking</li>
+              <li><strong>Semantic Cache Warmup:</strong> Catálogo de perguntas institucionais pré-aquecidas com latência &lt;15ms</li>
+              <li><strong>Geração Sintética &amp; Ragas:</strong> Dataset sintético automatizado de 50 perguntas balanceadas para CI/CD</li>
+              <li><strong>Middleware Universal:</strong> Injeção de data/hora oficial de Brasília, fuso horário e perfil de sessão</li>
+              <li><strong>Human-in-the-Loop (HITL):</strong> Pausa determinística no grafo para aprovação humana em ações críticas</li>
             </ul>
           </div>
           <div className="landing-split-img">
@@ -224,30 +226,30 @@ export default function LandingPage() {
 
       {/* Pipeline RAG */}
       <section className="landing-section dark">
-        <h2>Pipeline RAG Híbrido de Alta Precisão</h2>
+        <h2>Pipeline RAG de Última Geração (CRAG + Anthropic Standard)</h2>
         <p className="landing-section-sub">
-          Recuperação com rastreabilidade, re-ranking contextual e avaliação contínua.
+          Recuperação corrigida com rastreabilidade, reescrita coreferencial, re-ranking e avaliação contínua.
         </p>
         <div className="landing-grid-3">
           <div className="landing-step">
             <span>01</span>
-            <h4>Ingestão Semântica</h4>
+            <h4>Contextual Retrieval &amp; Rewriting</h4>
             <p>
-              Documentos oficiais fatiados com overlap e metadados ricos, vetorizados via FastEmbed ONNX local com suporte a Qdrant.
+              Ancoragem hierárquica do documento pai no chunk e reescrita de query com resolução de pronomes antes da busca.
             </p>
           </div>
           <div className="landing-step">
             <span>02</span>
-            <h4>Busca Híbrida &amp; Re-ranking</h4>
+            <h4>Busca Híbrida &amp; CRAG Grader</h4>
             <p>
-              Combinação vetorial e BM25 fundidos via Reciprocal Rank Fusion (RRF), reclassificados pelo Cross-Encoder BAAI/bge-reranker.
+              Qdrant + BM25 fundidos via RRF, re-ranking via Cross-Encoder e Retrieval Grader descartando ruído com score &lt; 0.35.
             </p>
           </div>
           <div className="landing-step">
             <span>03</span>
-            <h4>Geração &amp; Guardrails</h4>
+            <h4>Geração, Cache &amp; Ragas</h4>
             <p>
-              Streaming token a token via SSE, citação rigorosa de fontes e validação de grounding (recusa honesta quando não há dados).
+              Streaming SSE, Semantic Cache pré-aquecido, citação estrita de fontes e validação contínua com Ragas Quality Gate.
             </p>
           </div>
         </div>

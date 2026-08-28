@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from qdrant_client import QdrantClient
     from qdrant_client.models import Filter
 
+    from src.rag.crag_grader import RetrievalGrader
     from src.rag.embedder import Embedder
     from src.rag.reranker import Reranker
 
@@ -133,9 +134,12 @@ class HybridRetriever:
         client: QdrantClient,
         embedder: Embedder,
         reranker: Reranker | None = None,
+        grader: RetrievalGrader | None = None,
         collection_name: str = "academico",
         search_top_k: int = 20,
         rerank_top_k: int = 5,
+        min_relevance_score: float = 0.35,
+        enable_crag_filter: bool = True,
     ) -> None:
         self.client = client
         self.embedder = embedder
@@ -143,6 +147,19 @@ class HybridRetriever:
         self.collection_name = collection_name
         self.search_top_k = search_top_k
         self.rerank_top_k = rerank_top_k
+        self.min_relevance_score = min_relevance_score
+        self.enable_crag_filter = enable_crag_filter
+
+        if grader is not None:
+            self.grader = grader
+        else:
+            from src.rag.crag_grader import RetrievalGrader
+
+            self.grader = RetrievalGrader(
+                min_relevance_score=min_relevance_score,
+                enabled=enable_crag_filter,
+            )
+
         self._bm25_index: _BM25Index | None = None
 
     def search(
@@ -150,14 +167,14 @@ class HybridRetriever:
         query: str,
         profile: str = "student",
     ) -> list[RetrievalResult]:
-        """Busca híbrida com filtro de perfil.
+        """Busca híbrida com filtro de perfil e Corrective RAG (CRAG).
 
         Args:
             query: Pergunta do usuário.
             profile: "student" ou "staff" — filtra documentos por público-alvo.
 
         Returns:
-            Lista de RetrievalResult ordenados por relevância.
+            Lista de RetrievalResult aprovados pelo Grader ordenados por relevância.
         """
         profile_filter = self._build_profile_filter(profile)
 
@@ -193,9 +210,13 @@ class HybridRetriever:
                 for hit in vector_hits
             ]
 
-        # 4. Reranking
+        # 4. Reranking com Cross-Encoder
         if self.reranker and candidates:
             candidates = self._apply_reranking(query, candidates)
+
+        # 5. Corrective RAG (CRAG) Grader & Relevancy Filter
+        if self.grader and candidates:
+            candidates, _ = self.grader.grade_results(query, candidates)
 
         return candidates[: self.rerank_top_k]
 
@@ -332,6 +353,7 @@ class HybridRetriever:
                 source=candidates[idx].source,
             )
             for idx, score in reranked
+            if 0 <= idx < len(candidates)
         ]
 
     @staticmethod

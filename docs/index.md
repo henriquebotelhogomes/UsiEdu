@@ -10,20 +10,21 @@
    - Grafo de estados determinístico (`StateGraph`) com supervisor com saída estruturada tipada (`with_structured_output`), checkpointers SQLite/Postgres e suporte a `interrupt_before` para **Human-in-the-Loop (HITL)**.
    - Reducers de estado resilientes a conversas multi-turnos com reset explícito de contexto.
 
-2. **RAG Híbrido em 4 Estágios:**
-   - **Busca Densa:** Qdrant Vector DB com embeddings locais otimizados via ONNX.
-   - **Busca Esparsa:** BM25 lexical search para precisão em termos regulatórios e leis.
-   - **Fusão RRF:** Reciprocal Rank Fusion ($k=60$) combinando os rankings.
-   - **Re-ranking:** Cross-Encoder com `BAAI/bge-reranker-base` para seleção cirúrgica dos Top Chunks.
+2. **RAG Híbrido Avançado com CRAG & Padrão Anthropic:**
+   - **Contextual Retrieval:** Prefixos contextuais automáticos ancorando instituição, documento pai e seção em cada chunk (redução de até 49% nas falhas de recuperação).
+   - **Query Rewriting & Resolução Coreferencial:** Resolução de referências pronominais baseada no histórico antes de despachar para os índices.
+   - **Busca Híbrida:** Qdrant (Vetorial denso) + BM25 (Léxico esparso) fundidos via Reciprocal Rank Fusion ($k=60$).
+   - **Re-ranking & Corrective RAG (CRAG):** Cross-Encoder (`bge-reranker-base`) combinado com **Retrieval Grader** com descarte automático de candidatos com relevância $< 0.35$.
 
 3. **Middleware de Contexto do Sistema (Grounding Universal):**
    - Injeção dinâmica de data/hora oficial no fuso de Brasília, fuso horário, semestre letivo e perfil de sessão antes de qualquer chamada LLM.
 
 4. **FinOps & AI Safety:**
-   - Semantic Caching vetorial com limiar de similaridade $\ge 0.92$ (respostas em <15ms e custo zero de tokens).
+   - **Semantic Caching:** Cache vetorial (SQLite/Redis) com threshold $\ge 0.92$ e script de **Warmup Automatizado** com catálogo de perguntas institucionais frequentes (latência $< 15$ms e custo zero de tokens).
    - Mascaramento de dados sensíveis (PII Masking) e poda dinâmica de tokens (`trim_messages`).
 
-5. **Qualidade Contínua e LLM-as-a-Judge:**
+5. **Qualidade Contínua, Geração Sintética & LLM-as-a-Judge:**
+   - **Geração Sintética de Testes:** Gerador automatizado (`generate_synthetic_testset.py`) que fatias a base de conhecimento e produz 50 casos de teste balanceados (diretos, raciocínio, multi-contexto e fora de escopo).
    - Suíte com mais de **450 testes unitários automatizados** (100% aprovados).
    - Quality Gate de CI/CD baseado no framework **RAGAS** (*Faithfulness $\ge 0.85$*) e **Agent Trajectory Harness**.
 

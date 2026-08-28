@@ -34,15 +34,16 @@ Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiE
 
 | Dimensão | Chatbot / RAG Tradicional (MVP) | UsiEdu Enterprise Multi-Agent (Scale-up) |
 |---|---|---|
-| **Orquestração** | Cadeia linear única (sem estado granular) | **StateGraph (LangGraph)** com supervisor e checkpointer persistente |
+| **Orquestração** | Cadeia linear única (sem estado granular) | **StateGraph (LangGraph)** com supervisor tipado e checkpointer persistente |
 | **Contexto Temporal** | Dependência de funções ad-hoc / LLM sem relógio | **Middleware Universal de Contexto** (Data/Hora de Brasília, Timezone e Perfil) |
-| **Roteamento** | Parse frágil de strings / Regex | **`with_structured_output`** tipado com Pydantic v2 |
-| **Execução de Ferramentas** | Funções manuais acopladas no prompt | **`@tool` nativo com `bind_tools`** e validação estrita de tipos |
+| **Recuperação de Chunks** | Fatiamento ingênuo por tamanho fixo | **Contextual Retrieval (Padrão Anthropic)** com prefixos de documento pai |
+| **Resolução de Perguntas** | Busca com pronomes do usuário ("ele", "disso") | **Query Rewriter & Resolução Coreferencial** antes de consultar índices |
+| **Filtragem de Ruído** | Injeta os Top-K cegamente no prompt | **Corrective RAG (CRAG)** com Retrieval Grader (score $\ge 0.35$) |
+| **Recuperação de Dados** | Busca vetorial densa isolada | **RAG Híbrido 4 Estágios** (Qdrant + BM25 + RRF + Cross-Encoder Re-ranker) |
+| **FinOps & Cache** | Sem cache / reexecução cara | **Semantic Cache (SQLite/Redis)** com **Warmup Automatizado** (<15ms) |
 | **Ações Sensíveis** | Execução automática sem confirmação | **Human-in-the-Loop (HITL)** via `interrupt_before` e `POST /chat/resume` |
-| **Recuperação de Dados** | Busca vetorial densa isolada | **RAG Híbrido de 4 Estágios** (Qdrant + BM25 + RRF + Cross-Encoder Re-ranker) |
-| **FinOps & Tokens** | Histórico infinito com estouro de janela | **Semantic Cache (SQLite/Redis)** + **`trim_messages`** por janela de contexto |
 | **Segurança & Compliance** | Sem tratamento de dados pessoais | **PII Masking (`mask_pii`)** + Guardrails anti-prompt injection multi-nível |
-| **Qualidade & CI/CD** | Testes manuais / ad-hoc | **457 testes unitários (100%)** + **RAGAS Quality Gate** + **Agent Harness** |
+| **Avaliação & CI/CD** | Testes manuais / ad-hoc | **Dataset Sintético (50 casos)** + **RAGAS Quality Gate** + **Agent Harness** |
 
 ---
 
@@ -57,23 +58,27 @@ graph TD
     Cache -->|"Sim (Cosseno >= 0.92)"| FastResponse[Resposta Imediata < 15ms]
     Cache -->|"Não (Miss)"| Supervisor["Nó Supervisor (Structured Output)"]
     
-    Supervisor -->|intent = academico| Academico["Agente Acadêmico (@tool Notas/Faltas + RAG)"]
-    Supervisor -->|intent = financeiro| Financeiro["Agente Financeiro (@tool Boletos/Renegociação + RAG)"]
-    Supervisor -->|intent = institucional| Documental["Agente Documental (RAG Normas/Políticas)"]
-    Supervisor -->|intent = composta| Parallel["Despacho Paralelo de Agentes"]
+    Supervisor -->|intent = academico| Academico["Agente Acadêmico (Rewriter + CRAG RAG + @tools)"]
+    Supervisor -->|intent = financeiro| Financeiro["Agente Financeiro (Rewriter + CRAG RAG + @tools)"]
+    Supervisor -->|intent = institucional| Documental["Agente Documental (Rewriter + CRAG RAG)"]
+    Supervisor -->|intent = composta| Parallel["Despacho Paralelo de Especialistas"]
     Supervisor -->|intent = fora_de_escopo| OutOfScope["Nó Fora de Escopo"]
     
     Parallel --> Academico
     Parallel --> Financeiro
     Parallel --> Documental
     
+    Academico --> CRAG_A[CRAG Grader]
+    Financeiro --> CRAG_F[CRAG Grader]
+    Documental --> CRAG_D[CRAG Grader]
+    
     Financeiro -->|Ação Crítica| HITL{HITL Interrupt?}
-    HITL -->|interrupt_before| Suspend["Pausa no Grafo (Aguarda Aprovação)"]
+    HITL -->|interrupt_before| Suspend["Pausa no Grafo (Aguarda Confirmação)"]
     Suspend -->|POST /chat/resume| Consolidation
     
-    Academico --> Consolidation["Nó de Consolidação (Fast-path ou Síntese Cognitiva LLM)"]
-    Financeiro --> Consolidation
-    Documental --> Consolidation
+    CRAG_A --> Consolidation["Nó de Consolidação (Fast-path ou Síntese Cognitiva LLM)"]
+    CRAG_F --> Consolidation
+    CRAG_D --> Consolidation
     
     Consolidation --> GuardrailsOut[Guardrail de Saída & Validação de Grounding]
     GuardrailsOut --> Client([Cliente Web - Streaming SSE / JSON])
@@ -83,35 +88,29 @@ graph TD
 
 ## 🔬 Destaques Técnicos da Implementação
 
-### 1. Middleware de Contexto de Ambiente Universal (`src/orchestration/context.py`)
-Injeta automaticamente data/hora no fuso de Brasília, semestre letivo e perfil de sessão antes de qualquer chamada, permitindo que os agentes raciocinem sobre prazos e calendários de forma determinística sem a necessidade de ferramentas manuais ad-hoc:
-```python
-system_context = get_system_context(profile="student")
-# Injeta: Data atual, horário de Brasília, semestre vigente (2026.2) e diretrizes temporais
+### 1. Contextual Retrieval — Padrão Anthropic (`src/rag/chunker.py`)
+Prefixa cada fragmento com a contextualização hierárquica do documento pai e seção (`_build_context_prefix`), reduzindo as falhas de recuperação vetorial em até 49%:
+```text
+Este trecho pertence ao documento 'Regimento Geral da UnB' da instituição 'UnB', seção 'Art. 15'.
+[Texto do artigo fatiado...]
 ```
 
-### 2. Roteamento Estruturado com Pydantic (`src/orchestration/supervisor.py`)
-Elimina fragilidades de parsing de JSON cru com Structured Output nativo e fallback resiliente:
-```python
-decision = await router_model.with_structured_output(SupervisorDecision).ainvoke(prompt)
-```
+### 2. Query Rewriting & Resolução Coreferencial (`src/rag/rewrite.py`)
+Resolve referências pronominais antes da busca vetorial/léxica. Uma pergunta como *"E até quando posso pagar ele?"* é automaticamente expandida para *"Até quando posso pagar o boleto de graduação?"*.
 
-### 3. Reducers de Estado com Suporte a Reset Multi-Turno (`src/orchestration/state.py`)
-Garante isolamento de agentes e evita vazamento de contexto acumulado entre perguntas subsequentes:
-```python
-def reduce_agent_results(current: dict | None, update: dict | None) -> dict:
-    if update == {}:  # Permite reset explícito no início de cada turno
-        return {}
-    return {**(current or {}), **(update or {})}
-```
+### 3. Corrective RAG (CRAG) com Retrieval Grader (`src/rag/crag_grader.py`)
+Após o re-ranking pelo Cross-Encoder, o `RetrievalGrader` descarta documentos irrelevantes com score $< 0.35$, evitando alucinações e garantindo que o agente declare ausência de dados quando necessário.
 
-### 4. RAG Híbrido em 4 Estágios com Re-ranking (`src/rag/`)
-- **Qdrant Vector DB:** Busca semântica densa local com FastEmbed ONNX (`all-MiniLM-L6-v2`).
-- **BM25 Lexical Search:** Indexação esparsa para códigos de matérias, termos regulatórios e artigos de lei.
-- **Reciprocal Rank Fusion (RRF):** Fusão harmônica dos rankings esparso e denso ($k=60$).
-- **Cross-Encoder Re-ranking:** Reclassificação com `BAAI/bge-reranker-base` para máxima precisão contextual.
+### 4. Semantic Cache com Warmup Automatizado (`scripts/warmup_cache.py`)
+Pré-popula o cache vetorial (SQLite/Redis) com 40 perguntas institucionais frequentes, permitindo respostas instantâneas (< 15ms) com custo zero de tokens.
 
-### 5. Human-in-the-Loop Interrupts (`src/orchestration/graph.py`)
+### 5. Geração Sintética Automatizada de Testes (`scripts/generate_synthetic_testset.py`)
+Gera automaticamente datasets balanceados de 50 perguntas com gabarito fundamentado (40% diretas, 30% raciocínio, 20% multi-contexto e 10% fora de escopo) para alimentar o Quality Gate de Ragas (LLM-as-a-Judge).
+
+### 6. Middleware de Contexto de Ambiente Universal (`src/orchestration/context.py`)
+Injeta automaticamente data/hora no fuso de Brasília, semestre letivo e perfil de sessão antes de qualquer chamada LLM.
+
+### 7. Human-in-the-Loop Interrupts (`src/orchestration/graph.py`)
 ```python
 # Pausa o grafo com checkpointer persistente antes de ações com efeito colateral
 graph = builder.compile(
@@ -127,11 +126,11 @@ graph = builder.compile(
 | Camada | Tecnologias Utilizadas |
 |---|---|
 | **Orquestração Multi-Agente** | **LangGraph v0.2+**, **LangChain v0.3+**, `StateGraph`, `MemorySaver`, Checkpointers SQLite/PostgreSQL |
-| **Recuperação & RAG** | **Qdrant**, BM25, Reciprocal Rank Fusion (RRF), Cross-Encoder Re-ranker (`bge-reranker-base`) |
+| **Recuperação & RAG** | **Qdrant**, BM25, Contextual Retrieval (Anthropic), CRAG Grader, Cross-Encoder (`bge-reranker-base`) |
 | **Backend & APIs** | **FastAPI**, Python 3.12+, Server-Sent Events (SSE via `astream_events`), Pydantic v2, SlowAPI |
 | **Modelos de Linguagem (LLMs)** | OpenCode Go (**DeepSeek V4 Flash**, **Kimi K2.7 Code**) + `FakeChatModel` para testes |
-| **Segurança & FinOps** | Semantic Cache (SQLite/Redis), PII Masking (`mask_pii`), Guardrails Anti-Injection, `trim_messages` |
-| **Avaliação & Harness** | **Agent Trajectory Harness**, Framework **RAGAS** (LLM-as-a-Judge), **LangSmith Tracing** |
+| **Segurança & FinOps** | Semantic Cache (SQLite/Redis) + Warmup, PII Masking (`mask_pii`), Guardrails Anti-Injection, `trim_messages` |
+| **Avaliação & Harness** | **Synthetic Testset Generator**, **RAGAS** (LLM-as-a-Judge), **Agent Trajectory Harness**, **LangSmith Tracing** |
 | **Frontend & UI/UX** | **React 18**, **Vite**, **TypeScript**, Rich Markdown com botão de cópia de código, Vitest |
 | **Infraestrutura em Nuvem** | **Azure Container Apps**, **Bicep (IaC)**, Azure Files, GitHub Container Registry (GHCR) |
 
@@ -179,10 +178,16 @@ cp .env.example .env
 # 5. Suba o Vector Database (Qdrant)
 docker compose up -d qdrant
 
-# 6. Ingestão dos documentos no Qdrant
+# 6. Ingestão dos documentos no Qdrant (com Contextual Retrieval)
 python -m src.rag.ingest
 
-# 7. Inicie o servidor FastAPI
+# 7. Pré-aquecimento do Semantic Cache (Warmup)
+python scripts/warmup_cache.py
+
+# 8. (Opcional) Gerar dataset sintético para avaliação Ragas
+python scripts/generate_synthetic_testset.py --count 50
+
+# 9. Inicie o servidor FastAPI
 uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 - **API Swagger / OpenAPI:** [http://localhost:8000/docs](http://localhost:8000/docs)

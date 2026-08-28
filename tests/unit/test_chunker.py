@@ -207,3 +207,59 @@ class TestChunkMetadata:
         chunks = chunker.chunk_document(doc, metadata)
         ids = [c.id for c in chunks]
         assert len(ids) == len(set(ids))  # Todos únicos
+
+
+class TestContextualRetrieval:
+    """Testes para o Contextual Retrieval (Padrão Anthropic)."""
+
+    def test_prefixo_contextual_adicionado_quando_habilitado(self, metadata, tmp_path):
+        chunker = DocumentChunker(max_chars=500, overlap_chars=50, contextualize=True)
+        doc = tmp_path / "regimento.txt"
+        doc.write_text(
+            "Art. 10 O trancamento de matrícula é permitido até o 30º dia do semestre letivo.",
+            encoding="utf-8",
+        )
+
+        chunks = chunker.chunk_document(doc, metadata)
+        assert len(chunks) == 1
+        chunk = chunks[0]
+
+        # Verifica se o prefixo de ancoragem contextual está presente no texto vetorizado
+        assert "Este trecho pertence ao documento 'Regimento Geral'" in chunk.text
+        assert "da instituição 'UnB'" in chunk.text
+        assert "seção 'Art. 10'" in chunk.text
+        assert "O trancamento de matrícula é permitido" in chunk.text
+
+        # Verifica se o texto original limpo foi preservado em metadata
+        assert "original_text" in chunk.metadata
+        assert "Este trecho pertence" not in chunk.metadata["original_text"]
+        assert "Art. 10 O trancamento de matrícula" in chunk.metadata["original_text"]
+
+    def test_sem_contextualizacao_quando_desabilitado(self, metadata, tmp_path):
+        chunker = DocumentChunker(max_chars=500, overlap_chars=50, contextualize=False)
+        doc = tmp_path / "regimento.txt"
+        doc.write_text(
+            "Art. 10 O trancamento de matrícula é permitido.",
+            encoding="utf-8",
+        )
+
+        chunks = chunker.chunk_document(doc, metadata)
+        assert len(chunks) == 1
+        chunk = chunks[0]
+
+        assert "Este trecho pertence" not in chunk.text
+        assert chunk.text.startswith("Art. 10")
+        assert chunk.metadata["original_text"] == chunk.text
+
+    def test_build_context_prefix_variacoes(self, metadata):
+        # 1. Seção padrão
+        p1 = DocumentChunker._build_context_prefix(metadata, "Art. 42")
+        assert "seção 'Art. 42'" in p1
+
+        # 2. Preâmbulo
+        p2 = DocumentChunker._build_context_prefix(metadata, "preâmbulo")
+        assert "preâmbulo introdutório" in p2
+
+        # 3. Documento sem seção específica
+        p3 = DocumentChunker._build_context_prefix(metadata, "documento")
+        assert "seção" not in p3

@@ -279,6 +279,7 @@ def main() -> None:
     chunker = DocumentChunker(
         max_chars=settings.chunk_max_chars,
         overlap_chars=settings.chunk_overlap_chars,
+        contextualize=settings.enable_contextual_retrieval,
     )
 
     # Processa cada documento

@@ -408,3 +408,73 @@ class TestStopwords:
     def test_get_texts_ignora_ids_desconhecidos(self):
         idx = _BM25Index([("id-1", "texto um")])
         assert idx.get_texts(["id-1", "id-x"]) == ["texto um"]
+
+
+class TestRetrieverCRAG:
+    """Testes para o filtro Corrective RAG (CRAG) no HybridRetriever."""
+
+    def test_retriever_crag_filtra_documentos_com_score_baixo(self, mock_qdrant, mock_embedder):
+        reranker = MagicMock()
+        # Retorna um relevante (0.80) e outro com score baixo (0.20)
+        reranker.rerank.return_value = [(0, 0.80), (1, 0.20)]
+
+        hit1 = MagicMock()
+        hit1.id = "id-1"
+        hit1.score = 0.80
+        hit1.payload = {"text": "Texto relevante", "documento": "Doc 1"}
+
+        hit2 = MagicMock()
+        hit2.id = "id-2"
+        hit2.score = 0.20
+        hit2.payload = {"text": "Texto irrelevante", "documento": "Doc 2"}
+
+        class _Resp:
+            points = [hit1, hit2]
+
+        mock_qdrant.query_points.return_value = _Resp()
+
+        retriever = HybridRetriever(
+            client=mock_qdrant,
+            embedder=mock_embedder,
+            reranker=reranker,
+            min_relevance_score=0.35,
+            enable_crag_filter=True,
+        )
+
+        results = retriever.search("minha dúvida", profile="student")
+        assert len(results) == 1
+        assert results[0].text == "Texto relevante"
+        assert results[0].score == 0.80
+
+    def test_retriever_crag_retorna_vazio_se_todos_abaixo_do_limiar(
+        self, mock_qdrant, mock_embedder
+    ):
+        reranker = MagicMock()
+        # Ambos com score irrelevante
+        reranker.rerank.return_value = [(0, 0.15), (1, 0.25)]
+
+        hit1 = MagicMock()
+        hit1.id = "id-1"
+        hit1.score = 0.15
+        hit1.payload = {"text": "Texto 1", "documento": "Doc 1"}
+
+        hit2 = MagicMock()
+        hit2.id = "id-2"
+        hit2.score = 0.25
+        hit2.payload = {"text": "Texto 2", "documento": "Doc 2"}
+
+        class _Resp:
+            points = [hit1, hit2]
+
+        mock_qdrant.query_points.return_value = _Resp()
+
+        retriever = HybridRetriever(
+            client=mock_qdrant,
+            embedder=mock_embedder,
+            reranker=reranker,
+            min_relevance_score=0.35,
+            enable_crag_filter=True,
+        )
+
+        results = retriever.search("pergunta fora de contexto", profile="student")
+        assert len(results) == 0
