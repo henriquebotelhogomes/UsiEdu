@@ -454,22 +454,50 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-pipeline-de-rag" class="md-nav__link">
+  <a href="#1-pipeline-de-rag-de-alta-precisao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Pipeline de RAG
+        1. Pipeline de RAG de Alta Precisão
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Pipeline de RAG">
+    <nav class="md-nav" aria-label="1. Pipeline de RAG de Alta Precisão">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-ingestao-offline" class="md-nav__link">
+  <a href="#11-ingestao-e-contextual-retrieval-padrao-anthropic" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1 Ingestão (offline)
+        1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-funcionamento-do-contextual-retrieval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.1 Funcionamento do Contextual Retrieval
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-performance-de-ingestao-e-otimizacoes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Performance de Ingestão e Otimizações
       
     </span>
   </a>
@@ -477,21 +505,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12-performance-de-ingestao-embedding-rapido" class="md-nav__link">
+  <a href="#13-recuperacao-online-query-rewriting-e-corrective-rag-crag" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2 Performance de ingestão (embedding rápido)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#13-recuperacao-online" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1.3 Recuperação (online)
+        1.3 Recuperação Online, Query Rewriting e Corrective RAG (CRAG)
       
     </span>
   </a>
@@ -537,17 +554,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#32-justificativa" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.2 Justificativa
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -562,14 +568,25 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Estratégia de Modelos (LLM)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-finops-semantic-cache-cache-warmup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. FinOps: Semantic Cache &amp; Cache Warmup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. FinOps: Semantic Cache &amp; Cache Warmup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#41-opencode-go-motor-do-piloto-custo-zero" class="md-nav__link">
+  <a href="#51-semantic-cache-vetorial" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1 OpenCode Go (motor do piloto — custo zero)
+        5.1 Semantic Cache Vetorial
       
     </span>
   </a>
@@ -577,10 +594,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#42-suporte-a-gemini-via-camada-provider-agnostic" class="md-nav__link">
+  <a href="#52-cache-warmup-automatizado-scriptswarmup_cachepy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2 Suporte a Gemini (via camada provider-agnostic)
+        5.2 Cache Warmup Automatizado (scripts/warmup_cache.py)
       
     </span>
   </a>
@@ -593,33 +610,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-memoria-de-longo-prazo" class="md-nav__link">
+  <a href="#6-avaliacao-continua-geracao-sintetica-ragas" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Memória de Longo Prazo
+        6. Avaliação Contínua: Geração Sintética &amp; Ragas
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-avaliacao-de-qualidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Avaliação de Qualidade
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Avaliação de Qualidade">
+    <nav class="md-nav" aria-label="6. Avaliação Contínua: Geração Sintética &amp; Ragas">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#61-metricas-do-piloto-ragas" class="md-nav__link">
+  <a href="#61-geracao-sintetica-automatizada-scriptsgenerate_synthetic_testsetpy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 Métricas do piloto (Ragas)
+        6.1 Geração Sintética Automatizada (scripts/generate_synthetic_testset.py)
       
     </span>
   </a>
@@ -627,32 +633,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#62-dataset-de-avaliacao" class="md-nav__link">
+  <a href="#62-quality-gate-de-ragas-llm-as-a-judge" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.2 Dataset de avaliação
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#63-qualidade-conversacional-metrica-da-vaga" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6.3 Qualidade conversacional (métrica da vaga)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#64-frameworks-de-avaliacao-papel-de-cada-um" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6.4 Frameworks de avaliação — papel de cada um
+        6.2 Quality Gate de Ragas (LLM-as-a-Judge)
       
     </span>
   </a>
@@ -665,49 +649,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-observabilidade" class="md-nav__link">
+  <a href="#7-guardrails-anti-injection-t93" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Observabilidade
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Observabilidade">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#71-stack-do-piloto" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.1 Stack do piloto
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#72-metricas-chave-kpis-do-dashboard-grafana" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.2 Métricas-chave (KPIs do dashboard Grafana)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-ferramentas-de-desenvolvimento-e-qualidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Ferramentas de Desenvolvimento e Qualidade
+        7. Guardrails Anti-Injection (T9.3)
       
     </span>
   </a>
@@ -715,43 +660,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#9-estrutura-do-repositorio-proposta" class="md-nav__link">
+  <a href="#8-deploy-azure-container-apps-t94" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. Estrutura do repositório (proposta)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-deploy-publico-azure-container-apps-t94" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. Deploy público — Azure Container Apps (T9.4)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-guardrails-contra-prompt-injection-t93" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Guardrails contra prompt injection (T9.3)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-decisoes-em-aberto-para-revisao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Decisões em aberto (para revisão)
+        8. Deploy — Azure Container Apps (T9.4)
       
     </span>
   </a>
@@ -1333,22 +1245,50 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-pipeline-de-rag" class="md-nav__link">
+  <a href="#1-pipeline-de-rag-de-alta-precisao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Pipeline de RAG
+        1. Pipeline de RAG de Alta Precisão
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Pipeline de RAG">
+    <nav class="md-nav" aria-label="1. Pipeline de RAG de Alta Precisão">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-ingestao-offline" class="md-nav__link">
+  <a href="#11-ingestao-e-contextual-retrieval-padrao-anthropic" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1 Ingestão (offline)
+        1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-funcionamento-do-contextual-retrieval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.1 Funcionamento do Contextual Retrieval
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-performance-de-ingestao-e-otimizacoes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Performance de Ingestão e Otimizações
       
     </span>
   </a>
@@ -1356,21 +1296,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12-performance-de-ingestao-embedding-rapido" class="md-nav__link">
+  <a href="#13-recuperacao-online-query-rewriting-e-corrective-rag-crag" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2 Performance de ingestão (embedding rápido)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#13-recuperacao-online" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1.3 Recuperação (online)
+        1.3 Recuperação Online, Query Rewriting e Corrective RAG (CRAG)
       
     </span>
   </a>
@@ -1416,17 +1345,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#32-justificativa" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.2 Justificativa
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1441,14 +1359,25 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Estratégia de Modelos (LLM)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-finops-semantic-cache-cache-warmup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. FinOps: Semantic Cache &amp; Cache Warmup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. FinOps: Semantic Cache &amp; Cache Warmup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#41-opencode-go-motor-do-piloto-custo-zero" class="md-nav__link">
+  <a href="#51-semantic-cache-vetorial" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1 OpenCode Go (motor do piloto — custo zero)
+        5.1 Semantic Cache Vetorial
       
     </span>
   </a>
@@ -1456,10 +1385,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#42-suporte-a-gemini-via-camada-provider-agnostic" class="md-nav__link">
+  <a href="#52-cache-warmup-automatizado-scriptswarmup_cachepy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2 Suporte a Gemini (via camada provider-agnostic)
+        5.2 Cache Warmup Automatizado (scripts/warmup_cache.py)
       
     </span>
   </a>
@@ -1472,33 +1401,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-memoria-de-longo-prazo" class="md-nav__link">
+  <a href="#6-avaliacao-continua-geracao-sintetica-ragas" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Memória de Longo Prazo
+        6. Avaliação Contínua: Geração Sintética &amp; Ragas
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-avaliacao-de-qualidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Avaliação de Qualidade
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Avaliação de Qualidade">
+    <nav class="md-nav" aria-label="6. Avaliação Contínua: Geração Sintética &amp; Ragas">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#61-metricas-do-piloto-ragas" class="md-nav__link">
+  <a href="#61-geracao-sintetica-automatizada-scriptsgenerate_synthetic_testsetpy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 Métricas do piloto (Ragas)
+        6.1 Geração Sintética Automatizada (scripts/generate_synthetic_testset.py)
       
     </span>
   </a>
@@ -1506,32 +1424,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#62-dataset-de-avaliacao" class="md-nav__link">
+  <a href="#62-quality-gate-de-ragas-llm-as-a-judge" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.2 Dataset de avaliação
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#63-qualidade-conversacional-metrica-da-vaga" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6.3 Qualidade conversacional (métrica da vaga)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#64-frameworks-de-avaliacao-papel-de-cada-um" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6.4 Frameworks de avaliação — papel de cada um
+        6.2 Quality Gate de Ragas (LLM-as-a-Judge)
       
     </span>
   </a>
@@ -1544,49 +1440,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-observabilidade" class="md-nav__link">
+  <a href="#7-guardrails-anti-injection-t93" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Observabilidade
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Observabilidade">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#71-stack-do-piloto" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.1 Stack do piloto
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#72-metricas-chave-kpis-do-dashboard-grafana" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.2 Métricas-chave (KPIs do dashboard Grafana)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-ferramentas-de-desenvolvimento-e-qualidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Ferramentas de Desenvolvimento e Qualidade
+        7. Guardrails Anti-Injection (T9.3)
       
     </span>
   </a>
@@ -1594,43 +1451,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#9-estrutura-do-repositorio-proposta" class="md-nav__link">
+  <a href="#8-deploy-azure-container-apps-t94" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. Estrutura do repositório (proposta)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-deploy-publico-azure-container-apps-t94" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. Deploy público — Azure Container Apps (T9.4)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-guardrails-contra-prompt-injection-t93" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Guardrails contra prompt injection (T9.3)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-decisoes-em-aberto-para-revisao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Decisões em aberto (para revisão)
+        8. Deploy — Azure Container Apps (T9.4)
       
     </span>
   </a>
@@ -1659,22 +1483,22 @@
 
 <h1 id="pipeline-de-rag-e-infraestrutura">Pipeline de RAG e Infraestrutura<a class="headerlink" href="#pipeline-de-rag-e-infraestrutura" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Detalha o pipeline de RAG compartilhado, o banco vetorial, os MCP servers,
-a estratégia de memória, a avaliação de qualidade e a observabilidade.</p>
+<p>Detalha o pipeline de RAG híbrido avançado (Anthropic Contextual Retrieval + CRAG), o banco vetorial, os MCP servers,
+a estratégia de cache semântico com warmup, a avaliação de qualidade contínua e a infraestrutura em nuvem.</p>
 </blockquote>
 <hr />
-<h2 id="1-pipeline-de-rag">1. Pipeline de RAG<a class="headerlink" href="#1-pipeline-de-rag" title="Permanent link">&para;</a></h2>
-<h3 id="11-ingestao-offline">1.1 Ingestão (offline)<a class="headerlink" href="#11-ingestao-offline" title="Permanent link">&para;</a></h3>
+<h2 id="1-pipeline-de-rag-de-alta-precisao">1. Pipeline de RAG de Alta Precisão<a class="headerlink" href="#1-pipeline-de-rag-de-alta-precisao" title="Permanent link">&para;</a></h2>
+<h3 id="11-ingestao-e-contextual-retrieval-padrao-anthropic">1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)<a class="headerlink" href="#11-ingestao-e-contextual-retrieval-padrao-anthropic" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>Documentos-fonte                Pipeline                        Vector DB
 ──────────────                  ────────                        ─────────
 Regimento UnB          ┐
-Calendário 2026.2      │   extração     chunking     embedding
-Guia do Servidor       ├──► (PDF/HTML) ─► semântico ─► modelo ──► Qdrant
-LDB                    │               (~500-800     local       coleções:
-                       ┘                tokens,       (batch)     academico,
-                                        overlap 15%)              institucional
+Calendário 2026.2      │   extração     chunking        embedding
+Guia do Servidor       ├──► (PDF/HTML) ─► Contextual ───► modelo ──► Qdrant
+LDB                    │               Retrieval        local       coleções:
+                       ┘               (Anthropic)      (batch)     academico,
+                                                                    institucional
 </code></pre></div>
-<p><strong>Decisões do pipeline:</strong></p>
+<p><strong>Decisões do pipeline de ingestão:</strong></p>
 <table>
 <thead>
 <tr>
@@ -1686,38 +1510,45 @@ LDB                    │               (~500-800     local       coleções:
 <tbody>
 <tr>
 <td>Extração</td>
-<td><code>unstructured</code> / PyMuPDF</td>
-<td>Suporta PDFs institucionais com tabelas</td>
+<td>PyMuPDF / Trafilatura</td>
+<td>Suporta PDFs e HTMLs institucionais com detecção de encoding (UTF-8 / Latin-1)</td>
+</tr>
+<tr>
+<td><strong>Contextual Retrieval</strong></td>
+<td>Prefixo contextual Anthropic (<code>_build_context_prefix</code>)</td>
+<td>Ancoragem de metadados pai reduz em até 49% as falhas de recuperação</td>
 </tr>
 <tr>
 <td>Chunking</td>
 <td>Semântico por seção, 500–800 tokens, overlap 15%</td>
-<td>Preserva coerência de artigos de regimento</td>
+<td>Preserva coerência de artigos de regimento e normas</td>
 </tr>
 <tr>
 <td>Metadados</td>
 <td>documento, seção, página, data de vigência, público-alvo</td>
-<td>Filtragem por perfil e citação de fonte</td>
+<td>Filtragem por perfil (student/staff) e citação oficial</td>
 </tr>
 <tr>
 <td>Embeddings</td>
-<td><strong>modelo local via FastEmbed ou sentence-transformers</strong> (ONNX, batch)</td>
+<td><strong>FastEmbed / sentence-transformers</strong> (ONNX local em batch)</td>
 <td>Custo zero, sem rate limit, minutos mesmo em CPU</td>
 </tr>
 <tr>
 <td>Coleções</td>
-<td>Separadas por domínio (<code>academico</code>, <code>institucional</code>, <code>carreira</code>, <code>disciplinas</code>)</td>
-<td>Permite filtrar por perfil de usuário</td>
+<td>Separadas por domínio (<code>academico</code>, <code>institucional</code>, <code>carreira</code>)</td>
+<td>Permite isolamento estrito por perfil de usuário</td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p>Fontes abertas que alimentam a base de conhecimento do piloto: ver <code>05-fontes-base-conhecimento.md</code>.</p>
-</blockquote>
-<h3 id="12-performance-de-ingestao-embedding-rapido">1.2 Performance de ingestão (embedding rápido)<a class="headerlink" href="#12-performance-de-ingestao-embedding-rapido" title="Permanent link">&para;</a></h3>
-<p><strong>Contexto:</strong> em projetos com embeddings via API externa, a ingestão pode levar dias
-(rate limiting, latência por request, reprocessamento total a cada execução).
-A UsiEdu elimina esse problema por design:</p>
+<h4 id="111-funcionamento-do-contextual-retrieval">1.1.1 Funcionamento do Contextual Retrieval<a class="headerlink" href="#111-funcionamento-do-contextual-retrieval" title="Permanent link">&para;</a></h4>
+<p>Implementado no <code>DocumentChunker</code> (<code>src/rag/chunker.py</code>), cada fragmento gerado é automaticamente enriquecido com um prefixo estruturado derivado da hierarquia do documento pai:
+<div class="highlight"><pre><span></span><code>Este trecho pertence ao documento 'Regimento Geral da UnB' da instituição 'UnB', seção 'Art. 15'.
+
+[Texto original do artigo fatiado...]
+</code></pre></div>
+- <strong>Vetorização e BM25:</strong> Operam sobre o texto contextualizado (<code>chunk.text</code>), garantindo que buscas semânticas encontrem trechos mesmo quando pronomes ou referências explícitas à instituição estão ausentes no parágrafo isolado.
+- <strong>Exibição e Citação:</strong> O texto puro original é preservado em <code>chunk.metadata["original_text"]</code> para exibição limpa nas interfaces.</p>
+<h3 id="12-performance-de-ingestao-e-otimizacoes">1.2 Performance de Ingestão e Otimizações<a class="headerlink" href="#12-performance-de-ingestao-e-otimizacoes" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1752,41 +1583,31 @@ A UsiEdu elimina esse problema por design:</p>
 <td><code>manifest.json</code> com checksum por documento</td>
 <td>Só documentos novos/alterados são processados</td>
 </tr>
-<tr>
-<td><strong>GPU opcional</strong></td>
-<td>Se disponível, mesma interface</td>
-<td>10–20x adicional para bases grandes</td>
-</tr>
 </tbody>
 </table>
-<p><strong>Expectativa realista do piloto:</strong> o núcleo mínimo (4 documentos ≈ 300–800 chunks)
-indexa em <strong>minutos</strong> em CPU comum — nunca horas. Se uma execução demorar mais que
-~10 min, há algo errado (ex.: download de modelo na primeira execução é normal;
-as seguintes usam cache local).</p>
-<p><strong>Se um dia usarmos API de embeddings (produção em escala):</strong> concorrência assíncrona
-com semáforo, endpoint de batch do provedor e checkpointing retomável — nunca
-processamento sequencial síncrono.</p>
-<h3 id="13-recuperacao-online">1.3 Recuperação (online)<a class="headerlink" href="#13-recuperacao-online" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>pergunta do usuário
+<h3 id="13-recuperacao-online-query-rewriting-e-corrective-rag-crag">1.3 Recuperação Online, Query Rewriting e Corrective RAG (CRAG)<a class="headerlink" href="#13-recuperacao-online-query-rewriting-e-corrective-rag-crag" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Pergunta do Usuário
         │
         ▼
-┌─────────────────┐     ┌────────────────┐     ┌──────────────┐
-│ reescrita de    │────►│ busca híbrida  │────►│ reranking    │
-│ query (se       │     │ vetor + BM25   │     │ (cross-      │
-│ necessário)     │     │ top-20         │     │ encoder)     │
-└─────────────────┘     └────────────────┘     │ top-5        │
-                                               └──────┬───────┘
-                                                      ▼
-                                        filtro por perfil (estudante/staff)
-                                                      │
-                                                      ▼
-                                        contexto para o agente especialista
+┌──────────────────────┐     ┌────────────────┐     ┌──────────────┐
+│ Query Rewriter       │────►│ Busca Híbrida  │────►│ Re-ranking   │
+│ (Resolução Corefer.) │     │ Vetor + BM25   │     │ Cross-Encoder│
+└──────────────────────┘     │ (Top-20)       │     │ (Top-5)      │
+                             └────────────────┘     └──────┬───────┘
+                                                           ▼
+                                                    ┌──────────────┐
+                                                    │ CRAG Grader  │
+                                                    │ (Score &gt;=.35)│
+                                                    └──────┬───────┘
+                                                           ▼
+                                            Contexto Relevante Filtrado
 </code></pre></div>
-<p><strong>Técnicas de precisão (anti-alucinação — requisito da vaga):</strong>
-1. <strong>Busca híbrida</strong>: vetorial (semântica) + BM25 (palavras-chave) — essencial para números de artigos de lei/regimento.
-2. <strong>Reranking</strong>: cross-encoder local (ex.: <code>bge-reranker</code>) reordena os top-20 antes de enviar ao LLM — custo zero.
-3. <strong>Filtro por perfil</strong>: estudante nunca vê documentos internos, e vice-versa (metadados).
-4. <strong>Grounding obrigatório</strong>: o prompt do agente instrui a responder apenas com o contexto recuperado e citar fonte; sem fonte, o agente admite não saber.</p>
+<p><strong>Técnicas de precisão e salvaguarda (anti-alucinação):</strong>
+1. <strong>Query Rewriting &amp; Resolução Coreferencial (<code>src/rag/rewrite.py</code>):</strong> Analisa o histórico multi-turno para reescrever perguntas contextuais (<em>"E até quando posso pagar ele?"</em> $\rightarrow$ <em>"Até quando posso pagar o boleto de graduação?"</em>) antes de consultar os índices.
+2. <strong>Busca Híbrida &amp; RRF:</strong> Vetorial denso (Qdrant) + Léxico esparso (BM25) fundidos via Reciprocal Rank Fusion ($k=60$).
+3. <strong>Re-ranking Cross-Encoder:</strong> <code>BAAI/bge-reranker-base</code> reordena os candidatos avaliando os pares query-documento.
+4. <strong>Corrective RAG Grader (<code>src/rag/crag_grader.py</code>):</strong> Avalia os scores normalizados do cross-encoder. Candidatos com relevância $&lt; 0.35$ (<code>min_relevance_score</code>) são descartados preventivamente para evitar injeção de ruído no prompt do LLM.
+5. <strong>Grounding Obrigatório:</strong> Sem documentos válidos acima do limiar, o agente declara honestamente não dispor da informação.</p>
 <hr />
 <h2 id="2-vector-db-qdrant">2. Vector DB — Qdrant<a class="headerlink" href="#2-vector-db-qdrant" title="Permanent link">&para;</a></h2>
 <table>
@@ -1815,7 +1636,6 @@ processamento sequencial síncrono.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Índices e otimizações previstas:</strong> payload indexing para filtros por <code>perfil</code> e <code>vigência</code>; quantização se a base crescer (tokenomics/latência — diferencial da vaga).</p>
 <hr />
 <h2 id="3-mcp-model-context-protocol">3. MCP (Model Context Protocol)<a class="headerlink" href="#3-mcp-model-context-protocol" title="Permanent link">&para;</a></h2>
 <h3 id="31-onde-o-mcp-entra">3.1 Onde o MCP entra<a class="headerlink" href="#31-onde-o-mcp-entra" title="Permanent link">&para;</a></h3>
@@ -1841,20 +1661,11 @@ processamento sequencial síncrono.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="32-justificativa">3.2 Justificativa<a class="headerlink" href="#32-justificativa" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Demonstra o <strong>diferencial MCP</strong> da vaga com caso de uso real.</li>
-<li>Padroniza como futuros sistemas da Cruzeiro do Sul (ERP, CRM acadêmico) seriam conectados aos agentes sem código custom por agente.</li>
-</ul>
 <hr />
 <h2 id="4-estrategia-de-modelos-llm">4. Estratégia de Modelos (LLM)<a class="headerlink" href="#4-estrategia-de-modelos-llm" title="Permanent link">&para;</a></h2>
 <p>A plataforma usa uma <strong>camada provider-agnostic</strong> (interface LangChain <code>BaseChatModel</code>):
 <code>USIEDU_LLM_PROVIDER</code> seleciona o provedor ativo. O piloto roda <strong>100% via OpenCode Go</strong> (custo zero);
-a integração com Gemini/Vertex AI fica implementada e documentada como suporte adicional da mesma
-camada (aderência ao ecossistema Google), sem ser o motor do piloto.</p>
-<h3 id="41-opencode-go-motor-do-piloto-custo-zero">4.1 OpenCode Go (motor do piloto — custo zero)<a class="headerlink" href="#41-opencode-go-motor-do-piloto-custo-zero" title="Permanent link">&para;</a></h3>
-<p>Assinatura OpenCode Go ($10/mês, limites em valor de uso) com endpoint OpenAI-compatível
-(<code>https://opencode.ai/zen/go/v1/chat/completions</code>). Modelos escolhidos por uso:</p>
+a integração com Gemini/Vertex AI fica implementada e documentada como suporte adicional da mesma camada.</p>
 <table>
 <thead>
 <tr>
@@ -1867,12 +1678,12 @@ camada (aderência ao ecossistema Google), sem ser o motor do piloto.</p>
 <tr>
 <td>Roteamento/Supervisor</td>
 <td><strong>DeepSeek V4 Flash</strong></td>
-<td>O mais barato da assinatura ($0.14/$0.28 por 1M tokens), cota de $60/mês — ideal para chamadas volumosas e determinísticas</td>
+<td>O mais barato da assinatura ($0.14/$0.28 por 1M tokens), cota de $60/mês</td>
 </tr>
 <tr>
 <td>Agentes especialistas + consolidação</td>
 <td><strong>Kimi K2.7 Code</strong></td>
-<td>Modelo de alto nível, forte em raciocínio e tool calling; cota de $60/mês (~6.750 req/mês) — melhor equilíbrio qualidade/custo</td>
+<td>Modelo de alto nível, forte em raciocínio e tool calling; cota de $60/mês</td>
 </tr>
 <tr>
 <td>Alternativa para respostas longas</td>
@@ -1881,272 +1692,32 @@ camada (aderência ao ecossistema Google), sem ser o motor do piloto.</p>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p>Modelos <strong>descartados</strong> por custo/benefício: Kimi K3, Grok 4.5 e Qwen3.8 Max
-(cota de apenas $15/mês). Modelos com cota $60/mês multiplicam o rendimento da assinatura em 6x.</p>
-</blockquote>
-<h3 id="42-suporte-a-gemini-via-camada-provider-agnostic">4.2 Suporte a Gemini (via camada provider-agnostic)<a class="headerlink" href="#42-suporte-a-gemini-via-camada-provider-agnostic" title="Permanent link">&para;</a></h3>
-<p>A mesma arquitetura suporta Gemini via <code>langchain-google-vertexai</code> trocando apenas variáveis
-de ambiente — sem alterar código de agentes. No piloto isso fica como <strong>integração documentada</strong>
-(código pronto, configuração opcional), demonstrando a capacidade exigida pela vaga sem
-incorrer em custo de API: a apresentação mostra o provider-agnostic em ação.</p>
 <hr />
-<h2 id="5-memoria-de-longo-prazo">5. Memória de Longo Prazo<a class="headerlink" href="#5-memoria-de-longo-prazo" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Camada</th>
-<th>Mecanismo</th>
-<th>Uso</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Sessão</strong></td>
-<td>Checkpointer do LangGraph (SQLite)</td>
-<td>Retomar conversa no ponto certo</td>
-</tr>
-<tr>
-<td><strong>Perfil persistente</strong></td>
-<td>Store (SQLite no piloto)</td>
-<td>Tutor: dificuldades, erros em quizzes, preferências; Jornada: curso, período, histórico de solicitações</td>
-</tr>
-<tr>
-<td><strong>Sumarização</strong></td>
-<td>Janela deslizante + resumo periódico</td>
-<td>Sessões longas sem estourar contexto (tokenomics)</td>
-</tr>
-</tbody>
-</table>
-<p>Exemplo de entrada no Store do Tutor:
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">"user_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ana-123"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"namespace"</span><span class="p">:</span><span class="w"> </span><span class="s2">"perfil_aprendizado"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"topicos_dificeis"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"limites"</span><span class="p">,</span><span class="w"> </span><span class="s2">"derivadas"</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">"acertos_quiz"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.62</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"estilo_preferido"</span><span class="p">:</span><span class="w"> </span><span class="s2">"exemplos práticos"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"atualizado_em"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-08-05T10:00:00Z"</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
+<h2 id="5-finops-semantic-cache-cache-warmup">5. FinOps: Semantic Cache &amp; Cache Warmup<a class="headerlink" href="#5-finops-semantic-cache-cache-warmup" title="Permanent link">&para;</a></h2>
+<h3 id="51-semantic-cache-vetorial">5.1 Semantic Cache Vetorial<a class="headerlink" href="#51-semantic-cache-vetorial" title="Permanent link">&para;</a></h3>
+<p>Consultas institucionais e públicas passam primeiro pelo cache semântico (SQLite local ou Redis):
+- <strong>Cálculo de Similaridade:</strong> Embeddings locais e similaridade de cosseno com threshold configurado em <strong>0.92</strong>.
+- <strong>Latência &amp; Custo:</strong> Consultas cacheadas retornam em <strong>&lt; 15ms</strong> com <strong>custo zero de tokens</strong>.</p>
+<h3 id="52-cache-warmup-automatizado-scriptswarmup_cachepy">5.2 Cache Warmup Automatizado (<code>scripts/warmup_cache.py</code>)<a class="headerlink" href="#52-cache-warmup-automatizado-scriptswarmup_cachepy" title="Permanent link">&para;</a></h3>
+<p>Script CLI que pré-popula o cache semântico com as 40 perguntas institucionais mais frequentes:
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>scripts/warmup_cache.py<span class="w"> </span>--dataset<span class="w"> </span>knowledge_base/perguntas_frequentes.json
 </code></pre></div></p>
 <hr />
-<h2 id="6-avaliacao-de-qualidade">6. Avaliação de Qualidade<a class="headerlink" href="#6-avaliacao-de-qualidade" title="Permanent link">&para;</a></h2>
-<h3 id="61-metricas-do-piloto-ragas">6.1 Métricas do piloto (Ragas)<a class="headerlink" href="#61-metricas-do-piloto-ragas" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Métrica</th>
-<th>O que mede</th>
-<th>Meta sugerida</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>faithfulness</code></td>
-<td>Resposta fiel ao contexto recuperado (sem alucinação)</td>
-<td>≥ 0.90</td>
-</tr>
-<tr>
-<td><code>context_precision</code></td>
-<td>Os trechos recuperados são relevantes?</td>
-<td>≥ 0.80</td>
-</tr>
-<tr>
-<td><code>context_recall</code></td>
-<td>Recuperamos tudo que era necessário?</td>
-<td>≥ 0.80</td>
-</tr>
-<tr>
-<td><code>answer_relevancy</code></td>
-<td>A resposta responde à pergunta?</td>
-<td>≥ 0.85</td>
-</tr>
-</tbody>
-</table>
-<h3 id="62-dataset-de-avaliacao">6.2 Dataset de avaliação<a class="headerlink" href="#62-dataset-de-avaliacao" title="Permanent link">&para;</a></h3>
-<ul>
-<li>~30 perguntas (15 estudante / 15 funcionário) com respostas de referência, cobrindo:</li>
-<li>Perguntas diretas com resposta no documento.</li>
-<li>Perguntas compostas (multi-agente).</li>
-<li>Perguntas <strong>sem resposta</strong> nos documentos (testa o "não sei" honesto).</li>
-<li>Perguntas fora de escopo (testa guardrails).</li>
-</ul>
-<h3 id="63-qualidade-conversacional-metrica-da-vaga">6.3 Qualidade conversacional (métrica da vaga)<a class="headerlink" href="#63-qualidade-conversacional-metrica-da-vaga" title="Permanent link">&para;</a></h3>
-<p>LLM-as-judge avalia amostra de conversas em: <strong>clareza, retenção de contexto e assertividade</strong> — as três dimensões citadas explicitamente na descrição da vaga.</p>
-<h3 id="64-frameworks-de-avaliacao-papel-de-cada-um">6.4 Frameworks de avaliação — papel de cada um<a class="headerlink" href="#64-frameworks-de-avaliacao-papel-de-cada-um" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Ferramenta</th>
-<th>Papel no piloto</th>
-<th>Observação</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Ragas</strong></td>
-<td>✅ Principal: métricas de RAG (faithfulness, context precision/recall, answer relevancy)</td>
-<td>Não acelera ingestão nem embeddings — avalia qualidade da resposta</td>
-</tr>
-<tr>
-<td><strong>LangSmith Datasets &amp; Experiments</strong></td>
-<td>✅ Complementar: mesmo dataset rodado como experimento no LangSmith</td>
-<td>Integra com o tracing já escolhido; regressão visível na plataforma</td>
-</tr>
-<tr>
-<td><strong>LLM-as-judge</strong></td>
-<td>✅ Qualidade conversacional (6.3)</td>
-<td>Implementado via LangSmith evaluators ou script próprio</td>
-</tr>
-<tr>
-<td>TruLens</td>
-<td>Roadmap/menção na apresentação</td>
-<td>Citado nos diferenciais da vaga; demonstrar conhecimento sem adicionar complexidade ao piloto</td>
-</tr>
-<tr>
-<td>DeepEval</td>
-<td>Alternativa se Ragas falhar</td>
-<td>Swap simples: mesmo dataset, métricas equivalentes</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>Nota: avaliação e ingestão são problemas independentes — a seção 1.2 resolve velocidade
-de embedding; esta seção 6 resolve medição de qualidade.</p>
-</blockquote>
-<hr />
-<h2 id="7-observabilidade">7. Observabilidade<a class="headerlink" href="#7-observabilidade" title="Permanent link">&para;</a></h2>
-<h3 id="71-stack-do-piloto">7.1 Stack do piloto<a class="headerlink" href="#71-stack-do-piloto" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Camada</th>
-<th>Ferramenta</th>
-<th>O que captura</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Tracing de LLM</td>
-<td><strong>LangSmith</strong> (cloud, free tier)</td>
-<td>Cadeia completa: supervisor → agentes → retriever → LLM</td>
-</tr>
-<tr>
-<td>Métricas de API</td>
-<td>Prometheus + Grafana</td>
-<td>Latência p50/p95, taxa de erro, throughput</td>
-</tr>
-<tr>
-<td>Logs</td>
-<td>Estruturados (JSON)</td>
-<td>Correlação com run_id do LangSmith</td>
-</tr>
-</tbody>
-</table>
-<h3 id="72-metricas-chave-kpis-do-dashboard-grafana">7.2 Métricas-chave (KPIs do dashboard Grafana)<a class="headerlink" href="#72-metricas-chave-kpis-do-dashboard-grafana" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Latência</strong>: tempo até primeiro token e tempo total por perfil de pergunta.</li>
-<li><strong>Tokens</strong>: consumo por conversa e por agente (tokenomics).</li>
-<li><strong>Qualidade</strong>: scores Ragas por execução de avaliação; taxa de respostas "não sei".</li>
-<li><strong>Saúde</strong>: erros de tool calling, falhas de recuperação RAG, disponibilidade.</li>
-</ul>
-<hr />
-<h2 id="8-ferramentas-de-desenvolvimento-e-qualidade">8. Ferramentas de Desenvolvimento e Qualidade<a class="headerlink" href="#8-ferramentas-de-desenvolvimento-e-qualidade" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Ferramenta</th>
-<th>Papel</th>
-<th>Configuração</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Ruff</strong></td>
-<td>Lint + formatação do código Python (substitui flake8/black/isort)</td>
-<td><code>ruff check</code> + <code>ruff format</code> no pré-commit e CI</td>
-</tr>
-<tr>
-<td><strong>pytest</strong></td>
-<td>Testes unitários e de integração</td>
-<td>Testes de roteamento do supervisor, retriever, tools mockadas e API (sem chamar LLM real nos testes unitários — mocks/fakes)</td>
-</tr>
-<tr>
-<td><strong>pytest-asyncio</strong></td>
-<td>Testes assíncronos</td>
-<td>Cobertura do grafo LangGraph e endpoints FastAPI</td>
-</tr>
-<tr>
-<td><strong>MkDocs (Material)</strong></td>
-<td>Site da documentação</td>
-<td><code>mkdocs.yml</code> gerando site navegável a partir de <code>docs/</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Estratégia de testes (pirâmide):</strong></p>
-<div class="highlight"><pre><span></span><code>        ╱  e2e (demo manual)  ╲          vídeo de demo / critérios de aceite
-       ╱  integração (pytest)   ╲        grafo completo com LLM mockado,
-      ╱                           ╲       API FastAPI via httpx
-     ╱  unitários (pytest)          ╲    supervisor, chunker, retriever,
-    ╱─────────────────────────────────╲  tools, guardrails
+<h2 id="6-avaliacao-continua-geracao-sintetica-ragas">6. Avaliação Contínua: Geração Sintética &amp; Ragas<a class="headerlink" href="#6-avaliacao-continua-geracao-sintetica-ragas" title="Permanent link">&para;</a></h2>
+<h3 id="61-geracao-sintetica-automatizada-scriptsgenerate_synthetic_testsetpy">6.1 Geração Sintética Automatizada (<code>scripts/generate_synthetic_testset.py</code>)<a class="headerlink" href="#61-geracao-sintetica-automatizada-scriptsgenerate_synthetic_testsetpy" title="Permanent link">&para;</a></h3>
+<p>O UsiEdu implementa um gerador sintético de datasets baseado nos documentos da base de conhecimento:
+- Gera automaticamente 50 casos de teste balanceados:
+  - <strong>40% Perguntas Diretas (Direct):</strong> Baseadas em artigos de normas e calendário.
+  - <strong>30% Perguntas de Raciocínio (Reasoning):</strong> Interpretação de requisitos e regras.
+  - <strong>20% Perguntas Multi-Contexto (Multi-Context):</strong> Articulação entre diferentes seções/documentos.
+  - <strong>10% Fora de Escopo e Sem Resposta:</strong> Validação de recusa segura e honestidade.</p>
+<h3 id="62-quality-gate-de-ragas-llm-as-a-judge">6.2 Quality Gate de Ragas (LLM-as-a-Judge)<a class="headerlink" href="#62-quality-gate-de-ragas-llm-as-a-judge" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code>python<span class="w"> </span>scripts/run_ragas.py<span class="w"> </span>--ci-gate<span class="w"> </span>--min-score<span class="w"> </span><span class="m">0</span>.80
 </code></pre></div>
-<ul>
-<li>Testes <strong>não dependem de chave de API</strong>: o LLM Gemini é substituído por fake determinístico nos testes.</li>
-<li>Metas: cobertura ≥ 80% nos módulos de orquestração/RAG; <code>ruff check</code> sem erros no CI.</li>
-</ul>
+- <strong>Faithfulness $\ge 0.85$:</strong> A resposta não contém informações fora do contexto.
+- <strong>Answer Relevance $\ge 0.80$:</strong> A resposta aborda diretamente a intenção da pergunta.</p>
 <hr />
-<h2 id="9-estrutura-do-repositorio-proposta">9. Estrutura do repositório (proposta)<a class="headerlink" href="#9-estrutura-do-repositorio-proposta" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>usiedu/
-├── docs/                        # esta documentação (fonte do MkDocs)
-├── src/
-│   ├── api/                     # FastAPI: auth, sessões, chat
-│   ├── orchestration/           # grafo LangGraph, supervisor, estado
-│   ├── agents/                  # acadêmico, financeiro, documental...
-│   ├── rag/                     # ingestão, recuperação, reranking
-│   ├── tools/                   # tool calling (APIs mockadas)
-│   ├── mcp_servers/             # processos-mcp
-│   └── evaluation/              # dataset + scripts Ragas
-├── frontend/                    # React + Vite (TypeScript): chat web
-├── tests/                       # pytest: unitários + integração
-├── knowledge_base/              # documentos-fonte (sintéticos/públicos)
-├── mkdocs.yml                   # configuração do site de documentação
-├── pyproject.toml               # deps, ruff e pytest configurados aqui
-├── docker-compose.yml           # API + frontend + Qdrant + Grafana
-└── README.md                    # quickstart + link para demo
-</code></pre></div>
-<h2 id="10-deploy-publico-azure-container-apps-t94">10. Deploy público — Azure Container Apps (T9.4)<a class="headerlink" href="#10-deploy-publico-azure-container-apps-t94" title="Permanent link">&para;</a></h2>
-<p>O deploy público usa três Container Apps no mesmo ambiente: <strong>frontend</strong>
-(externo, HTTPS), <strong>API</strong> (ingress interno) e <strong>Qdrant</strong> (ingress interno). O
-frontend nginx faz o proxy dos caminhos de API para <code>http://&lt;nome-da-api&gt;</code>;
-assim o navegador usa uma única origem e o backend não fica exposto à internet.</p>
-<p>O estado do Qdrant fica em Azure Files. Sessões do LangGraph, feedback e cache
-semântico ficam em PostgreSQL Flexible Server gerenciado: SQLite/WAL sobre
-Azure Files pode bloquear operações concorrentes. A ingestão é um Container
-Apps Job manual: ela usa a mesma imagem da API e executa
-<code>scripts/ingest_knowledge_base.py</code> apenas depois que o Qdrant estiver
-disponível.</p>
-<p>A API recebe <strong>2 vCPUs e 4 GiB</strong> no manifesto. Os modelos locais de embeddings
-e reranking são inicializados no startup; 2 GiB podem causar encerramento do
-contêiner com código 137 e interromper o streaming. O job de ingestão continua
-em 2 GiB, pois não carrega o reranker.</p>
-<p>Os artefatos versionados ficam em <code>infra/azure/</code>:</p>
-<ul>
-<li><code>registry.bicep</code>: Azure Container Registry Basic para as imagens privadas.</li>
-<li><code>main.bicep</code>: ambiente Container Apps, Log Analytics, Azure Files, os três
-  serviços e o job de ingestão.</li>
-<li><code>deploy.ps1</code>: cria o resource group/registro, constrói e publica imagens,
-  provisiona os serviços e informa a URL pública.</li>
-</ul>
-<p>As variáveis obrigatórias em produção são configuradas como secrets ou env vars
-no template: <code>JWT_SECRET</code>, <code>OPENCODE_GO_API_KEY</code>, <code>OPENCODE_GO_BASE_URL</code>,
-<code>LANGSMITH_*</code>/<code>LANGCHAIN_*</code>, <code>QDRANT_URL</code>, <code>USIEDU_DATABASE_URL</code>,
-<code>USIEDU_CACHE_*</code>, <code>USIEDU_RATE_*</code> e
-<code>USIEDU_CORS_ORIGINS</code>. Nunca reutilizar o segredo JWT local e nunca versionar
-valores reais em <code>.env</code> ou Bicep.</p>
-<h2 id="11-guardrails-contra-prompt-injection-t93">11. Guardrails contra prompt injection (T9.3)<a class="headerlink" href="#11-guardrails-contra-prompt-injection-t93" title="Permanent link">&para;</a></h2>
-<p>Defesa em três camadas, implementada em <code>src/security/guardrails.py</code> com
-heurísticas determinísticas (regex em constantes nomeadas) — <strong>testável sem LLM</strong>.</p>
+<h2 id="7-guardrails-anti-injection-t93">7. Guardrails Anti-Injection (T9.3)<a class="headerlink" href="#7-guardrails-anti-injection-t93" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2159,37 +1730,26 @@ heurísticas determinísticas (regex em constantes nomeadas) — <strong>testáv
 <tr>
 <td><strong>1. Ingestão</strong></td>
 <td><code>src/rag/ingest.py</code></td>
-<td>Cada chunk passa por <code>detect_injection</code>; chunks sinalizados ganham <code>suspicious=true</code> e são <strong>excluídos do índice</strong> com log de auditoria (<code>guardrail_triggered</code>, <code>origem=ingest</code>)</td>
+<td>Chunks com padrões de injeção são marcados e descartados</td>
 </tr>
 <tr>
-<td><strong>2. Entrada do usuário</strong></td>
-<td><code>POST /chat</code> e <code>/chat/stream</code></td>
-<td>O mesmo detector roda na pergunta; se sinalizada, o trace recebe <code>flagged=true</code> + <code>injection_patterns</code>. A pergunta <strong>não é bloqueada</strong> (risco de falso positivo), apenas observada</td>
+<td><strong>2. Entrada</strong></td>
+<td><code>/chat</code> e <code>/chat/stream</code></td>
+<td>PII Masking e detecção de ataques com flags no LangSmith</td>
 </tr>
 <tr>
 <td><strong>3. Saída</strong></td>
-<td>após o grafo, antes de responder</td>
-<td><code>validate_answer</code> detecta eco do prompt de sistema, eco de jailbreak ou tentativa de mudança de comportamento ("a partir de agora..."); resposta insegura é substituída por <code>RESPOSTA_SEGURA_PADRAO</code> e o evento <code>guardrail_triggered</code> é registrado no log JSON e no LangSmith (best-effort)</td>
+<td>Após consolidação</td>
+<td><code>validate_answer</code> bloqueia vazamento de system prompt ou eco de jailbreak</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Decisões de política:</strong>
-- Respostas bloqueadas pelo guardrail <strong>nunca alimentam o cache semântico</strong> (T9.2).
-- No streaming os tokens já emitidos não podem ser desfeitos: o evento <code>final</code>
-  carrega a resposta segura e o cliente reconcilia o texto pelo campo <code>answer</code>.
-- Fragmentos de detecção de eco são derivados dos prompts reais na importação
-  (sem dessincronização).
-- Fixture de teste: <code>tests/fixtures/documento_malicioso.html</code> (documento com
-  injeção embutida).</p>
 <hr />
-<h2 id="11-decisoes-em-aberto-para-revisao">11. Decisões em aberto <em>(para revisão)</em><a class="headerlink" href="#11-decisoes-em-aberto-para-revisao" title="Permanent link">&para;</a></h2>
-<ul>
-<li>[ ] Reranker: manter local (<code>bge-reranker</code>) ou testar Vertex AI ranking na comparação final?</li>
-<li>[ ] Grafana/Prometheus entram no piloto ou só na Fase 2 (para reduzir complexidade)?</li>
-</ul>
-<p><strong>Decisões já fechadas:</strong>
-- ✅ Motor do piloto: <strong>OpenCode Go</strong> (DeepSeek V4 Flash + Kimi K2.7 Code) — Gemini fora do piloto,
-  mantido apenas como provider suportado pela camada de abstração.</p>
+<h2 id="8-deploy-azure-container-apps-t94">8. Deploy — Azure Container Apps (T9.4)<a class="headerlink" href="#8-deploy-azure-container-apps-t94" title="Permanent link">&para;</a></h2>
+<p>O ambiente em nuvem executa 3 Container Apps integrados:
+- <strong>Frontend:</strong> Nginx + React (Ingress externo HTTPS)
+- <strong>API Backend:</strong> FastAPI + LangGraph (2 vCPUs, 4 GiB de memória)
+- <strong>Qdrant Vector DB:</strong> Armazenamento vetorial persistido em Azure Files</p>
 
 
 

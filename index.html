@@ -1144,13 +1144,13 @@
 <p>Reducers de estado resilientes a conversas multi-turnos com reset explícito de contexto.</p>
 </li>
 <li>
-<p><strong>RAG Híbrido em 4 Estágios:</strong></p>
+<p><strong>RAG Híbrido Avançado com CRAG &amp; Padrão Anthropic:</strong></p>
 </li>
-<li><strong>Busca Densa:</strong> Qdrant Vector DB com embeddings locais otimizados via ONNX.</li>
-<li><strong>Busca Esparsa:</strong> BM25 lexical search para precisão em termos regulatórios e leis.</li>
-<li><strong>Fusão RRF:</strong> Reciprocal Rank Fusion ($k=60$) combinando os rankings.</li>
+<li><strong>Contextual Retrieval:</strong> Prefixos contextuais automáticos ancorando instituição, documento pai e seção em cada chunk (redução de até 49% nas falhas de recuperação).</li>
+<li><strong>Query Rewriting &amp; Resolução Coreferencial:</strong> Resolução de referências pronominais baseada no histórico antes de despachar para os índices.</li>
+<li><strong>Busca Híbrida:</strong> Qdrant (Vetorial denso) + BM25 (Léxico esparso) fundidos via Reciprocal Rank Fusion ($k=60$).</li>
 <li>
-<p><strong>Re-ranking:</strong> Cross-Encoder com <code>BAAI/bge-reranker-base</code> para seleção cirúrgica dos Top Chunks.</p>
+<p><strong>Re-ranking &amp; Corrective RAG (CRAG):</strong> Cross-Encoder (<code>bge-reranker-base</code>) combinado com <strong>Retrieval Grader</strong> com descarte automático de candidatos com relevância $&lt; 0.35$.</p>
 </li>
 <li>
 <p><strong>Middleware de Contexto do Sistema (Grounding Universal):</strong></p>
@@ -1161,13 +1161,14 @@
 <li>
 <p><strong>FinOps &amp; AI Safety:</strong></p>
 </li>
-<li>Semantic Caching vetorial com limiar de similaridade $\ge 0.92$ (respostas em &lt;15ms e custo zero de tokens).</li>
+<li><strong>Semantic Caching:</strong> Cache vetorial (SQLite/Redis) com threshold $\ge 0.92$ e script de <strong>Warmup Automatizado</strong> com catálogo de perguntas institucionais frequentes (latência $&lt; 15$ms e custo zero de tokens).</li>
 <li>
 <p>Mascaramento de dados sensíveis (PII Masking) e poda dinâmica de tokens (<code>trim_messages</code>).</p>
 </li>
 <li>
-<p><strong>Qualidade Contínua e LLM-as-a-Judge:</strong></p>
+<p><strong>Qualidade Contínua, Geração Sintética &amp; LLM-as-a-Judge:</strong></p>
 </li>
+<li><strong>Geração Sintética de Testes:</strong> Gerador automatizado (<code>generate_synthetic_testset.py</code>) que fatias a base de conhecimento e produz 50 casos de teste balanceados (diretos, raciocínio, multi-contexto e fora de escopo).</li>
 <li>Suíte com mais de <strong>450 testes unitários automatizados</strong> (100% aprovados).</li>
 <li>Quality Gate de CI/CD baseado no framework <strong>RAGAS</strong> (<em>Faithfulness $\ge 0.85$</em>) e <strong>Agent Trajectory Harness</strong>.</li>
 </ol>
