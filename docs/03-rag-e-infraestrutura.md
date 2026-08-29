@@ -1,13 +1,13 @@
 # Pipeline de RAG e Infraestrutura
 
-> Detalha o pipeline de RAG híbrido avançado (Anthropic Contextual Retrieval + CRAG), o banco vetorial, os MCP servers,
+> Detalha o pipeline de RAG híbrido avançado (Anthropic Contextual Retrieval + Parent-Document + CRAG + Lost in the Middle Reordering), o banco vetorial, os MCP servers,
 > a estratégia de cache semântico com warmup, a avaliação de qualidade contínua e a infraestrutura em nuvem.
 
 ---
 
 ## 1. Pipeline de RAG de Alta Precisão
 
-### 1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)
+### 1.1 Ingestão, Contextual Retrieval e Parent-Document (Small-to-Big)
 
 ```
 Documentos-fonte                Pipeline                        Vector DB
@@ -15,7 +15,7 @@ Documentos-fonte                Pipeline                        Vector DB
 Regimento UnB          ┐
 Calendário 2026.2      │   extração     chunking        embedding
 Guia do Servidor       ├──► (PDF/HTML) ─► Contextual ───► modelo ──► Qdrant
-LDB                    │               Retrieval        local       coleções:
+LDB                    │               + Parent-Doc     local       coleções:
                        ┘               (Anthropic)      (batch)     academico,
                                                                     institucional
 ```
@@ -26,19 +26,21 @@ LDB                    │               Retrieval        local       coleções
 |---|---|---|
 | Extração | PyMuPDF / Trafilatura | Suporta PDFs e HTMLs institucionais com detecção de encoding (UTF-8 / Latin-1) |
 | **Contextual Retrieval** | Prefixo contextual Anthropic (`_build_context_prefix`) | Ancoragem de metadados pai reduz em até 49% as falhas de recuperação |
+| **Parent-Document** | Chunks filhos com `parent_text` preservado nos metadados | Alta sensibilidade na busca vetorial mantendo o contexto pai íntegro |
 | Chunking | Semântico por seção, 500–800 tokens, overlap 15% | Preserva coerência de artigos de regimento e normas |
-| Metadados | documento, seção, página, data de vigência, público-alvo | Filtragem por perfil (student/staff) e citação oficial |
+| Metadados | documento, seção, página, data de vigência, público-alvo, parent_text | Filtragem por perfil (student/staff), Self-Querying e citação oficial |
 | Embeddings | **FastEmbed / sentence-transformers** (ONNX local em batch) | Custo zero, sem rate limit, minutos mesmo em CPU |
 | Coleções | Separadas por domínio (`academico`, `institucional`, `carreira`) | Permite isolamento estrito por perfil de usuário |
 
-#### 1.1.1 Funcionamento do Contextual Retrieval
-Implementado no `DocumentChunker` (`src/rag/chunker.py`), cada fragmento gerado é automaticamente enriquecido com um prefixo estruturado derivado da hierarquia do documento pai:
+#### 1.1.1 Funcionamento do Contextual Retrieval & Parent-Document
+Implementado no `DocumentChunker` (`src/rag/chunker.py`), cada fragmento gerado é automaticamente enriquecido com um prefixo estruturado derivado da hierarquia do documento pai, além de armazenar o texto completo da seção pai:
 ```text
 Este trecho pertence ao documento 'Regimento Geral da UnB' da instituição 'UnB', seção 'Art. 15'.
 
-[Texto original do artigo fatiado...]
+[Texto original do artigo fatiado para indexação precisa...]
 ```
 - **Vetorização e BM25:** Operam sobre o texto contextualizado (`chunk.text`), garantindo que buscas semânticas encontrem trechos mesmo quando pronomes ou referências explícitas à instituição estão ausentes no parágrafo isolado.
+- **Hierarchical Parent Context:** O texto integral da seção é retido em `chunk.metadata["parent_text"]` para expansão de contexto durante a geração da resposta.
 - **Exibição e Citação:** O texto puro original é preservado em `chunk.metadata["original_text"]` para exibição limpa nas interfaces.
 
 ### 1.2 Performance de Ingestão e Otimizações
@@ -51,32 +53,39 @@ Este trecho pertence ao documento 'Regimento Geral da UnB' da instituição 'UnB
 | **Cache de embeddings em disco** | Hash → vetor já calculado (SQLite/arquivo) | Troca de coleção/Qdrant não re-embeda nada |
 | **Ingestão incremental** | `manifest.json` com checksum por documento | Só documentos novos/alterados são processados |
 
-### 1.3 Recuperação Online, Query Rewriting e Corrective RAG (CRAG)
+### 1.3 Recuperação Online, Self-Querying, Re-ranking e Reorder (Lost in the Middle)
 
 ```
 Pergunta do Usuário
         │
         ▼
-┌──────────────────────┐     ┌────────────────┐     ┌──────────────┐
-│ Query Rewriter       │────►│ Busca Híbrida  │────►│ Re-ranking   │
-│ (Resolução Corefer.) │     │ Vetor + BM25   │     │ Cross-Encoder│
-└──────────────────────┘     │ (Top-20)       │     │ (Top-5)      │
-                             └────────────────┘     └──────┬───────┘
-                                                           ▼
-                                                    ┌──────────────┐
-                                                    │ CRAG Grader  │
-                                                    │ (Score >=.35)│
-                                                    └──────┬───────┘
-                                                           ▼
-                                            Contexto Relevante Filtrado
+┌───────────────────────────┐     ┌────────────────────────┐     ┌──────────────┐
+│ Query Rewriter &          │────►│ Busca Híbrida          │────►│ Re-ranking   │
+│ Self-Querying Metadata    │     │ Qdrant (Filtro) + BM25 │     │ Cross-Encoder│
+└───────────────────────────┘     │ (Top-20)               │     │ (Top-5)      │
+                                  └────────────────────────┘     └──────┬───────┘
+                                                                        ▼
+                                                                 ┌──────────────┐
+                                                                 │ CRAG Grader  │
+                                                                 │ (Score >=.35)│
+                                                                 └──────┬───────┘
+                                                                        ▼
+                                                                 ┌──────────────┐
+                                                                 │ Reorder      │
+                                                                 │ [1,3,5,4,2]  │
+                                                                 └──────┬───────┘
+                                                                        ▼
+                                                         Contexto Relevante Balanceado
 ```
 
 **Técnicas de precisão e salvaguarda (anti-alucinação):**
-1. **Query Rewriting & Resolução Coreferencial (`src/rag/rewrite.py`):** Analisa o histórico multi-turno para reescrever perguntas contextuais (*"E até quando posso pagar ele?"* $\rightarrow$ *"Até quando posso pagar o boleto de graduação?"*) antes de consultar os índices.
-2. **Busca Híbrida & RRF:** Vetorial denso (Qdrant) + Léxico esparso (BM25) fundidos via Reciprocal Rank Fusion ($k=60$).
-3. **Re-ranking Cross-Encoder:** `BAAI/bge-reranker-base` reordena os candidatos avaliando os pares query-documento.
-4. **Corrective RAG Grader (`src/rag/crag_grader.py`):** Avalia os scores normalizados do cross-encoder. Candidatos com relevância $< 0.35$ (`min_relevance_score`) são descartados preventivamente para evitar injeção de ruído no prompt do LLM.
-5. **Grounding Obrigatório:** Sem documentos válidos acima do limiar, o agente declara honestamente não dispor da informação.
+1. **Query Rewriting & Resolução Coreferencial (`src/rag/query_rewriter.py`):** Analisa o histórico multi-turno para reescrever perguntas contextuais (*"E até quando posso pagar ele?"* $\rightarrow$ *"Até quando posso pagar o boleto de graduação?"*) antes de consultar os índices.
+2. **Self-Querying & Extração de Metadados (`extract_query_metadata`):** Identifica referências a normas e documentos específicos na query do usuário e aplica filtros booleanos pré-HNSW no Qdrant, reduzindo ruídos entre documentos.
+3. **Busca Híbrida & RRF:** Vetorial denso (Qdrant) + Léxico esparso (BM25) fundidos via Reciprocal Rank Fusion ($k=60$).
+4. **Re-ranking Cross-Encoder:** `BAAI/bge-reranker-base` reordena os candidatos avaliando os pares query-documento com alta precisão semântica.
+5. **Corrective RAG Grader (`src/rag/crag_grader.py`):** Avalia os scores normalizados do cross-encoder. Candidatos com relevância $< 0.35$ (`min_relevance_score`) são descartados preventivamente para evitar injeção de ruído no prompt do LLM.
+6. **Mitigação de Lost in the Middle (`reorder_context`):** Reorganiza os chunks aprovados no padrão `[1º, 3º, 5º, 4º, 2º]`, posicionando os documentos mais importantes nas regiões de maior atenção do LLM (início e fim do prompt).
+7. **Grounding Obrigatório:** Sem documentos válidos acima do limiar, o agente declara honestamente não dispor da informação.
 
 ---
 

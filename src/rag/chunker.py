@@ -74,6 +74,8 @@ class DocumentChunker:
                             "publico_alvo": metadata.publico_alvo,
                             "chunk_index": chunk_index,
                             "original_text": part,
+                            "parent_text": section_text,
+                            "parent_section": section_name,
                         },
                     )
                 )

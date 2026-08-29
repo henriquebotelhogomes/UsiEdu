@@ -9,7 +9,7 @@
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph%20v0.2%2B-orange?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
 [![LangChain](https://img.shields.io/badge/Framework-LangChain%20v0.3%2B-green?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langchain)
 [![Vector DB](https://img.shields.io/badge/Vector%20DB-Qdrant%20Hybrid-red?logo=qdrant&logoColor=white)](https://qdrant.tech/)
-[![Unit Tests](https://img.shields.io/badge/Tests-457%20passed%20(100%25)-brightgreen?logo=pytest&logoColor=white)](https://github.com/henriquebotelhogomes/UsiEdu)
+[![Unit Tests](https://img.shields.io/badge/Tests-484%20passed%20(100%25)-brightgreen?logo=pytest&logoColor=white)](https://github.com/henriquebotelhogomes/UsiEdu)
 [![Linter](https://img.shields.io/badge/Linter-Ruff%20(0%20warnings)-000000?logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
 [![Azure Cloud](https://img.shields.io/badge/Cloud-Azure%20Container%20Apps-0078D4?logo=microsoft-azure&logoColor=white)](https://azure.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -26,7 +26,7 @@
 
 O **UsiEdu** é uma plataforma conversacional multi-agente de padrão **Série B / Scale-up Enterprise**, desenhada para unificar o ecossistema de atendimento e autosserviço de instituições de ensino superior. 
 
-Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiEdu opera sob um **Grafo de Estados Determinístico (LangGraph)**, combinando múltiplos agentes especialistas, execução nativa de ferramentas (*Function Calling*), aprovação humana no fluxo (*Human-in-the-Loop*), middleware de contexto universal, síntese cognitiva paralela e guardrails em camadas com controle de custos (*FinOps*).
+Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiEdu opera sob um **Grafo de Estados Determinístico (LangGraph)**, combinando múltiplos agentes especialistas, execução nativa de ferramentas (*Function Calling*), aprovação humana no fluxo (*Human-in-the-Loop*), middleware de contexto universal, síntese cognitiva paralela, mitigação de *Lost in the Middle*, recuperação hierárquica e guardrails em camadas com controle de custos (*FinOps*).
 
 ---
 
@@ -34,13 +34,15 @@ Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiE
 
 | Dimensão | Chatbot / RAG Tradicional (MVP) | UsiEdu Enterprise Multi-Agent (Scale-up) |
 |---|---|---|
-| **Orquestração** | Cadeia linear única (sem estado granular) | **StateGraph (LangGraph)** com supervisor tipado e checkpointer persistente |
+| **Orquestração** | Cadeia linear única (sem estado granular) | **StateGraph (LangGraph)** com supervisor tipado e checkpointer persistente (`AsyncSqliteSaver`) |
 | **Contexto Temporal** | Dependência de funções ad-hoc / LLM sem relógio | **Middleware Universal de Contexto** (Data/Hora de Brasília, Timezone e Perfil) |
-| **Recuperação de Chunks** | Fatiamento ingênuo por tamanho fixo | **Contextual Retrieval (Padrão Anthropic)** com prefixos de documento pai |
+| **Recuperação de Chunks** | Fatiamento ingênuo por tamanho fixo | **Contextual Retrieval (Anthropic)** + **Hierarchical Parent-Document (`parent_text`)** |
+| **Atenção do Modelo** | Injeção linear sujeita a *Lost in the Middle* | **Reordenação Balanceada (`reorder_context` `[1º, 3º, 5º, 4º, 2º]`)** |
 | **Resolução de Perguntas** | Busca com pronomes do usuário ("ele", "disso") | **Query Rewriter & Resolução Coreferencial** antes de consultar índices |
+| **Filtragem Pré-Busca** | Busca vetorial cega em toda a base | **Self-Querying Metadata Filtering** pré-HNSW (documentos e normas oficiais) |
 | **Filtragem de Ruído** | Injeta os Top-K cegamente no prompt | **Corrective RAG (CRAG)** com Retrieval Grader (score $\ge 0.35$) |
 | **Recuperação de Dados** | Busca vetorial densa isolada | **RAG Híbrido 4 Estágios** (Qdrant + BM25 + RRF + Cross-Encoder Re-ranker) |
-| **FinOps & Cache** | Sem cache / reexecução cara | **Semantic Cache (SQLite/Redis)** com **Warmup Automatizado** (<15ms) |
+| **FinOps & Cache** | Sem cache / reexecução cara | **Semantic Cache calibrated a 0.92** + **Warmup** (<15ms) + **`trim_messages`** |
 | **Ações Sensíveis** | Execução automática sem confirmação | **Human-in-the-Loop (HITL)** via `interrupt_before` e `POST /chat/resume` |
 | **Segurança & Compliance** | Sem tratamento de dados pessoais | **PII Masking (`mask_pii`)** + Guardrails anti-prompt injection multi-nível |
 | **Avaliação & CI/CD** | Testes manuais / ad-hoc | **Dataset Sintético (50 casos)** + **RAGAS Quality Gate** + **Agent Harness** |
@@ -58,9 +60,9 @@ graph TD
     Cache -->|"Sim (Cosseno >= 0.92)"| FastResponse[Resposta Imediata < 15ms]
     Cache -->|"Não (Miss)"| Supervisor["Nó Supervisor (Structured Output)"]
     
-    Supervisor -->|intent = academico| Academico["Agente Acadêmico (Rewriter + CRAG RAG + @tools)"]
-    Supervisor -->|intent = financeiro| Financeiro["Agente Financeiro (Rewriter + CRAG RAG + @tools)"]
-    Supervisor -->|intent = institucional| Documental["Agente Documental (Rewriter + CRAG RAG)"]
+    Supervisor -->|intent = academico| Academico["Agente Acadêmico (Self-Querying + CRAG RAG + @tools)"]
+    Supervisor -->|intent = financeiro| Financeiro["Agente Financeiro (Self-Querying + CRAG RAG + @tools)"]
+    Supervisor -->|intent = institucional| Documental["Agente Documental (Self-Querying + CRAG RAG)"]
     Supervisor -->|intent = composta| Parallel["Despacho Paralelo de Especialistas"]
     Supervisor -->|intent = fora_de_escopo| OutOfScope["Nó Fora de Escopo"]
     
@@ -73,12 +75,16 @@ graph TD
     Documental --> CRAG_D[CRAG Grader]
     
     Financeiro -->|Ação Crítica| HITL{HITL Interrupt?}
-    HITL -->|interrupt_before| Suspend["Pausa no Grafo (Aguarda Confirmação)"]
+    HITL -->|interrupt_before| Suspend["Pausa no Grafo (AsyncSqliteSaver)"]
     Suspend -->|POST /chat/resume| Consolidation
     
-    CRAG_A --> Consolidation["Nó de Consolidação (Fast-path ou Síntese Cognitiva LLM)"]
-    CRAG_F --> Consolidation
-    CRAG_D --> Consolidation
+    CRAG_A --> ReorderA[Reorder Context Lost in Middle]
+    CRAG_F --> ReorderF[Reorder Context Lost in Middle]
+    CRAG_D --> ReorderD[Reorder Context Lost in Middle]
+    
+    ReorderA --> Consolidation["Nó de Consolidação (Fast-path ou Síntese Cognitiva LLM)"]
+    ReorderF --> Consolidation
+    ReorderD --> Consolidation
     
     Consolidation --> GuardrailsOut[Guardrail de Saída & Validação de Grounding]
     GuardrailsOut --> Client([Cliente Web - Streaming SSE / JSON])
@@ -88,31 +94,31 @@ graph TD
 
 ## 🔬 Destaques Técnicos da Implementação
 
-### 1. Contextual Retrieval — Padrão Anthropic (`src/rag/chunker.py`)
-Prefixa cada fragmento com a contextualização hierárquica do documento pai e seção (`_build_context_prefix`), reduzindo as falhas de recuperação vetorial em até 49%:
+### 1. Hierarchical Parent-Document & Contextual Retrieval (`src/rag/chunker.py`)
+Combina contextualização hierárquica do documento pai com preservação de seções completas (`parent_text`), reduzindo falhas de recuperação em até 49% e entregando contexto rico ao modelo:
 ```text
 Este trecho pertence ao documento 'Regimento Geral da UnB' da instituição 'UnB', seção 'Art. 15'.
-[Texto do artigo fatiado...]
+[Texto fatiado para indexação sensível com referência ao parent_text expandido...]
 ```
 
-### 2. Query Rewriting & Resolução Coreferencial (`src/rag/rewrite.py`)
-Resolve referências pronominais antes da busca vetorial/léxica. Uma pergunta como *"E até quando posso pagar ele?"* é automaticamente expandida para *"Até quando posso pagar o boleto de graduação?"*.
+### 2. Mitigação do Efeito "Lost in the Middle" (`src/rag/retriever.py`)
+Reorganiza os chunks mais relevantes para as posições de maior atenção do LLM (`[1º, 3º, 5º, 4º, 2º]`), evitando a perda de contexto no centro de blocos longos de documentos.
 
-### 3. Corrective RAG (CRAG) com Retrieval Grader (`src/rag/crag_grader.py`)
+### 3. Self-Querying & Filtragem Pré-HNSW (`src/rag/query_rewriter.py`)
+Extrai metadados estruturados das perguntas (documento, instituição, normas) e aplica filtros booleanos no Qdrant antes do cálculo vetorial, acelerando a busca e eliminando ruídos.
+
+### 4. Poda Dinâmica de Contexto & FinOps (`src/agents/`)
+Adota `trim_messages` do LangChain (`max_tokens=2000`) em todas as invocações de agentes para garantir economia de tokens e proteção contra estouro de contexto.
+
+### 5. Semantic Cache com Warmup Automatizado (`src/rag/cache.py` / `scripts/warmup_cache.py`)
+Calibrado em limiar de cosseno **0.92**, respondendo a dúvidas frequentes com latência $< 15\text{ms}$ e custo zero de tokens.
+
+### 6. Corrective RAG (CRAG) com Retrieval Grader (`src/rag/crag_grader.py`)
 Após o re-ranking pelo Cross-Encoder, o `RetrievalGrader` descarta documentos irrelevantes com score $< 0.35$, evitando alucinações e garantindo que o agente declare ausência de dados quando necessário.
 
-### 4. Semantic Cache com Warmup Automatizado (`scripts/warmup_cache.py`)
-Pré-popula o cache vetorial (SQLite/Redis) com 40 perguntas institucionais frequentes, permitindo respostas instantâneas (< 15ms) com custo zero de tokens.
-
-### 5. Geração Sintética Automatizada de Testes (`scripts/generate_synthetic_testset.py`)
-Gera automaticamente datasets balanceados de 50 perguntas com gabarito fundamentado (40% diretas, 30% raciocínio, 20% multi-contexto e 10% fora de escopo) para alimentar o Quality Gate de Ragas (LLM-as-a-Judge).
-
-### 6. Middleware de Contexto de Ambiente Universal (`src/orchestration/context.py`)
-Injeta automaticamente data/hora no fuso de Brasília, semestre letivo e perfil de sessão antes de qualquer chamada LLM.
-
-### 7. Human-in-the-Loop Interrupts (`src/orchestration/graph.py`)
+### 7. Human-in-the-Loop com Persistência Assíncrona (`src/orchestration/graph.py`)
 ```python
-# Pausa o grafo com checkpointer persistente antes de ações com efeito colateral
+# Pausa o grafo com checkpointer assíncrono persistente (AsyncSqliteSaver)
 graph = builder.compile(
     checkpointer=checkpointer,
     interrupt_before=["financeiro_confirmacao", "trancar_matricula"],
@@ -219,7 +225,7 @@ O repositório possui uma pipeline automatizada no GitHub Actions ([.github/work
 # 1. Verificação de Linter e Estilo (Ruff)
 ruff check src/ tests/ scripts/
 
-# 2. Suíte de Testes Unitários Automatizados (457 testes - 100% aprovados)
+# 2. Suíte de Testes Unitários Automatizados (484 testes - 100% aprovados)
 pytest tests/unit/
 
 # 3. Quality Gate de Qualidade RAG (RAGAS LLM-as-a-Judge)

@@ -263,3 +263,27 @@ class TestContextualRetrieval:
         # 3. Documento sem seção específica
         p3 = DocumentChunker._build_context_prefix(metadata, "documento")
         assert "seção" not in p3
+
+
+class TestHierarchicalParentDocument:
+    """Testes para suporte a Parent-Document Retrieval (Small-to-Big)."""
+
+    def test_parent_text_preservado_no_metadata(self, metadata, tmp_path):
+        chunker = DocumentChunker(max_chars=100, overlap_chars=20)
+        doc = tmp_path / "secao_longa.txt"
+        texto_longo = (
+            "Art. 15 O estudante poderá trancar a matrícula em até dois semestres consecutivos. "
+            "Para tanto, deverá abrir requerimento junto à Secretaria Acadêmica apresentando "
+            "justificativa formal e comprovante de quitação financeira."
+        )
+        doc.write_text(texto_longo, encoding="utf-8")
+
+        chunks = chunker.chunk_document(doc, metadata)
+        assert len(chunks) >= 2  # Texto dividido em múltiplos chunks pequenos
+        for chunk in chunks:
+            assert "parent_text" in chunk.metadata
+            assert "parent_section" in chunk.metadata
+            # O parent_text contém o texto completo da seção pai
+            assert chunk.metadata["parent_section"] == "Art. 15"
+            assert "justificativa formal" in chunk.metadata["parent_text"]
+

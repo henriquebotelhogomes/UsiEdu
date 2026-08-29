@@ -83,9 +83,9 @@ def cache_ativo() -> bool:
 
 def _limiar_similaridade() -> float:
     try:
-        return float(os.getenv("USIEDU_CACHE_SIMILARITY", "0.97"))
+        return float(os.getenv("USIEDU_CACHE_SIMILARITY", "0.92"))
     except ValueError:
-        return 0.97
+        return 0.92
 
 
 def _ttl_dias() -> int:

@@ -71,6 +71,16 @@ class TestProfileFilter:
         f = HybridRetriever._build_profile_filter("staff")
         assert f.must[0].match.value == "staff"
 
+    def test_filtro_com_metadados_adicionais(self):
+        f = HybridRetriever._build_profile_filter(
+            "student", metadata_filters={"documento": "Regimento Geral da UnB"}
+        )
+        assert len(f.must) == 2
+        assert f.must[0].key == "publico_alvo"
+        assert f.must[1].key == "documento"
+        assert f.must[1].match.value == "Regimento Geral da UnB"
+
+
 
 try:
     import rank_bm25  # noqa: F401
@@ -478,3 +488,25 @@ class TestRetrieverCRAG:
 
         results = retriever.search("pergunta fora de contexto", profile="student")
         assert len(results) == 0
+
+
+class TestReorderContext:
+    """Testes para a mitigação de 'Lost in the Middle' (reorder_context)."""
+
+    def test_reorder_context_5_elementos(self):
+        from src.rag.retriever import reorder_context
+
+        # Entrada ordenada por relevância: [1, 2, 3, 4, 5]
+        # Esperado: 1º no início, 2º no fim, 3º no início, 4º no fim, 5º no meio -> [1, 3, 5, 4, 2]
+        entrada = [1, 2, 3, 4, 5]
+        resultado = reorder_context(entrada)
+        assert resultado == [1, 3, 5, 4, 2]
+
+    def test_reorder_context_pequeno(self):
+        from src.rag.retriever import reorder_context
+
+        assert reorder_context([]) == []
+        assert reorder_context([1]) == [1]
+        assert reorder_context([1, 2]) == [1, 2]
+        assert reorder_context([1, 2, 3]) == [1, 3, 2]
+

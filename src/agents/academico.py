@@ -49,17 +49,20 @@ def make_academico_node(
         user_id = state.get("user_id", "")
         last_message = state["messages"][-1].content if state["messages"] else ""
 
-        # Recupera contexto RAG com resolução coreferencial de consulta
-        from src.rag.query_rewriter import rewrite_query_for_rag
+        # Recupera contexto RAG com resolução coreferencial de consulta e Self-Querying
+        from src.rag.query_rewriter import extract_query_metadata, rewrite_query_for_rag
 
         search_query = await rewrite_query_for_rag(state.get("messages", []), agent_llm)
+        metadata_filters = extract_query_metadata(search_query)
 
         context_text = ""
         retrieved_sources: list[Source] = []
 
         if retriever:
             try:
-                results = retriever.search(search_query, profile="student")
+                results = retriever.search(
+                    search_query, profile="student", metadata_filters=metadata_filters
+                )
                 context_text = _format_context(results)
                 retrieved_sources = [r.source for r in results]
             except Exception:
@@ -161,13 +164,18 @@ async def _executar_ferramentas_academicas(user_id: str, query: str) -> str:
 
 
 def _format_context(results: list) -> str:
-    """Formata resultados RAG para o prompt."""
+    """Formata resultados RAG para o prompt com mitigação de 'Lost in the Middle'."""
     if not results:
         return "Nenhum documento relevante encontrado."
 
+    from src.rag.retriever import reorder_context
+
+    # Reordena chunks para [1º, 3º, 5º, 4º, 2º]
+    reordered_results = reorder_context(results[:5])
+
     max_chars = 2400
     parts = []
-    for i, r in enumerate(results[:5], 1):
+    for i, r in enumerate(reordered_results, 1):
         excerpt = r.source.excerpt
         if len(excerpt) > max_chars:
             excerpt = excerpt[:max_chars] + "..."
@@ -180,12 +188,19 @@ def _format_context(results: list) -> str:
 
 
 def _format_messages(messages: list) -> str:
-    """Formata as últimas perguntas do usuário para o prompt."""
-    from langchain_core.messages import HumanMessage
+    """Formata as últimas perguntas do usuário para o prompt com poda de tokens (trim_messages)."""
+    from langchain_core.messages import HumanMessage, trim_messages
 
     user_messages = [m for m in messages if isinstance(m, HumanMessage)]
+    trimmed = trim_messages(
+        user_messages,
+        max_tokens=2000,
+        token_counter=len,
+        strategy="last",
+        start_on="human",
+    )
     text_parts = []
-    for msg in user_messages[-4:]:
+    for msg in trimmed[-4:]:
         content = msg.content[:500] if isinstance(msg.content, str) else str(msg.content)[:500]
         text_parts.append(f"Usuário: {content}")
     return "\n".join(text_parts)

@@ -98,3 +98,50 @@ class TestHumanInTheLoop:
         data = resume_res.json()
         assert data["session_id"] == "sess-hitl-2"
         assert data["answer"]
+
+    @pytest.mark.asyncio
+    async def test_grafo_com_sqlite_checkpointer_persiste_estado(
+        self, tmp_path, monkeypatch
+    ) -> None:
+        """Grafo criado com USIEDU_CHECKPOINTER_DB deve persistir estado no SQLite."""
+        db_file = tmp_path / "checkpoints_test.db"
+        monkeypatch.setenv("USIEDU_CHECKPOINTER_DB", str(db_file))
+
+        router_llm = FakeChatModel(
+            default_response=json.dumps(
+                {"intent": "academico", "plan": None, "reasoning": "teste sqlite"}
+            )
+        )
+        agent_llm = FakeChatModel(default_response="Resposta persistida.")
+        graph = create_chat_graph(
+            router_llm=router_llm,
+            agent_llm=agent_llm,
+            checkpointer=None,  # Deve instanciar SqliteSaver automaticamente
+            interrupt_before=["consolidation"],
+        )
+
+        config = {"configurable": {"thread_id": "thread-sqlite-1"}}
+        state = {
+            "user_id": "aluno@teste.com",
+            "profile": "student",
+            "messages": [],
+            "plan": None,
+            "delegations": [],
+            "agent_results": {},
+            "retrieved_sources": [],
+            "needs_more_info": False,
+            "cycle_count": 0,
+            "supervisor_decision": None,
+        }
+
+        await graph.ainvoke(state, config)
+        assert db_file.exists()
+        assert db_file.stat().st_size > 0
+
+        snapshot = await graph.aget_state(config)
+        assert snapshot.next == ("consolidation",)
+
+        # Fecha conexão do checkpointer de forma limpa
+        if hasattr(graph.checkpointer, "conn"):
+            await graph.checkpointer.conn.close()
+

@@ -32,8 +32,17 @@ Sua tarefa é analisar o histórico recente da conversa e a última pergunta do 
 
 
 def _format_recent_history(messages: list[AnyMessage], max_turns: int = 3) -> str:
-    """Formata os últimos turnos da conversa para o prompt de reescrita."""
-    recent = messages[-(max_turns * 2) :]
+    """Formata os últimos turnos da conversa para o prompt de reescrita com poda de tokens."""
+    from langchain_core.messages import trim_messages
+
+    trimmed = trim_messages(
+        messages,
+        max_tokens=1500,
+        token_counter=len,
+        strategy="last",
+        start_on="human",
+    )
+    recent = trimmed[-(max_turns * 2) :]
     lines = []
     for msg in recent[:-1]:  # Exclui a última mensagem, que é a query atual
         role = "Usuário" if isinstance(msg, HumanMessage) else "Assistente"
@@ -92,3 +101,27 @@ async def rewrite_query_for_rag(
         logger.warning("Falha ao reescrever query com LLM (%s); usando query original", exc)
 
     return raw_query
+
+
+def extract_query_metadata(query: str) -> dict[str, str]:
+    """Extrai metadados estruturados da pergunta para filtragem pré-HNSW (Self-Querying).
+
+    Identifica menções diretas a documentos e normas regulatórias oficiais.
+    """
+    if not query:
+        return {}
+
+    q_lower = query.lower()
+    filters: dict[str, str] = {}
+
+    if "regimento" in q_lower or "regimento geral" in q_lower:
+        filters["documento"] = "Regimento Geral da UnB"
+    elif "calendário" in q_lower or "calendario" in q_lower:
+        filters["documento"] = "Calendário Acadêmico 2026.2"
+    elif "renegociação" in q_lower or "renegociacao" in q_lower:
+        filters["documento"] = "Política de Renegociação 2026"
+    elif "ldb" in q_lower or "lei 9.394" in q_lower:
+        filters["documento"] = "Lei de Diretrizes e Bases (LDB)"
+
+    return filters
+

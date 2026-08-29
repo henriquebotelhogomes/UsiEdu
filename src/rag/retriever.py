@@ -118,6 +118,25 @@ def _tokenize(text: str) -> list[str]:
     return [t for t in tokens if t not in _STOPWORDS]
 
 
+def reorder_context(items: list) -> list:
+    """Reordena chunks recuperados para mitigar o efeito 'Lost in the Middle'.
+
+    Posiciona os elementos mais relevantes nas extremidades do contexto (início e fim):
+    Exemplo: [1º, 2º, 3º, 4º, 5º] -> [1º, 3º, 5º, 4º, 2º].
+    """
+    if len(items) <= 2:
+        return list(items)
+
+    left: list = []
+    right: list = []
+    for i, item in enumerate(items):
+        if i % 2 == 0:
+            left.append(item)
+        else:
+            right.append(item)
+    return left + list(reversed(right))
+
+
 class HybridRetriever:
     """Retriever híbrido: busca vetorial no Qdrant + BM25 + reranking.
 
@@ -166,17 +185,20 @@ class HybridRetriever:
         self,
         query: str,
         profile: str = "student",
+        metadata_filters: dict | None = None,
     ) -> list[RetrievalResult]:
-        """Busca híbrida com filtro de perfil e Corrective RAG (CRAG).
+        """Busca híbrida com filtro de perfil, metadados estruturados e Corrective RAG (CRAG).
 
         Args:
             query: Pergunta do usuário.
             profile: "student" ou "staff" — filtra documentos por público-alvo.
+            metadata_filters: Dicionário opcional com filtros adicionais
+                (ex.: {"documento": "..."}).
 
         Returns:
             Lista de RetrievalResult aprovados pelo Grader ordenados por relevância.
         """
-        profile_filter = self._build_profile_filter(profile)
+        profile_filter = self._build_profile_filter(profile, metadata_filters=metadata_filters)
 
         # 1. Busca BM25 (também fornece termos para expansão da query vetorial)
         bm25_results = self._bm25_search(query)
@@ -240,18 +262,27 @@ class HybridRetriever:
         logger.info("Índice BM25 construído com %d documentos.", len(docs))
 
     @staticmethod
-    def _build_profile_filter(profile: str) -> Filter:
-        """Constrói filtro do Qdrant por público-alvo."""
+    def _build_profile_filter(profile: str, metadata_filters: dict | None = None) -> Filter:
+        """Constrói filtro do Qdrant por público-alvo e metadados adicionais."""
         from qdrant_client.models import FieldCondition, Filter, MatchValue
 
-        return Filter(
-            must=[
-                FieldCondition(
-                    key="publico_alvo",
-                    match=MatchValue(value=profile),
-                )
-            ]
-        )
+        conditions = [
+            FieldCondition(
+                key="publico_alvo",
+                match=MatchValue(value=profile),
+            )
+        ]
+        if metadata_filters:
+            for key, val in metadata_filters.items():
+                if val:
+                    conditions.append(
+                        FieldCondition(
+                            key=key,
+                            match=MatchValue(value=val),
+                        )
+                    )
+
+        return Filter(must=conditions)
 
     def _expand_query(self, query: str, bm25_results: list[tuple[str, float]]) -> str:
         """Expande a query com termos distintivos dos top hits do BM25.

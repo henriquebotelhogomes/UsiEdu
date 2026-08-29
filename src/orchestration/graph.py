@@ -89,7 +89,17 @@ def create_chat_graph(
 
     # === Checkpointer ===
     if checkpointer is None:
-        checkpointer = MemorySaver()
+        import os
+
+        db_path = os.getenv("USIEDU_CHECKPOINTER_DB")
+        if db_path:
+            import aiosqlite
+            from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+            conn = aiosqlite.connect(db_path)
+            checkpointer = AsyncSqliteSaver(conn)
+        else:
+            checkpointer = MemorySaver()
 
     # === Compilação com suporte a Human-in-the-Loop (RF4-01) ===
     graph = builder.compile(

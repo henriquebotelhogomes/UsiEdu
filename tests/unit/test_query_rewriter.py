@@ -98,3 +98,26 @@ class TestQueryRewriter:
         assert "Usuário: Pergunta 1" in history
         assert "Assistente: Resposta 1" in history
         assert "Pergunta 2" not in history
+
+
+class TestExtractQueryMetadata:
+    """Testes unitários para extract_query_metadata (Self-Querying)."""
+
+    def test_extract_query_metadata_regimento(self) -> None:
+        from src.rag.query_rewriter import extract_query_metadata
+
+        meta = extract_query_metadata("O que diz o Regimento Geral sobre faltas?")
+        assert meta.get("documento") == "Regimento Geral da UnB"
+
+    def test_extract_query_metadata_calendario(self) -> None:
+        from src.rag.query_rewriter import extract_query_metadata
+
+        meta = extract_query_metadata("Quando começa o semestre no calendário acadêmico?")
+        assert meta.get("documento") == "Calendário Acadêmico 2026.2"
+
+    def test_extract_query_metadata_sem_documento(self) -> None:
+        from src.rag.query_rewriter import extract_query_metadata
+
+        meta = extract_query_metadata("Como tirar segunda via de carteirinha?")
+        assert meta == {}
+

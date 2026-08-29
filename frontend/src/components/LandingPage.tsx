@@ -38,7 +38,7 @@ const STACK = [
   ["Reranker", "BAAI/bge-reranker-base local"],
   ["Observabilidade", "LangSmith Tracing + Distributed Logs"],
   ["Frontend", "React 18 + Vite + TypeScript + SSE Streaming"],
-  ["Qualidade", "Ruff · pytest (457 testes - 100%) · RAGAS Gate"],
+  ["Qualidade", "Ruff · pytest (484 testes - 100%) · RAGAS Gate"],
 ];
 
 const FONTES = [
@@ -133,11 +133,14 @@ export default function LandingPage() {
               Ver no GitHub
             </a>
           </div>
-          <div className="landing-chips">
+           <div className="landing-chips">
             <span>Python 3.12</span>
             <span>FastAPI</span>
             <span>LangGraph</span>
             <span>Qdrant</span>
+            <span>Parent-Document RAG</span>
+            <span>Self-Querying</span>
+            <span>Lost-in-the-Middle Reorder</span>
             <span>Semantic Cache</span>
             <span>Human-in-the-Loop</span>
             <span>RAGAS Gate</span>
@@ -158,36 +161,34 @@ export default function LandingPage() {
             <p>
               Assistente de jornada acadêmica e financeira: dúvidas sobre calendário,
               matrícula e regimento respondidas com base em documentos
-              oficiais, além de consulta de notas, faltas e simulação de renegociação
-              de boletos. Perguntas compostas são resolvidas de forma colaborativa e paralela.
+              oficiais, além de consulta de notas, faltas e boletos.
             </p>
           </div>
           <div className="landing-card">
-            <div className="landing-card-icon teal">🏛️</div>
-            <h3>Para Funcionários &amp; Docentes</h3>
+            <div className="landing-card-icon gold">🏛️</div>
+            <h3>Para Funcionários e Docentes</h3>
             <p>
-              Assistente de conhecimento institucional: normas, portarias e
-              processos internos recuperados por busca híbrida (vetorial +
-              BM25 + Cross-Encoder Re-ranker) e respondidos sempre com citação obrigatória do documento
-              e da seção de origem.
+              Acesso exclusivo a normas internas, portarias e processos
+              administrativos via Agente Documental, com isolamento seguro de
+              perfil e citações auditáveis.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Agentes */}
-      <section id="agentes" className="landing-section alt">
-        <h2>Especialização e Autonomia Multi-Agente</h2>
+      {/* Seção Agentes */}
+      <section id="agentes" className="landing-section dark">
+        <h2>Agentes Especialistas no Grafo</h2>
         <p className="landing-section-sub">
-          Múltiplos agentes orquestrados por um nó supervisor central tipado com Pydantic, cada um com suas ferramentas e bases especializadas.
+          Cada agente possui escopo delimitado, ferramentas próprias e base de
+          conhecimento indexada.
         </p>
         <div className="landing-grid-4">
           {AGENTES.map((agente) => (
-            <div
-              key={agente.nome}
-              className={`landing-card small ${agente.fase === "Fase 2" ? "future" : ""}`}
-            >
-              <span className="landing-fase">{agente.fase}</span>
+            <div key={agente.nome} className="landing-card small">
+              <span className={`agente-fase ${agente.fase === "Piloto" ? "piloto" : "fase2"}`}>
+                {agente.fase}
+              </span>
               <h4>{agente.nome}</h4>
               <p>{agente.descricao}</p>
             </div>
@@ -198,21 +199,20 @@ export default function LandingPage() {
       {/* Arquitetura */}
       <section id="arquitetura" className="landing-section">
         <div className="landing-split">
-          <div>
-            <h2>Orquestração com LangGraph: Muito além de um simples wrapper</h2>
+          <div className="landing-split-text">
+            <h2>Arquitetura Multi-Agente &amp; RAG Enterprise</h2>
             <p>
-              O grafo <strong>LangGraph</strong> executa o fluxo com gerenciamento de estado persistente,
-              roteamento via <code>with_structured_output</code>, injeção de contexto temporal e pontos de interrupção
-              para <strong>Human-in-the-Loop (HITL)</strong> em ações sensíveis.
+              O UsiEdu foi projetado seguindo as melhores práticas de IA corporativa:
             </p>
-            <ul className="landing-list">
-              <li><strong>Contextual Retrieval (Anthropic):</strong> Prefixos contextuais com metadados do documento pai no chunk (reduz falhas em até 49%)</li>
+            <ul className="landing-feature-list">
+              <li><strong>Parent-Document Retrieval:</strong> Chunks filhos para matching vetorial preciso com injeção do contexto pai integral</li>
+              <li><strong>Lost in the Middle Reordering:</strong> Reorganização [1º, 3º, 5º, 4º, 2º] maximizando a atenção do LLM sobre os documentos-chave</li>
+              <li><strong>Self-Querying &amp; Filtragem Pré-HNSW:</strong> Extração automática de metadados para filtro booleano antes do cálculo vetorial</li>
               <li><strong>Query Rewriting &amp; Coreferência:</strong> Resolução de pronomes no histórico antes do Qdrant/BM25</li>
               <li><strong>Corrective RAG (CRAG):</strong> Retrieval Grader com pontuação de corte para eliminar ruídos pós-reranking</li>
-              <li><strong>Semantic Cache Warmup:</strong> Catálogo de perguntas institucionais pré-aquecidas com latência &lt;15ms</li>
-              <li><strong>Geração Sintética &amp; Ragas:</strong> Dataset sintético automatizado de 50 perguntas balanceadas para CI/CD</li>
-              <li><strong>Middleware Universal:</strong> Injeção de data/hora oficial de Brasília, fuso horário e perfil de sessão</li>
-              <li><strong>Human-in-the-Loop (HITL):</strong> Pausa determinística no grafo para aprovação humana em ações críticas</li>
+              <li><strong>Semantic Cache Warmup:</strong> Catálogo de perguntas pré-aquecidas com limiar 0.92 e latência &lt;15ms</li>
+              <li><strong>Poda Dinâmica (trim_messages):</strong> Controle rigoroso de tokens e custos para conversas multi-turnos</li>
+              <li><strong>Human-in-the-Loop com AsyncSqliteSaver:</strong> Persistência assíncrona com interrupção para autorização humana</li>
             </ul>
           </div>
           <div className="landing-split-img">
@@ -228,28 +228,28 @@ export default function LandingPage() {
       <section className="landing-section dark">
         <h2>Pipeline RAG de Última Geração (CRAG + Anthropic Standard)</h2>
         <p className="landing-section-sub">
-          Recuperação corrigida com rastreabilidade, reescrita coreferencial, re-ranking e avaliação contínua.
+          Recuperação hierárquica corrigida com rastreabilidade, reescrita coreferencial, re-ranking e avaliação contínua.
         </p>
         <div className="landing-grid-3">
           <div className="landing-step">
             <span>01</span>
-            <h4>Contextual Retrieval &amp; Rewriting</h4>
+            <h4>Parent-Document &amp; Self-Querying</h4>
             <p>
-              Ancoragem hierárquica do documento pai no chunk e reescrita de query com resolução de pronomes antes da busca.
+              Ancoragem contextual hierárquica, extração de filtros pré-HNSW e reescrita de query com resolução de pronomes antes da busca.
             </p>
           </div>
           <div className="landing-step">
             <span>02</span>
-            <h4>Busca Híbrida &amp; CRAG Grader</h4>
+            <h4>Busca Híbrida, Rerank &amp; Reorder</h4>
             <p>
-              Qdrant + BM25 fundidos via RRF, re-ranking via Cross-Encoder e Retrieval Grader descartando ruído com score &lt; 0.35.
+              Qdrant + BM25 fundidos via RRF, re-ranking Cross-Encoder, CRAG Grader e mitigação de Lost in the Middle nas extremidades do contexto.
             </p>
           </div>
           <div className="landing-step">
             <span>03</span>
-            <h4>Geração, Cache &amp; Ragas</h4>
+            <h4>Geração, FinOps &amp; Ragas</h4>
             <p>
-              Streaming SSE, Semantic Cache pré-aquecido, citação estrita de fontes e validação contínua com Ragas Quality Gate.
+              Streaming SSE, Semantic Cache (0.92) com Warmup, trim_messages e validação contínua com Ragas Quality Gate.
             </p>
           </div>
         </div>
