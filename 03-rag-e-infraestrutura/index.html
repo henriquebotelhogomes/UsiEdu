@@ -466,22 +466,22 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-ingestao-e-contextual-retrieval-padrao-anthropic" class="md-nav__link">
+  <a href="#11-ingestao-contextual-retrieval-e-parent-document-small-to-big" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)
+        1.1 Ingestão, Contextual Retrieval e Parent-Document (Small-to-Big)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)">
+    <nav class="md-nav" aria-label="1.1 Ingestão, Contextual Retrieval e Parent-Document (Small-to-Big)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#111-funcionamento-do-contextual-retrieval" class="md-nav__link">
+  <a href="#111-funcionamento-do-contextual-retrieval-parent-document" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1.1 Funcionamento do Contextual Retrieval
+        1.1.1 Funcionamento do Contextual Retrieval &amp; Parent-Document
       
     </span>
   </a>
@@ -505,10 +505,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#13-recuperacao-online-query-rewriting-e-corrective-rag-crag" class="md-nav__link">
+  <a href="#13-recuperacao-online-self-querying-re-ranking-e-reorder-lost-in-the-middle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.3 Recuperação Online, Query Rewriting e Corrective RAG (CRAG)
+        1.3 Recuperação Online, Self-Querying, Re-ranking e Reorder (Lost in the Middle)
       
     </span>
   </a>
@@ -1257,22 +1257,22 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-ingestao-e-contextual-retrieval-padrao-anthropic" class="md-nav__link">
+  <a href="#11-ingestao-contextual-retrieval-e-parent-document-small-to-big" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)
+        1.1 Ingestão, Contextual Retrieval e Parent-Document (Small-to-Big)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)">
+    <nav class="md-nav" aria-label="1.1 Ingestão, Contextual Retrieval e Parent-Document (Small-to-Big)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#111-funcionamento-do-contextual-retrieval" class="md-nav__link">
+  <a href="#111-funcionamento-do-contextual-retrieval-parent-document" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1.1 Funcionamento do Contextual Retrieval
+        1.1.1 Funcionamento do Contextual Retrieval &amp; Parent-Document
       
     </span>
   </a>
@@ -1296,10 +1296,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#13-recuperacao-online-query-rewriting-e-corrective-rag-crag" class="md-nav__link">
+  <a href="#13-recuperacao-online-self-querying-re-ranking-e-reorder-lost-in-the-middle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.3 Recuperação Online, Query Rewriting e Corrective RAG (CRAG)
+        1.3 Recuperação Online, Self-Querying, Re-ranking e Reorder (Lost in the Middle)
       
     </span>
   </a>
@@ -1483,18 +1483,18 @@
 
 <h1 id="pipeline-de-rag-e-infraestrutura">Pipeline de RAG e Infraestrutura<a class="headerlink" href="#pipeline-de-rag-e-infraestrutura" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Detalha o pipeline de RAG híbrido avançado (Anthropic Contextual Retrieval + CRAG), o banco vetorial, os MCP servers,
+<p>Detalha o pipeline de RAG híbrido avançado (Anthropic Contextual Retrieval + Parent-Document + CRAG + Lost in the Middle Reordering), o banco vetorial, os MCP servers,
 a estratégia de cache semântico com warmup, a avaliação de qualidade contínua e a infraestrutura em nuvem.</p>
 </blockquote>
 <hr />
 <h2 id="1-pipeline-de-rag-de-alta-precisao">1. Pipeline de RAG de Alta Precisão<a class="headerlink" href="#1-pipeline-de-rag-de-alta-precisao" title="Permanent link">&para;</a></h2>
-<h3 id="11-ingestao-e-contextual-retrieval-padrao-anthropic">1.1 Ingestão e Contextual Retrieval (Padrão Anthropic)<a class="headerlink" href="#11-ingestao-e-contextual-retrieval-padrao-anthropic" title="Permanent link">&para;</a></h3>
+<h3 id="11-ingestao-contextual-retrieval-e-parent-document-small-to-big">1.1 Ingestão, Contextual Retrieval e Parent-Document (Small-to-Big)<a class="headerlink" href="#11-ingestao-contextual-retrieval-e-parent-document-small-to-big" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>Documentos-fonte                Pipeline                        Vector DB
 ──────────────                  ────────                        ─────────
 Regimento UnB          ┐
 Calendário 2026.2      │   extração     chunking        embedding
 Guia do Servidor       ├──► (PDF/HTML) ─► Contextual ───► modelo ──► Qdrant
-LDB                    │               Retrieval        local       coleções:
+LDB                    │               + Parent-Doc     local       coleções:
                        ┘               (Anthropic)      (batch)     academico,
                                                                     institucional
 </code></pre></div>
@@ -1519,14 +1519,19 @@ LDB                    │               Retrieval        local       coleções
 <td>Ancoragem de metadados pai reduz em até 49% as falhas de recuperação</td>
 </tr>
 <tr>
+<td><strong>Parent-Document</strong></td>
+<td>Chunks filhos com <code>parent_text</code> preservado nos metadados</td>
+<td>Alta sensibilidade na busca vetorial mantendo o contexto pai íntegro</td>
+</tr>
+<tr>
 <td>Chunking</td>
 <td>Semântico por seção, 500–800 tokens, overlap 15%</td>
 <td>Preserva coerência de artigos de regimento e normas</td>
 </tr>
 <tr>
 <td>Metadados</td>
-<td>documento, seção, página, data de vigência, público-alvo</td>
-<td>Filtragem por perfil (student/staff) e citação oficial</td>
+<td>documento, seção, página, data de vigência, público-alvo, parent_text</td>
+<td>Filtragem por perfil (student/staff), Self-Querying e citação oficial</td>
 </tr>
 <tr>
 <td>Embeddings</td>
@@ -1540,13 +1545,14 @@ LDB                    │               Retrieval        local       coleções
 </tr>
 </tbody>
 </table>
-<h4 id="111-funcionamento-do-contextual-retrieval">1.1.1 Funcionamento do Contextual Retrieval<a class="headerlink" href="#111-funcionamento-do-contextual-retrieval" title="Permanent link">&para;</a></h4>
-<p>Implementado no <code>DocumentChunker</code> (<code>src/rag/chunker.py</code>), cada fragmento gerado é automaticamente enriquecido com um prefixo estruturado derivado da hierarquia do documento pai:
+<h4 id="111-funcionamento-do-contextual-retrieval-parent-document">1.1.1 Funcionamento do Contextual Retrieval &amp; Parent-Document<a class="headerlink" href="#111-funcionamento-do-contextual-retrieval-parent-document" title="Permanent link">&para;</a></h4>
+<p>Implementado no <code>DocumentChunker</code> (<code>src/rag/chunker.py</code>), cada fragmento gerado é automaticamente enriquecido com um prefixo estruturado derivado da hierarquia do documento pai, além de armazenar o texto completo da seção pai:
 <div class="highlight"><pre><span></span><code>Este trecho pertence ao documento 'Regimento Geral da UnB' da instituição 'UnB', seção 'Art. 15'.
 
-[Texto original do artigo fatiado...]
+[Texto original do artigo fatiado para indexação precisa...]
 </code></pre></div>
 - <strong>Vetorização e BM25:</strong> Operam sobre o texto contextualizado (<code>chunk.text</code>), garantindo que buscas semânticas encontrem trechos mesmo quando pronomes ou referências explícitas à instituição estão ausentes no parágrafo isolado.
+- <strong>Hierarchical Parent Context:</strong> O texto integral da seção é retido em <code>chunk.metadata["parent_text"]</code> para expansão de contexto durante a geração da resposta.
 - <strong>Exibição e Citação:</strong> O texto puro original é preservado em <code>chunk.metadata["original_text"]</code> para exibição limpa nas interfaces.</p>
 <h3 id="12-performance-de-ingestao-e-otimizacoes">1.2 Performance de Ingestão e Otimizações<a class="headerlink" href="#12-performance-de-ingestao-e-otimizacoes" title="Permanent link">&para;</a></h3>
 <table>
@@ -1585,29 +1591,36 @@ LDB                    │               Retrieval        local       coleções
 </tr>
 </tbody>
 </table>
-<h3 id="13-recuperacao-online-query-rewriting-e-corrective-rag-crag">1.3 Recuperação Online, Query Rewriting e Corrective RAG (CRAG)<a class="headerlink" href="#13-recuperacao-online-query-rewriting-e-corrective-rag-crag" title="Permanent link">&para;</a></h3>
+<h3 id="13-recuperacao-online-self-querying-re-ranking-e-reorder-lost-in-the-middle">1.3 Recuperação Online, Self-Querying, Re-ranking e Reorder (Lost in the Middle)<a class="headerlink" href="#13-recuperacao-online-self-querying-re-ranking-e-reorder-lost-in-the-middle" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>Pergunta do Usuário
         │
         ▼
-┌──────────────────────┐     ┌────────────────┐     ┌──────────────┐
-│ Query Rewriter       │────►│ Busca Híbrida  │────►│ Re-ranking   │
-│ (Resolução Corefer.) │     │ Vetor + BM25   │     │ Cross-Encoder│
-└──────────────────────┘     │ (Top-20)       │     │ (Top-5)      │
-                             └────────────────┘     └──────┬───────┘
-                                                           ▼
-                                                    ┌──────────────┐
-                                                    │ CRAG Grader  │
-                                                    │ (Score &gt;=.35)│
-                                                    └──────┬───────┘
-                                                           ▼
-                                            Contexto Relevante Filtrado
+┌───────────────────────────┐     ┌────────────────────────┐     ┌──────────────┐
+│ Query Rewriter &amp;          │────►│ Busca Híbrida          │────►│ Re-ranking   │
+│ Self-Querying Metadata    │     │ Qdrant (Filtro) + BM25 │     │ Cross-Encoder│
+└───────────────────────────┘     │ (Top-20)               │     │ (Top-5)      │
+                                  └────────────────────────┘     └──────┬───────┘
+                                                                        ▼
+                                                                 ┌──────────────┐
+                                                                 │ CRAG Grader  │
+                                                                 │ (Score &gt;=.35)│
+                                                                 └──────┬───────┘
+                                                                        ▼
+                                                                 ┌──────────────┐
+                                                                 │ Reorder      │
+                                                                 │ [1,3,5,4,2]  │
+                                                                 └──────┬───────┘
+                                                                        ▼
+                                                         Contexto Relevante Balanceado
 </code></pre></div>
 <p><strong>Técnicas de precisão e salvaguarda (anti-alucinação):</strong>
-1. <strong>Query Rewriting &amp; Resolução Coreferencial (<code>src/rag/rewrite.py</code>):</strong> Analisa o histórico multi-turno para reescrever perguntas contextuais (<em>"E até quando posso pagar ele?"</em> $\rightarrow$ <em>"Até quando posso pagar o boleto de graduação?"</em>) antes de consultar os índices.
-2. <strong>Busca Híbrida &amp; RRF:</strong> Vetorial denso (Qdrant) + Léxico esparso (BM25) fundidos via Reciprocal Rank Fusion ($k=60$).
-3. <strong>Re-ranking Cross-Encoder:</strong> <code>BAAI/bge-reranker-base</code> reordena os candidatos avaliando os pares query-documento.
-4. <strong>Corrective RAG Grader (<code>src/rag/crag_grader.py</code>):</strong> Avalia os scores normalizados do cross-encoder. Candidatos com relevância $&lt; 0.35$ (<code>min_relevance_score</code>) são descartados preventivamente para evitar injeção de ruído no prompt do LLM.
-5. <strong>Grounding Obrigatório:</strong> Sem documentos válidos acima do limiar, o agente declara honestamente não dispor da informação.</p>
+1. <strong>Query Rewriting &amp; Resolução Coreferencial (<code>src/rag/query_rewriter.py</code>):</strong> Analisa o histórico multi-turno para reescrever perguntas contextuais (<em>"E até quando posso pagar ele?"</em> $\rightarrow$ <em>"Até quando posso pagar o boleto de graduação?"</em>) antes de consultar os índices.
+2. <strong>Self-Querying &amp; Extração de Metadados (<code>extract_query_metadata</code>):</strong> Identifica referências a normas e documentos específicos na query do usuário e aplica filtros booleanos pré-HNSW no Qdrant, reduzindo ruídos entre documentos.
+3. <strong>Busca Híbrida &amp; RRF:</strong> Vetorial denso (Qdrant) + Léxico esparso (BM25) fundidos via Reciprocal Rank Fusion ($k=60$).
+4. <strong>Re-ranking Cross-Encoder:</strong> <code>BAAI/bge-reranker-base</code> reordena os candidatos avaliando os pares query-documento com alta precisão semântica.
+5. <strong>Corrective RAG Grader (<code>src/rag/crag_grader.py</code>):</strong> Avalia os scores normalizados do cross-encoder. Candidatos com relevância $&lt; 0.35$ (<code>min_relevance_score</code>) são descartados preventivamente para evitar injeção de ruído no prompt do LLM.
+6. <strong>Mitigação de Lost in the Middle (<code>reorder_context</code>):</strong> Reorganiza os chunks aprovados no padrão <code>[1º, 3º, 5º, 4º, 2º]</code>, posicionando os documentos mais importantes nas regiões de maior atenção do LLM (início e fim do prompt).
+7. <strong>Grounding Obrigatório:</strong> Sem documentos válidos acima do limiar, o agente declara honestamente não dispor da informação.</p>
 <hr />
 <h2 id="2-vector-db-qdrant">2. Vector DB — Qdrant<a class="headerlink" href="#2-vector-db-qdrant" title="Permanent link">&para;</a></h2>
 <table>
