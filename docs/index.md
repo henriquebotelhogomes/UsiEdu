@@ -25,8 +25,8 @@
 
 5. **Qualidade Contínua, Geração Sintética & LLM-as-a-Judge:**
    - **Geração Sintética de Testes:** Gerador automatizado (`generate_synthetic_testset.py`) que fatias a base de conhecimento e produz 50 casos de teste balanceados (diretos, raciocínio, multi-contexto e fora de escopo).
-   - Suíte com mais de **450 testes unitários automatizados** (100% aprovados).
-   - Quality Gate de CI/CD baseado no framework **RAGAS** (*Faithfulness $\ge 0.85$*) e **Agent Trajectory Harness**.
+   - Suíte com mais de **530 testes unitários automatizados** (100% aprovados).
+   - Quality Gate de CI/CD baseado em **LLM-as-a-Judge por rubricas e Ragas** (*Faithfulness $\ge 0.90$*) e **Agent Trajectory Harness**.
 
 ---
 

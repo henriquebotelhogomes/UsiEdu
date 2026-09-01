@@ -8,8 +8,8 @@
 [![Python 3.12](https://img.shields.io/badge/Python-3.12%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph%20v0.2%2B-orange?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
 [![LangChain](https://img.shields.io/badge/Framework-LangChain%20v0.3%2B-green?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langchain)
-[![Vector DB](https://img.shields.io/badge/Vector%20DB-Qdrant%20Hybrid-red?logo=qdrant&logoColor=white)](https://qdrant.tech/)
-[![Unit Tests](https://img.shields.io/badge/Tests-484%20passed%20(100%25)-brightgreen?logo=pytest&logoColor=white)](https://github.com/henriquebotelhogomes/UsiEdu)
+[![Vector DB](https://img.shields.io/badge/Vector%20DB-Qdrant%20Hybrid%20(830%20chunks)-red?logo=qdrant&logoColor=white)](https://qdrant.tech/)
+[![Unit Tests](https://img.shields.io/badge/Tests-538%20passed%20(100%25)-brightgreen?logo=pytest&logoColor=white)](https://github.com/henriquebotelhogomes/UsiEdu)
 [![Linter](https://img.shields.io/badge/Linter-Ruff%20(0%20warnings)-000000?logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
 [![Azure Cloud](https://img.shields.io/badge/Cloud-Azure%20Container%20Apps-0078D4?logo=microsoft-azure&logoColor=white)](https://azure.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -146,6 +146,7 @@ graph = builder.compile(
 
 | Método | Rota | Autenticação | Descrição |
 |---|---|:---:|---|
+| `GET` | `/` | Não | Boas-vindas e links diretos para Swagger (`/docs`) e status (`/health`) |
 | `POST` | `/auth/login` | Não | Autentica usuário e emite token JWT com RBAC (`student` ou `staff`) |
 | `POST` | `/chat` | Sim | Envio síncrono com execução do grafo de agentes e retorno JSON estruturado |
 | `POST` | `/chat/stream` | Sim | Streaming SSE token a token em tempo real (`astream_events(v2)`) |
@@ -225,7 +226,7 @@ O repositório possui uma pipeline automatizada no GitHub Actions ([.github/work
 # 1. Verificação de Linter e Estilo (Ruff)
 ruff check src/ tests/ scripts/
 
-# 2. Suíte de Testes Unitários Automatizados (484 testes - 100% aprovados)
+# 2. Suíte de Testes Unitários Automatizados (538 testes - 100% aprovados)
 pytest tests/unit/
 
 # 3. Quality Gate de Qualidade RAG (RAGAS LLM-as-a-Judge)
