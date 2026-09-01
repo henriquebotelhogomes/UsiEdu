@@ -62,7 +62,11 @@ def _build_retrievers():
         from src.rag.retriever import HybridRetriever, qdrant_timeout_seconds
 
         qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
-        client = QdrantClient(qdrant_url, timeout=qdrant_timeout_seconds())
+        try:
+            client = QdrantClient(qdrant_url, timeout=qdrant_timeout_seconds())
+            client.get_collections()
+        except Exception:
+            client = QdrantClient(path="./qdrant_storage")
         embedder = Embedder()
 
         try:
