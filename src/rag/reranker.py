@@ -10,10 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 class Reranker:
-    """Reranker usando cross-encoder local (bge-reranker-base).
+    """Reranker usando cross-encoder local (bge-reranker-v2-m3).
 
     Reordena candidatos de busca por relevância usando um modelo
-    cross-encoder, que avalia pares (query, documento) diretamente.
+    cross-encoder multilingue, que avalia pares (query, documento)
+    diretamente. O checkpoint base foi trocado por não discriminar prosa
+    jurídica em português (ver nota de calibração em docs/08).
 
     Documentos longos são divididos em janelas sobrepostas, pois o
     modelo trunca a entrada em ~512 tokens e a informação relevante
@@ -22,7 +24,7 @@ class Reranker:
 
     def __init__(
         self,
-        model_name: str = "BAAI/bge-reranker-base",
+        model_name: str = "BAAI/bge-reranker-v2-m3",
         window_chars: int = 1200,
         overlap_chars: int = 200,
     ) -> None:

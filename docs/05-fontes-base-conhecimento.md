@@ -23,8 +23,48 @@ Ela possui, publicada e acessível, **todas as categorias de documento** de que 
 | Calendário acadêmico (graduação) | Calendário Universitário de Graduação 2026.2 (PDF) | https://saa.unb.br/wp-content/uploads/2026/06/2026_2_Calend_Ativ_Grad_15_06_2026.pdf |
 | Calendário de matrícula | Calendário de Matrícula em Disciplina 2026.2 (PDF) | https://saa.unb.br/wp-content/uploads/2026/06/2026_2_Calend_Mat_Grad_25_06_2026.pdf |
 | Página oficial de calendários | SAA/UnB — Calendário Acadêmico de Graduação | https://saa.unb.br/calendario-academico-graduacao/ |
+| Orientações ao discente | SAA/UnB — Perguntas Frequentes (aproveitamentos, matrícula, trancamentos, histórico) | https://saa.unb.br/perguntas-frequentes/ |
 | Guia do calouro | Guia Calouro UnB (PDF) | https://www.noticias.unb.br/images/Noticias/2015/Documentos/20150305_GuiaCalouro.pdf |
 | Guia do servidor | Guia do Servidor — Decanato de Gestão de Pessoas | https://dgp.unb.br/servidor/guia-servidor |
+
+### Guia do Servidor — páginas individuais (menu lateral)
+
+A página principal do Guia lista os assuntos, mas o conteúdo oficial de vários deles mora em
+subpáginas do DGP referenciadas pelo menu lateral — ex.: a definição de "Afastamento para
+Participação em Ação de Desenvolvimento" está em `https://dgp.unb.br/afastamentos`, fora da
+página principal. Todas as URLs internas do menu lateral foram curadas manualmente no
+manifest (o pipeline não faz crawl; cada URL é um GET explícito). Decisões de escopo:
+domínio externo `capacitacao.unb.br` excluído; todas as entradas têm `publico_alvo: staff`
+e são indexadas na coleção `institucional` (ver seção 4).
+
+| Assunto (rótulo do menu) | URL |
+|---|---|
+| SouGov.br | https://dgp.unb.br/sougovbr |
+| Redistribuição | https://dgp.unb.br/redistribuicao |
+| Movimentação Interna | https://dgp.unb.br/servidor-remocao |
+| Prata, Ouro e Diamante da Casa | https://dgp.unb.br/prata-ouro-diamante |
+| Formulários | https://dgp.unb.br/formularios |
+| SIGRH — Sobre | https://dgp.unb.br/sigrh-sobre |
+| SIGRH — Consultas | https://dgp.unb.br/sigrh-consultas |
+| SIGRH — Declarações | https://dgp.unb.br/sigrh-declaracoes |
+| SIGRH — Ponto Eletrônico | https://dgp.unb.br/sigrh-ponto |
+| SIGRH — Ocorrências e Ausências | https://dgp.unb.br/sigrh-ocorrencias |
+| SIGRH — Períodos de Recesso | https://dgp.unb.br/sigrh-recesso |
+| Carreira Técnico-Administrativa | https://dgp.unb.br/perfil-tecnico |
+| Carreira do Magistério Superior | https://dgp.unb.br/perfil-docente |
+| Licença e Afastamentos | https://dgp.unb.br/afastamentos |
+| Assistência à Saúde Suplementar | https://dgp.unb.br/assistencia-saude-menu |
+| Administradora de Planos de Saúde Contratada | https://dgp.unb.br/administradora-de-planos-de-saude-contratada |
+| Administradoras de Planos de Saúde | https://dgp.unb.br/plano-saude |
+| Relatórios Epidemiológicos | https://dgp.unb.br/relatorio-epidemiologico |
+| Perícia Oficial em Saúde | https://dgp.unb.br/pericia-oficial-em-saude |
+| Pessoas com Deficiência | https://dgp.unb.br/pessoas-com-deficiencia |
+| Exames Médicos Periódicos | https://dgp.unb.br/exames-medicos-periodicos |
+| Equipamentos de Proteção Individual | https://dgp.unb.br/epis |
+
+**Detecção de drift do menu:** `python -m src.rag.discover` faz fetch read-only da página do
+Guia, extrai o menu lateral e compara com o manifest — exit 0 sem drift, exit 1 quando há URL
+nova no menu (ou parsing vazio, que indica mudança estrutural no site). Nenhuma escrita é feita.
 
 **Cobertura por agente:**
 

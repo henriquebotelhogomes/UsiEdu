@@ -14,7 +14,7 @@
    - **Contextual Retrieval:** Prefixos contextuais automáticos ancorando instituição, documento pai e seção em cada chunk (redução de até 49% nas falhas de recuperação).
    - **Query Rewriting & Resolução Coreferencial:** Resolução de referências pronominais baseada no histórico antes de despachar para os índices.
    - **Busca Híbrida:** Qdrant (Vetorial denso) + BM25 (Léxico esparso) fundidos via Reciprocal Rank Fusion ($k=60$).
-   - **Re-ranking & Corrective RAG (CRAG):** Cross-Encoder (`bge-reranker-base`) combinado com **Retrieval Grader** com descarte automático de candidatos com relevância $< 0.35$.
+   - **Re-ranking & Corrective RAG (CRAG):** Cross-Encoder multilingue (`bge-reranker-v2-m3`) combinado com **Retrieval Grader** com descarte automático de candidatos com relevância $< 0.05$ (limiar calibrado por medição; ver nota T10.2 em `08-plano-execucao.md`).
 
 3. **Middleware de Contexto do Sistema (Grounding Universal):**
    - Injeção dinâmica de data/hora oficial no fuso de Brasília, fuso horário, semestre letivo e perfil de sessão antes de qualquer chamada LLM.

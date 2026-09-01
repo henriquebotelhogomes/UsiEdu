@@ -82,10 +82,20 @@ Pergunta do Usuário
 1. **Query Rewriting & Resolução Coreferencial (`src/rag/query_rewriter.py`):** Analisa o histórico multi-turno para reescrever perguntas contextuais (*"E até quando posso pagar ele?"* $\rightarrow$ *"Até quando posso pagar o boleto de graduação?"*) antes de consultar os índices.
 2. **Self-Querying & Extração de Metadados (`extract_query_metadata`):** Identifica referências a normas e documentos específicos na query do usuário e aplica filtros booleanos pré-HNSW no Qdrant, reduzindo ruídos entre documentos.
 3. **Busca Híbrida & RRF:** Vetorial denso (Qdrant) + Léxico esparso (BM25) fundidos via Reciprocal Rank Fusion ($k=60$).
-4. **Re-ranking Cross-Encoder:** `BAAI/bge-reranker-base` reordena os candidatos avaliando os pares query-documento com alta precisão semântica.
-5. **Corrective RAG Grader (`src/rag/crag_grader.py`):** Avalia os scores normalizados do cross-encoder. Candidatos com relevância $< 0.35$ (`min_relevance_score`) são descartados preventivamente para evitar injeção de ruído no prompt do LLM.
+4. **Re-ranking Cross-Encoder:** `BAAI/bge-reranker-v2-m3` reordena os candidatos avaliando os pares query-documento. O checkpoint anterior (`bge-reranker-base`) foi substituído por medição: em prosa jurídica em português ele atribuía score alto a artigos irrelevantes e baixo à passagem que respondia a pergunta, invertendo o ranqueamento (detalhe na nota T10.2 de `docs/08`).
+5. **Corrective RAG Grader (`src/rag/crag_grader.py`):** Descarta candidatos com relevância $< 0.05$ (`min_relevance_score`) para não injetar ruído no prompt do LLM. **Limitação medida:** sobre o corpus real a distribuição de scores de ouro e de ruído se sobrepõe (ouro 0.0001–0.995, ruído até 0.9927), então o threshold funciona como poda de candidatos claramente não relacionados, **não** como garantia de recusa — as recusas corretas de `sem_resposta`/`fora_de_escopo` vêm do prompt do agente, não do grader.
 6. **Mitigação de Lost in the Middle (`reorder_context`):** Reorganiza os chunks aprovados no padrão `[1º, 3º, 5º, 4º, 2º]`, posicionando os documentos mais importantes nas regiões de maior atenção do LLM (início e fim do prompt).
-7. **Grounding Obrigatório:** Sem documentos válidos acima do limiar, o agente declara honestamente não dispor da informação.
+7. **Grounding Obrigatório:** O agente responde apenas sobre os chunks aprovados no contexto; sem contexto útil, declara honestamente não dispor da informação.
+
+**Evidência de calibração do threshold (Sprint 10.2):** varredura sobre as 30 perguntas do dataset sintético, contando apenas os casos em que nenhum candidato aprovado pelo grader carrega o documento ouro no top-5.
+
+| Checkpoint / threshold | Perguntas respondíveis sem ouro no top-5 | Falsos-aceites (categorias sem ouro) |
+|---|---|---|
+| `bge-reranker-base` @ 0.35 (configuração antiga) | 8 | 4 / 9 |
+| `bge-reranker-v2-m3` @ 0.05 (adotado) | 7 | 4 / 9 |
+| `bge-reranker-v2-m3` @ 0.35 | 9 | 2 / 9 |
+
+Manter 0.35 após a troca do modelo era a intuição "mais rígida" e saiu-se pior nas duas curvas: 9 perguntas respondíveis ficavam sem nenhuma fonte aprovada. O ponto adotado domina o antigo (mais cobertura com o mesmo número de falsos-aceites); operar a curva em 0.15–0.2 é a alternativa se a prioridade passar a ser precisos de recusa.
 
 ---
 

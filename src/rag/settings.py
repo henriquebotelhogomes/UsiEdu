@@ -21,7 +21,7 @@ class RagSettings(BaseSettings):
     embedding_batch_size: int = 64
 
     # Reranker
-    reranker_model: str = "BAAI/bge-reranker-base"
+    reranker_model: str = "BAAI/bge-reranker-v2-m3"
 
     # Chunking & Contextual Retrieval (Padrão Anthropic)
     chunk_max_chars: int = 3200  # ~800 tokens (estimativa: 4 chars/token)
@@ -33,7 +33,7 @@ class RagSettings(BaseSettings):
     rerank_top_k: int = 5
 
     # Corrective RAG (CRAG) & Grader
-    min_relevance_score: float = 0.35
+    min_relevance_score: float = 0.05
     enable_crag_filter: bool = True
 
     @property

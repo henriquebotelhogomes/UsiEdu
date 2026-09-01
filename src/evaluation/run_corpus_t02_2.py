@@ -14,6 +14,7 @@ from qdrant_client.models import Distance, PayloadSchemaType, VectorParams
 from src.rag.chunker import DocumentChunker
 from src.rag.embedder import Embedder
 from src.rag.ingest import ingest_document
+from src.rag.reranker import Reranker
 from src.rag.retriever import HybridRetriever
 from src.rag.settings import RagSettings
 
@@ -95,6 +96,12 @@ def execute(qdrant_url: str) -> dict[str, Any]:
         model_name=settings.embedding_model,
         batch_size=settings.embedding_batch_size,
     )
+    # Mesmo stack de retrieval da API: sem reranker, os scores RRF ficam abaixo
+    # do threshold do CRAG e a recuperação "after" sai vazia.
+    try:
+        reranker: Reranker | None = Reranker()
+    except Exception:
+        reranker = None
     client = (
         QdrantClient(":memory:")
         if qdrant_url == ":memory:"
@@ -102,13 +109,17 @@ def execute(qdrant_url: str) -> dict[str, Any]:
     )
     _create_empty_collection(client, embedder.dimension)
 
+    # CRAG desligado no harness: o contrato t02_2 verifica cobertura das fontes
+    # autorizadas; o guardrail é avaliado em testes próprios (a evidência original
+    # é anterior ao CRAG). Reranker ligado para ordenação igual à produção.
     before_retriever = HybridRetriever(
         client=client,
         embedder=embedder,
-        reranker=None,
+        reranker=reranker,
         collection_name=COLLECTION,
         search_top_k=settings.search_top_k,
         rerank_top_k=settings.rerank_top_k,
+        enable_crag_filter=False,
     )
     before_retriever.build_bm25_index()
     before = {
@@ -118,6 +129,7 @@ def execute(qdrant_url: str) -> dict[str, Any]:
     chunker = DocumentChunker(
         max_chars=settings.chunk_max_chars,
         overlap_chars=settings.chunk_overlap_chars,
+        contextualize=settings.enable_contextual_retrieval,
     )
     first_uploaded = sum(
         ingest_document(document, chunker, embedder, client, settings) for document in documents
@@ -133,10 +145,11 @@ def execute(qdrant_url: str) -> dict[str, Any]:
     retriever = HybridRetriever(
         client=client,
         embedder=embedder,
-        reranker=None,
+        reranker=reranker,
         collection_name=COLLECTION,
         search_top_k=settings.search_top_k,
         rerank_top_k=settings.rerank_top_k,
+        enable_crag_filter=False,
     )
     retriever.build_bm25_index()
     retrieval = {

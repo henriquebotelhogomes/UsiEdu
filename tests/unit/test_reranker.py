@@ -36,11 +36,11 @@ class TestInit:
         assert r._model is None
         assert FakeCrossEncoder.instances == []
 
-    def test_modelo_carregado_no_primeiro_rerank(self):
+    def test_modelo_padrao_e_o_multilingue_calibrado_para_pt(self):
         r = Reranker()
         r.rerank("query", ["texto"])
         assert len(FakeCrossEncoder.instances) == 1
-        assert FakeCrossEncoder.instances[0].model_name == "BAAI/bge-reranker-base"
+        assert FakeCrossEncoder.instances[0].model_name == "BAAI/bge-reranker-v2-m3"
 
     def test_modelo_reutilizado_entre_chamadas(self):
         r = Reranker()

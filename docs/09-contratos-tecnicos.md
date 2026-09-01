@@ -180,7 +180,7 @@ LANGCHAIN_PROJECT=usiedu-pilot
 
 # Modelos locais
 EMBEDDING_MODEL=paraphrase-multilingual-MiniLM-L12-v2
-RERANKER_MODEL=BAAI/bge-reranker-base
+RERANKER_MODEL=BAAI/bge-reranker-v2-m3
 
 # App
 USIEDU_ENV=dev                          # dev | test | prod

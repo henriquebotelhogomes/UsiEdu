@@ -5,6 +5,7 @@ Uso: python -m src.rag.ingest
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import logging
@@ -156,12 +157,25 @@ def upload_chunks(
     return uploaded
 
 
+def _delete_documento(client, collection_name: str, doc_name: str) -> None:
+    """Remove todos os pontos de um documento da coleção (evita órfãos pós-rechunk)."""
+    from qdrant_client.models import FieldCondition, Filter, MatchValue
+
+    client.delete(
+        collection_name=collection_name,
+        points_selector=Filter(
+            must=[FieldCondition(key="documento", match=MatchValue(value=doc_name))]
+        ),
+    )
+
+
 def ingest_document(
     doc_entry: dict,
     chunker: DocumentChunker,
     embedder: Embedder,
     client,
     settings: RagSettings,
+    force: bool = False,
 ) -> int:
     """Processa e indexa um único documento. Retorna número de chunks indexados."""
     file_path = KNOWLEDGE_BASE_DIR / doc_entry["file"]
@@ -173,7 +187,8 @@ def ingest_document(
     # Verifica idempotência por checksum
     current_checksum = compute_file_checksum(file_path)
     if (
-        doc_entry.get("checksum") == current_checksum
+        not force
+        and doc_entry.get("checksum") == current_checksum
         and doc_entry.get("indexed")
         and documento_indexado_no_qdrant(client, doc_entry, settings)
     ):
@@ -233,6 +248,7 @@ def ingest_document(
     collections = pick_collections(doc_entry["publico_alvo"], settings)
     uploaded = 0
     for col_name in collections:
+        _delete_documento(client, col_name, doc_entry["name"])
         up = upload_chunks(client, col_name, chunks, vectors)
         uploaded += up
         logger.info("  %d pontos enviados para '%s'.", up, col_name)
@@ -245,8 +261,22 @@ def ingest_document(
     return uploaded
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     """Pipeline completo de ingestão."""
+    parser = argparse.ArgumentParser(
+        prog="python -m src.rag.ingest",
+        description="Ingere a base de conhecimento no Qdrant.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help=(
+            "Re-ingere todos os documentos e substitui os pontos já indexados. "
+            "Necessário após mudanças no chunker, que alteram contagem e conteúdo dos chunks."
+        ),
+    )
+    args = parser.parse_args(argv)
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
@@ -285,13 +315,15 @@ def main() -> None:
     # Processa cada documento
     total_chunks = 0
     for doc_entry in manifest["documents"]:
-        chunks = ingest_document(doc_entry, chunker, embedder, client, settings)
+        chunks = ingest_document(doc_entry, chunker, embedder, client, settings, force=args.force)
         total_chunks += chunks
 
-    # Salva manifest atualizado
+    # Salva manifest atualizado (newline fixa LF: o hash da cadeia de eval
+    # compara bytes crus contra texto normalizado CRLF->LF)
     MANIFEST_PATH.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2),
         encoding="utf-8",
+        newline="\n",
     )
 
     logger.info("Ingestão completa: %d chunks indexados no total.", total_chunks)

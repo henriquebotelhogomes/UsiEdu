@@ -7,9 +7,9 @@
       "file_type": "pdf",
       "instituicao": "UnB",
       "publico_alvo": "student",
-      "checksum": "29479e40f21d6f0cb7bdb8ec6b10a827a79a2105be3682d77b6fd640dafb4ee0",
+      "checksum": "c8f03daffb687ebea61a02fd506f875b690915652519bfdff2422beda11a6bd5",
       "indexed": true,
-      "chunks": 239
+      "chunks": 245
     },
     {
       "name": "Calendário de Graduação 2026.2",
@@ -18,9 +18,20 @@
       "file_type": "pdf",
       "instituicao": "UnB",
       "publico_alvo": "student",
-      "checksum": "728e767454f254634577c1e751c32737c53675e9df986ffb48812f3b69fc4976",
+      "checksum": "cc9a54e50b223cf866e20c0289fda342477dd0777b14f361a65b8f8193df7be1",
       "indexed": true,
       "chunks": 7
+    },
+    {
+      "name": "Perguntas Frequentes — SAA/UnB",
+      "file": "saa_perguntas_frequentes.html",
+      "url": "https://saa.unb.br/perguntas-frequentes/",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "student",
+      "indexed": true,
+      "checksum": "966537204ec71e093d5196de09c048c46c95905c32098ab4542ab1121d98aa9c",
+      "chunks": 27
     },
     {
       "name": "Guia do Servidor UnB",
@@ -29,9 +40,9 @@
       "file_type": "html",
       "instituicao": "UnB",
       "publico_alvo": "staff",
-      "checksum": "7a4f8abb3da4e5db9e545af9d6977efc19d77292379488a12f07be1c0733b563",
+      "checksum": "401a45e7dbdef00897695673484ea3c47971e2d3d142d441c8cf768b0c71fbc7",
       "indexed": true,
-      "chunks": 128
+      "chunks": 134
     },
     {
       "name": "LDB — Lei 9.394/96",
@@ -40,9 +51,9 @@
       "file_type": "html",
       "instituicao": "Brasil",
       "publico_alvo": "student",
-      "checksum": "07a214e1ac20497abe2e5592b496e70d341ab6dcf60859314622cfc92b53b979",
+      "checksum": "97df1cffff714a08ed70b1977b291eb16b735fd0bf2899ef5079c5991f5c990d",
       "indexed": true,
-      "chunks": 163
+      "chunks": 191
     },
     {
       "name": "Afastamento para Mestrado, Doutorado e Pos-Doutorado",
@@ -52,12 +63,14 @@
       "instituicao": "UnB",
       "publico_alvo": "staff",
       "checksum": "37236d44b3914fd115fb94af4cc9be8f8eae00c8eee1d4684b89da363a20def3",
-      "indexed": false,
-      "chunks": 0,
-      "questions": ["q018"],
+      "indexed": true,
+      "chunks": 6,
+      "questions": [
+        "q018"
+      ],
       "isolated_validation": {
         "collection": "t02_2_corpus_20260812",
-        "chunks": 4,
+        "chunks": 6,
         "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
       }
     },
@@ -69,9 +82,11 @@
       "instituicao": "UnB",
       "publico_alvo": "staff",
       "checksum": "d08fdeb3ab21103c160a4a3887c3ed394c21a2438902930dfc9c8efc65aaa24b",
-      "indexed": false,
-      "chunks": 0,
-      "questions": ["q019"],
+      "indexed": true,
+      "chunks": 1,
+      "questions": [
+        "q019"
+      ],
       "isolated_validation": {
         "collection": "t02_2_corpus_20260812",
         "chunks": 1,
@@ -86,12 +101,14 @@
       "instituicao": "UnB",
       "publico_alvo": "staff",
       "checksum": "e60f5ce4518a78fc6d873fe2e7801e9d05cca9d1aafa1d0b202422fe848adae2",
-      "indexed": false,
-      "chunks": 0,
-      "questions": ["q020"],
+      "indexed": true,
+      "chunks": 7,
+      "questions": [
+        "q020"
+      ],
       "isolated_validation": {
         "collection": "t02_2_corpus_20260812",
-        "chunks": 6,
+        "chunks": 7,
         "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
       }
     },
@@ -103,12 +120,14 @@
       "instituicao": "Governo Federal",
       "publico_alvo": "staff",
       "checksum": "43ed1fe4cb2494ecb8a1d18c1b377c08ce0e53256c8f2ac998f4074d25344c85",
-      "indexed": false,
-      "chunks": 0,
-      "questions": ["q020"],
+      "indexed": true,
+      "chunks": 391,
+      "questions": [
+        "q020"
+      ],
       "isolated_validation": {
         "collection": "t02_2_corpus_20260812",
-        "chunks": 337,
+        "chunks": 391,
         "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
       }
     },
@@ -120,9 +139,11 @@
       "instituicao": "UnB",
       "publico_alvo": "staff",
       "checksum": "0027b6ed1e9c886b2366ffc97f68ff263079728bdfc91ac9f828e1431403421a",
-      "indexed": false,
-      "chunks": 0,
-      "questions": ["q021"],
+      "indexed": true,
+      "chunks": 1,
+      "questions": [
+        "q021"
+      ],
       "isolated_validation": {
         "collection": "t02_2_corpus_20260812",
         "chunks": 1,
@@ -137,14 +158,258 @@
       "instituicao": "UnB",
       "publico_alvo": "staff",
       "checksum": "1bb626d315ffa0e604117ac5c15258c950b91e564f950ec584ed408000189ed3",
-      "indexed": false,
-      "chunks": 0,
-      "questions": ["q021"],
+      "indexed": true,
+      "chunks": 1,
+      "questions": [
+        "q021"
+      ],
       "isolated_validation": {
         "collection": "t02_2_corpus_20260812",
         "chunks": 1,
         "evidence": "src/evaluation/evidencia_corpus_t02_2.json"
       }
+    },
+    {
+      "name": "SouGov.br",
+      "file": "dgp_sougovbr.html",
+      "url": "https://dgp.unb.br/sougovbr",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "56d8dcfb16e93fb752acc92976dcc27c2ec84aec543c0f6863df27b98da99ee2"
+    },
+    {
+      "name": "Redistribuição",
+      "file": "dgp_redistribuicao.html",
+      "url": "https://dgp.unb.br/redistribuicao",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 7,
+      "checksum": "261e556695f142fcca23ab74c8dca70fb45c014b3867bfcf6b5e9c0f4b73ffd6"
+    },
+    {
+      "name": "Movimentação Interna",
+      "file": "dgp_servidor_remocao.html",
+      "url": "https://dgp.unb.br/servidor-remocao",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 10,
+      "checksum": "a8dc053908560fdc696c6d99a9e1cae5b81c46ffbd0fa32085353b14ef350cec"
+    },
+    {
+      "name": "Prata, Ouro e Diamante da Casa",
+      "file": "dgp_prata_ouro_diamante.html",
+      "url": "https://dgp.unb.br/prata-ouro-diamante",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "38c5ef7403fd5150cd1c61ad0574e8d68e267bb9ab6da5322784fb3fe596b670"
+    },
+    {
+      "name": "Formulários",
+      "file": "dgp_formularios.html",
+      "url": "https://dgp.unb.br/formularios",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "9fca2057a867588344b9f071b89c71dbce41d70c772d00a9c98fc09f3684bd2f"
+    },
+    {
+      "name": "SIGRH — Sobre",
+      "file": "dgp_sigrh_sobre.html",
+      "url": "https://dgp.unb.br/sigrh-sobre",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "0fcc252a67e1e4546ea12280c50a0e2d8b4eeca6bdc9e5ea8eaa53f3107180d9"
+    },
+    {
+      "name": "SIGRH — Consultas",
+      "file": "dgp_sigrh_consultas.html",
+      "url": "https://dgp.unb.br/sigrh-consultas",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 5,
+      "checksum": "35765ef05131443373a4f5b05c9f1cbae0477ec1d7f4014b6780c32c22e7ff09"
+    },
+    {
+      "name": "SIGRH — Declarações",
+      "file": "dgp_sigrh_declaracoes.html",
+      "url": "https://dgp.unb.br/sigrh-declaracoes",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "8a6106ed17222fd578de5d4c0e3c3c4d25d76f22a08f2642aa7bb0c3ab7d121f"
+    },
+    {
+      "name": "SIGRH — Ponto Eletrônico",
+      "file": "dgp_sigrh_ponto.html",
+      "url": "https://dgp.unb.br/sigrh-ponto",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 7,
+      "checksum": "34e4a91bbce471c344055a01184f0f584be2866823fc2b30b66fed1f176c007e"
+    },
+    {
+      "name": "SIGRH — Ocorrências e Ausências",
+      "file": "dgp_sigrh_ocorrencias.html",
+      "url": "https://dgp.unb.br/sigrh-ocorrencias",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 6,
+      "checksum": "e915a2ca201ed2bba0cf386f9f38f5837ae82b93af0dd90a0ff575445b4f17b6"
+    },
+    {
+      "name": "SIGRH — Períodos de Recesso",
+      "file": "dgp_sigrh_recesso.html",
+      "url": "https://dgp.unb.br/sigrh-recesso",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 5,
+      "checksum": "ee77b9b42b36eca0263499b893ecaa19015eeabffcc16e5dff39a7796c51f550"
+    },
+    {
+      "name": "Carreira Técnico-Administrativa",
+      "file": "dgp_perfil_tecnico.html",
+      "url": "https://dgp.unb.br/perfil-tecnico",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 8,
+      "checksum": "fb0c246c5f4e2b53a1ee7e6e107ab89feea085f97819b0653ba5e7fef1701402"
+    },
+    {
+      "name": "Carreira do Magistério Superior",
+      "file": "dgp_perfil_docente.html",
+      "url": "https://dgp.unb.br/perfil-docente",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 7,
+      "checksum": "458d2439ef92991bb45393ddac087aaf961bdd005597fe3a6b7859c1385567e7"
+    },
+    {
+      "name": "Licença e Afastamentos",
+      "file": "dgp_afastamentos.html",
+      "url": "https://dgp.unb.br/afastamentos",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "fe47e6cf7cc21520c443dc7fba3724d58269501c6ecade2512a7d39df37031f8"
+    },
+    {
+      "name": "Assistência à Saúde Suplementar",
+      "file": "dgp_assistencia_saude.html",
+      "url": "https://dgp.unb.br/assistencia-saude-menu",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 9,
+      "checksum": "619ed97c2445990dac82898055cb4710606e916ec85ba9bd84d4c057499a6a45"
+    },
+    {
+      "name": "Administradora de Planos de Saúde Contratada",
+      "file": "dgp_administradora_planos.html",
+      "url": "https://dgp.unb.br/administradora-de-planos-de-saude-contratada",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "27cf42d5e30b6b8e96dbedb71c16f013b383c9f957068efde3c4ff4c60716b10"
+    },
+    {
+      "name": "Administradoras de Planos de Saúde",
+      "file": "dgp_plano_saude.html",
+      "url": "https://dgp.unb.br/plano-saude",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 5,
+      "checksum": "ed37cb4f2a1ef22d6019435ce71bfaa310f74b10d82310cc95ddf12fa9c25130"
+    },
+    {
+      "name": "Relatórios Epidemiológicos",
+      "file": "dgp_relatorio_epidemiologico.html",
+      "url": "https://dgp.unb.br/relatorio-epidemiologico",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "76564eff2d3c47493815936cfff47bee153be230d5f331fca7b0b7144930644c"
+    },
+    {
+      "name": "Perícia Oficial em Saúde",
+      "file": "dgp_pericia_oficial_saude.html",
+      "url": "https://dgp.unb.br/pericia-oficial-em-saude",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 12,
+      "checksum": "fd616e9a8e8c29b59a9efd83616112fe3ef0160ead7471054cacd7b07041b777"
+    },
+    {
+      "name": "Pessoas com Deficiência",
+      "file": "dgp_pessoas_deficiencia.html",
+      "url": "https://dgp.unb.br/pessoas-com-deficiencia",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 7,
+      "checksum": "a5a4320b31ab96c7b91a35a64296e7eaa216a20f933f2c27c620e11b398f07ce"
+    },
+    {
+      "name": "Exames Médicos Periódicos",
+      "file": "dgp_exames_medicos.html",
+      "url": "https://dgp.unb.br/exames-medicos-periodicos",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "4bdea64fc44b48723f8a5fe63f7ced5b30c3d5917085b1bcb4de162d8994fe83"
+    },
+    {
+      "name": "Equipamentos de Proteção Individual",
+      "file": "dgp_epis.html",
+      "url": "https://dgp.unb.br/epis",
+      "file_type": "html",
+      "instituicao": "UnB",
+      "publico_alvo": "staff",
+      "indexed": true,
+      "chunks": 1,
+      "checksum": "a46aaebf261c7470e829f2b9b535c627e0749299a2ea26167edf1b4374742cae"
     }
   ]
 }

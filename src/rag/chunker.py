@@ -16,6 +16,15 @@ _SECTION_PATTERNS = [
 ]
 _SECTION_RE = re.compile("|".join(_SECTION_PATTERNS), re.MULTILINE)
 
+# Fronteiras de unidade de chunking: fim de sentença, parágrafo e marcadores
+# jurídicos. Quebras de linha "soft" (wrap visual da página extraída) NÃO são
+# fronteiras — foram elas que geraram chunks iniciando em "senvolvimento…".
+_UNIT_DELIM_RE = re.compile(
+    r"(?<=[.!?…])\s+"                            # fim de sentença
+    r"|\n[ \t]*\n"                               # quebra de parágrafo
+    r"|(?=(?:Art\.|§|T[ÍI]TULO|CAP[ÍI]TULO|SE[ÇC][ÃA]O)\s)"  # marcador jurídico
+)
+
 
 class DocumentChunker:
     """Divide documentos em chunks semânticos com overlap.
@@ -32,10 +41,12 @@ class DocumentChunker:
         max_chars: int = 3200,
         overlap_chars: int = 480,
         contextualize: bool = True,
+        parent_max_chars: int = 12000,
     ) -> None:
         self.max_chars = max_chars
         self.overlap_chars = overlap_chars
         self.contextualize = contextualize
+        self.parent_max_chars = parent_max_chars
 
     def chunk_document(
         self,
@@ -53,6 +64,9 @@ class DocumentChunker:
 
         for section_name, section_text in sections:
             parts = self._split_text(section_text)
+            parent_text = (
+                section_text if len(section_text) <= self.parent_max_chars else None
+            )
             context_prefix = (
                 self._build_context_prefix(metadata, section_name)
                 if self.contextualize
@@ -74,7 +88,7 @@ class DocumentChunker:
                             "publico_alvo": metadata.publico_alvo,
                             "chunk_index": chunk_index,
                             "original_text": part,
-                            "parent_text": section_text,
+                            "parent_text": parent_text,
                             "parent_section": section_name,
                         },
                     )
@@ -190,42 +204,87 @@ class DocumentChunker:
         return sections
 
     def _split_text(self, text: str) -> list[str]:
-        """Divide texto em pedaços com overlap, respeitando limites de sentenças."""
-        if len(text) <= self.max_chars:
-            return [text.strip()] if text.strip() else []
+        """Divide texto em chunks ancorados em fronteiras de sentença/parágrafo.
 
+        Unidades de texto são agrupadas até `max_chars`; o overlap carrega
+        unidades inteiras do chunk anterior, então nenhum chunk começa no
+        meio de uma palavra. Unidades maiores que o limite (texto sem
+        pontuação) são divididas em fronteiras de palavra.
+        """
+        stripped = text.strip()
+        if not stripped:
+            return []
+        if len(stripped) <= self.max_chars:
+            return [stripped]
+
+        units = self._unit_spans(stripped)
         parts: list[str] = []
-        start = 0
+        i = 0
+        n = len(units)
 
-        while start < len(text):
-            end = start + self.max_chars
+        while i < n:
+            j, length = i, 0
+            while j < n:
+                unit_len = self._span_len(stripped, units[j])
+                added = unit_len if j == i else unit_len + 1
+                if length + added > self.max_chars:
+                    break
+                length += added
+                j += 1
 
-            if end >= len(text):
-                parts.append(text[start:].strip())
-                break
+            if j == i:  # unidade sozinha não cabe no chunk: corte por palavra
+                for lo, hi in self._hard_split(stripped, units[i][0], units[i][1]):
+                    part = stripped[lo:hi].strip()
+                    if part:
+                        parts.append(part)
+                i += 1
+                continue
 
-            # Tenta quebrar no final de uma sentença
-            break_point = max(
-                text.rfind(". ", start, end),
-                text.rfind(".\n", start, end),
-                text.rfind("\n\n", start, end),
-                text.rfind("\n", start, end),
-            )
+            parts.append(stripped[units[i][0] : units[j - 1][1]].strip())
 
-            if break_point > start + self.max_chars // 2:
-                end = break_point + 1
+            carry, used, k = 0, 0, 1
+            while k < j - i:  # nunca carregar o chunk inteiro
+                candidate = self._span_len(stripped, units[j - 1 - k])
+                if used + candidate + (1 if carry else 0) > self.overlap_chars:
+                    break
+                used += candidate + (1 if carry else 0)
+                carry += 1
+                k += 1
 
-            part = text[start:end].strip()
-            if part:
-                parts.append(part)
-
-            # Avança com overlap, garantindo progresso
-            prev_start = start
-            start = end - self.overlap_chars
-            if start <= prev_start:
-                start = end  # garante progresso se overlap não avançar
+            i = j - carry if carry else j
 
         return [p for p in parts if p]
+
+    @staticmethod
+    def _span_len(text: str, span: tuple[int, int]) -> int:
+        return len(text[span[0] : span[1]].strip())
+
+    @staticmethod
+    def _unit_spans(text: str) -> list[tuple[int, int]]:
+        """Retorna os intervalos das unidades (sentenças/parágrafos/marcadores) do texto."""
+        cuts = [0]
+        for match in _UNIT_DELIM_RE.finditer(text):
+            if match.end() > cuts[-1]:
+                cuts.append(match.end())
+        cuts.append(len(text))
+        return [(lo, hi) for lo, hi in zip(cuts, cuts[1:]) if text[lo:hi].strip()]
+
+    def _hard_split(self, text: str, lo: int, hi: int) -> list[tuple[int, int]]:
+        """Divide uma unidade maior que o limite, cortando no último espaço do recorte."""
+        spans: list[tuple[int, int]] = []
+        pos = lo
+        while hi - pos > self.max_chars:
+            limit = pos + self.max_chars
+            cut = text.rfind(" ", pos + 1, limit)
+            if cut <= pos:
+                cut = text.rfind("\n", pos + 1, limit)
+            if cut <= pos:
+                cut = limit  # sequência sem espaços: único caso de corte intra-palavra
+            spans.append((pos, cut))
+            pos = cut
+        if pos < hi:
+            spans.append((pos, hi))
+        return spans
 
     @staticmethod
     def _make_chunk_id(metadata: DocumentMetadata, index: int) -> str:

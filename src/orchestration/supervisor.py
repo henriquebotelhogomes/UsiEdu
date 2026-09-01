@@ -90,6 +90,10 @@ def make_supervisor_node(router_llm: BaseChatModel) -> callable:
                     raw = raw.rsplit("```", 1)[0]
                 raw = raw.strip()
 
+            # O modelo ecoa as chaves quando o exemplo do prompt as duplica.
+            if raw.startswith("{{") and raw.endswith("}}"):
+                raw = raw[1:-1].strip()
+
             try:
                 data = json.loads(raw)
                 decision = SupervisorDecision(**data)

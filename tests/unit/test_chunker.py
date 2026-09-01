@@ -1,5 +1,8 @@
 """Testes unitários para o chunker de documentos."""
 
+import re
+from pathlib import Path
+
 import pytest
 
 from src.rag.chunker import DocumentChunker
@@ -286,4 +289,120 @@ class TestHierarchicalParentDocument:
             # O parent_text contém o texto completo da seção pai
             assert chunk.metadata["parent_section"] == "Art. 15"
             assert "justificativa formal" in chunk.metadata["parent_text"]
+
+    def test_secao_acima_do_orcamento_nao_duplica_parent_text(self, metadata, tmp_path):
+        """Uma página sem estrutura jurídica não pode clonar 329 KB em cada chunk."""
+        chunker = DocumentChunker(max_chars=300, overlap_chars=50, parent_max_chars=1000)
+        doc = tmp_path / "guia_flat.txt"
+        item = "Item do guia do servidor com explicacao razoavelmente longa sobre o servico. "
+        doc.write_text(item * 40, encoding="utf-8")  # ~2600 chars em uma única seção
+
+        chunks = chunker.chunk_document(doc, metadata)
+        assert len(chunks) >= 3
+        for chunk in chunks:
+            assert chunk.metadata["parent_text"] is None
+            assert chunk.metadata["parent_section"] == "documento"
+            assert len(chunk.text) <= chunker.max_chars + len("Este trecho pertence") + 200
+
+
+class TestAncoragemEmSentenca:
+    """Chunk não pode iniciar no meio de palavra/frase (bug dos fragmentos da LDB)."""
+
+    def test_nenhum_chunk_comeca_no_meio_de_palavra(self):
+        chunker = DocumentChunker(max_chars=600, overlap_chars=120)
+        # Reproduz o padrão de extração HTML/PDF: quebras de linha "soft" no
+        # meio da frase; o chunker antigo cortava na última \n e o overlap não
+        # ancorado gerava chunks como "senvolvimento do processo..." e "la Lei...".
+        sent1 = (
+            "O ensino religioso, católico e evangélico, constitui disciplina dos horários normais "
+            "das escolas públicas de ensino fundamental, assegurando o respeito à diversidade "
+            "cultural e religiosa."
+        )
+        sent2 = (
+            "Os currículos do ensino fundamental e médio devem ter uma base nacional comum, a ser "
+            "complementada, em cada sistema de ensino e estabelecimento escolar, por uma parte "
+            "diversificada, exigida pelas características regionais e locais da sociedade, da "
+            "cultura, da economia e do educando."
+        )
+        sent3 = (
+            "A educação básica em todos os níveis será marcada por uma gestão democrática, "
+            "assegurando a participação dos profissionais da educação na elaboração do projeto "
+            "pedagógico e das comunidades escolar e local em conselhos escolares ou equivalentes."
+        )
+        text = (
+            sent1 + "\n"
+            + sent2[:80] + "\n" + sent2[80:] + "\n"
+            + sent3[:50] + "\n" + sent3[50:]
+        )
+        parts = chunker._split_text(text)
+        assert len(parts) >= 2
+        for p in parts:
+            assert re.match(r"[A-ZÀ-Ü0-9§]", p), f"chunk inicia no meio da frase: {p[:40]!r}"
+
+    def test_overlap_ancorado_no_comeco_de_sentenca(self):
+        chunker = DocumentChunker(max_chars=110, overlap_chars=60)
+        text = (
+            "Primeira sentença tem cinquenta e um caracteres no total. "
+            "Segunda sentença tem quarenta e seis caracteres, sim. "
+            "Terceira sentença completa possui cinquenta caracteres."
+        )
+        parts = chunker._split_text(text)
+        assert len(parts) >= 2
+        for p in parts:
+            assert re.match(r"[A-ZÀ-Ü0-9§]", p), f"overlap iniciou no meio da frase: {p[:30]!r}"
+        assert sum(len(p) for p in parts) > len(text)  # overlap não foi eliminado
+
+    def test_hard_split_de_unidade_gigante_nao_rasga_palavra(self):
+        chunker = DocumentChunker(max_chars=100, overlap_chars=10)
+        text = " ".join(["palavra"] * 60)  # ~420 chars, sem pontuação nem quebras
+        parts = chunker._split_text(text)
+        assert len(parts) >= 4
+        for p in parts:
+            for token in p.split():
+                assert token == "palavra"
+
+    def test_paragrafo_enorme_com_quebras_soft_divide_em_limites_de_palavra(self):
+        """Frase única de 900 chars com quebras soft: corte apenas em palavras."""
+        chunker = DocumentChunker(max_chars=200, overlap_chars=40)
+        frase = (
+            "Art. 4º O acesso ao ensino fundamental é direito público subjetivo, podendo qualquer "
+            "cidadão, grupo de cidadãos, associação comunitária, organização sindical, entidade de "
+            "classe ou outra legalmente constituída, bem como o Ministério Público, fiscalizar o "
+            "cumprimento desta obrigação, impondo-se ao Poder Público de ensino a obrigação de "
+            "notificar o estabelecimento de ensino que não assegure a matrícula obrigatória, sob "
+            "pena de multa e das demais sanções administrativas previstas nesta Lei, garantido o "
+            "direito de defesa do notificado e o contraditório em procedimento próprio instaurado "
+            "pela autoridade competente do sistema de ensino ao qual estiver vinculado o ente."
+        )
+        assert len(frase) > 600
+        tokens = frase.split(" ")
+        # Wrap "soft" realista: a quebra ocupa o lugar do espaço, nunca rasga palavra.
+        text = "\n".join(
+            " ".join(tokens[i : i + 8]) for i in range(0, len(tokens), 8)
+        )
+        parts = chunker._split_text(text)
+        assert len(parts) >= 3
+        for p in parts:
+            for token in p.split():
+                assert token in set(frase.split()), f"fragmento de palavra: {token!r}"
+
+    def test_corpus_ldb_real_nao_gera_inicio_meio_palavra(self):
+        pytest.importorskip("trafilatura")
+        kb = Path(__file__).resolve().parents[2] / "knowledge_base"
+        ldb = kb / "ldb_9394_96.html"
+        if not ldb.exists():
+            pytest.skip("arquivo da LDB não baixado na knowledge_base")
+        chunker = DocumentChunker(max_chars=3200, overlap_chars=480, contextualize=False)
+        metadata = DocumentMetadata(
+            instituicao="MEC",
+            documento="LDB",
+            publico_alvo="student",
+            url_fonte="https://www.planalto.gov.br/ccivil_03/leis/l9394.htm",
+        )
+        chunks = chunker.chunk_document(ldb, metadata)
+        assert len(chunks) >= 2
+        for c in chunks:
+            assert not re.match(r"[a-zà-ü]", c.text), (
+                f"chunk {c.metadata['secao']} começa no meio da palavra: {c.text[:40]!r}"
+            )
 

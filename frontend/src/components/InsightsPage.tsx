@@ -125,7 +125,7 @@ export default function InsightsPage({ user, onLogout }: InsightsPageProps) {
                 <span>🛡️</span> Salvaguardas &amp; Qualidade Contínua (CRAG + Ragas)
               </h3>
               <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--color-text-muted, #64748b)", lineHeight: 1.5 }}>
-                • <strong>CRAG Grader:</strong> Candidatos com pontuação de relevância abaixo de 0.35 são descartados automaticamente.<br/>
+                • <strong>CRAG Grader:</strong> Candidatos com pontuação de relevância abaixo de 0.05 são descartados automaticamente.<br/>
                 • <strong>Contextual Retrieval:</strong> Chunks ancorados no documento pai reduzem erros de recuperação em até 49%.<br/>
                 • <strong>Semantic Cache Warmup:</strong> Catálogo institucional pré-carregado responde perguntas frequentes em &lt;15ms.<br/>
                 • <strong>Dataset Sintético:</strong> 50 casos de teste gerados automaticamente cobrindo perguntas diretas, raciocínio e fora de escopo.

@@ -87,7 +87,9 @@ class TestLoadManifest:
     def test_manifest_existente(self):
         manifest = load_manifest()
         assert "documents" in manifest
-        assert len(manifest["documents"]) == 10
+        assert len(manifest["documents"]) >= 10
+        nomes = {doc["name"] for doc in manifest["documents"]}
+        assert "Guia do Servidor UnB" in nomes
 
     def test_manifest_tem_campos_obrigatorios(self):
         manifest = load_manifest()
@@ -260,6 +262,87 @@ class TestIngestDocument:
         assert resultado == 0
 
 
+class TestForcedReindex:
+    """Re-indexação forçada: descartar pontos antigos antes do novo upload."""
+
+    @staticmethod
+    def _entry_indexado(file_path):
+        entry = TestIngestDocument._doc_entry()
+        entry["checksum"] = compute_file_checksum(file_path)
+        entry["indexed"] = True
+        entry["chunks"] = 1
+        return entry
+
+    @staticmethod
+    def _pipeline_mocks():
+        chunker = MagicMock()
+        chunker.chunk_document.return_value = [
+            Chunk(id=f"{0:032x}", text="chunk re-gerado", metadata={"documento": "Doc Teste"})
+        ]
+        embedder = MagicMock()
+        embedder.embed.return_value = [[0.1, 0.2]]
+        client = MagicMock()
+        client.count.return_value = SimpleNamespace(count=1)
+        return chunker, embedder, client
+
+    def test_com_force_reingesta_documento_ja_indexado_e_apaga_pontos_antigos(self, kb_dir):
+        f = kb_dir / "doc.txt"
+        f.write_text("conteúdo do documento")
+        entry = self._entry_indexado(f)
+        chunker, embedder, client = self._pipeline_mocks()
+
+        resultado = ingest_document(
+            entry, chunker, embedder, client, RagSettings(), force=True
+        )
+
+        assert resultado == 1
+        client.delete.assert_called_once()
+        kwargs = client.delete.call_args.kwargs
+        assert kwargs["collection_name"] == "academico"
+        cond = kwargs["points_selector"].must[0]
+        assert cond.key == "documento"
+        assert cond.match.value == "Doc Teste"
+        client.upsert.assert_called_once()
+
+    def test_sem_force_mantem_idempotencia_e_nao_apaga(self, kb_dir):
+        f = kb_dir / "doc.txt"
+        f.write_text("conteúdo do documento")
+        entry = self._entry_indexado(f)
+        chunker, embedder, client = self._pipeline_mocks()
+
+        resultado = ingest_document(entry, chunker, embedder, client, RagSettings())
+
+        assert resultado == 0
+        client.delete.assert_not_called()
+        chunker.chunk_document.assert_not_called()
+
+    def test_flag_force_propagada_pelo_cli(self, kb_dir, monkeypatch):
+        (kb_dir / "doc.txt").write_text("conteúdo do documento", encoding="utf-8")
+        manifest = {"documents": [TestIngestDocument._doc_entry()]}
+        (kb_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+        monkeypatch.setattr(ingest, "Embedder", FakeEmbedder)
+        import qdrant_client
+
+        monkeypatch.setattr(
+            qdrant_client, "QdrantClient", lambda **kw: _client_sem_colecoes()
+        )
+
+        chamadas: list = []
+        monkeypatch.setattr(
+            ingest,
+            "ingest_document",
+            lambda *args, **kwargs: chamadas.append(kwargs.get("force")) or 0,
+        )
+
+        main(["--force"])
+        assert chamadas == [True]
+
+        chamadas.clear()
+        main([])
+        assert chamadas == [False]
+
+
 class TestDocumentoIndexadoNoQdrant:
     def test_documento_nao_indexado_quando_filtro_nao_encontra_pontos(self):
         client = MagicMock()
@@ -294,7 +377,7 @@ class TestMain:
             raise AssertionError("Embedder não deveria ser criado")
 
         monkeypatch.setattr(ingest, "Embedder", _explode)
-        main()  # deve retornar sem erro
+        main([])  # deve retornar sem erro
 
     def test_pipeline_completo_indexa_documento(self, kb_dir, monkeypatch):
         (kb_dir / "doc.txt").write_text(
@@ -327,7 +410,7 @@ class TestMain:
 
         monkeypatch.setattr(qdrant_client, "QdrantClient", _qdrant_client)
 
-        main()
+        main([])
 
         assert client_options == {"url": "http://localhost:6333", "timeout": 60.0}
         updated = json.loads((kb_dir / "manifest.json").read_text(encoding="utf-8"))

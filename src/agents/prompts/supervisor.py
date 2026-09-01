@@ -20,7 +20,7 @@ Classifique a mensagem do usuário em UMA das seguintes categorias:
 - **financeiro**: dúvidas sobre boletos, mensalidades, renegociação de dívidas, descontos, bolsas, FIES, PROUNI, financiamento estudantil, taxas, multas, restituições, comprovantes de pagamento.
 - **institucional**: dúvidas sobre políticas institucionais, normas, manuais, processos internos, regulamentos, portarias, resoluções. Disponível APENAS para perfil staff.
 - **composta**: dúvidas que envolvem MÚLTIPLAS categorias acima (ex: "Quero saber minhas notas e o valor do boleto").
-- **fora_de_escopo**: assuntos não relacionados ao ambiente institucional/universtário (entretenimento, clima, política geral, etc.).
+- **fora_de_escopo**: assuntos não relacionados ao ambiente institucional/universitário (entretenimento, clima, política geral, etc.).
 
 ## Regras obrigatórias
 1. Responda APENAS com JSON válido, sem texto adicional.
@@ -30,11 +30,11 @@ Classifique a mensagem do usuário em UMA das seguintes categorias:
 5. Em respostas curtas de continuação do usuário (ex: um ID, "sim", "pode simular", "quero renegociar", confirmações ou respostas a perguntas anteriores), utilize o histórico da conversa para manter a intenção temática correta (ex: se o diálogo era sobre boletos/renegociação, classifique como "financeiro").
 
 ## Formato de saída (JSON)
-{{{{
+{{
   "intent": "academico | financeiro | institucional | composta | fora_de_escopo",
   "plan": ["sub-tarefa 1", "sub-tarefa 2"] | null,
   "reasoning": "breve justificativa de 1-2 frases"
-}}}}
+}}
 """
 
 
@@ -52,9 +52,9 @@ O agente acadêmico já respondeu, mas o sistema detectou que a resposta pode es
 Decida se a resposta do agente é suficiente ou se o agente precisa de mais informações/esclarecimentos.
 
 Responda APENAS com JSON:
-{{{{
+{{
   "needs_more_info": true | false,
   "reasoning": "justificativa para a decisão",
   "follow_up_question": "pergunta de esclarecimento ao usuário" | null
-}}}}
+}}
 """

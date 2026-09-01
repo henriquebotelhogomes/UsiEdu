@@ -181,3 +181,24 @@ class TestRouteFromSupervisor:
         """Sem supervisor_decision deve ir para END."""
         state = {"supervisor_decision": None, "profile": "student"}
         assert route_from_supervisor(state) == "__end__"  # type: ignore[arg-type]
+
+
+class TestParsingDaSaidaDoRoteador:
+    """O roteador imita o exemplo do prompt; chaves duplas não podem custar a decisão."""
+
+    def _decidir(self, state: dict, raw: str) -> SupervisorDecision:
+        from src.llm.fake import FakeChatModel
+
+        node = make_supervisor_node(FakeChatModel(default_response=raw))
+        return node(state, {})["supervisor_decision"]
+
+    def test_chaves_duplas_do_exemplo_nao_descartam_a_intencao(
+        self, default_state
+    ) -> None:
+        """Raw observado em produção: '{{"intent": "fora_de_escopo", ...}}' caía em academico."""
+        raw = (
+            '{{\n  "intent": "fora_de_escopo",\n  "plan": null,'
+            '\n  "reasoning": "legislação geral"\n}}'
+        )
+        decision = self._decidir(default_state, raw)
+        assert decision.get("intent") == "fora_de_escopo"

@@ -24,7 +24,7 @@ class RetrievalGrader:
 
     def __init__(
         self,
-        min_relevance_score: float = 0.35,
+        min_relevance_score: float = 0.05,
         enabled: bool = True,
     ) -> None:
         self.min_relevance_score = min_relevance_score

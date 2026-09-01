@@ -157,7 +157,7 @@ class HybridRetriever:
         collection_name: str = "academico",
         search_top_k: int = 20,
         rerank_top_k: int = 5,
-        min_relevance_score: float = 0.35,
+        min_relevance_score: float = 0.05,
         enable_crag_filter: bool = True,
     ) -> None:
         self.client = client

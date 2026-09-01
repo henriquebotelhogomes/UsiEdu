@@ -35,7 +35,7 @@ const STACK = [
   ["LLM", "OpenCode Go (DeepSeek V4 Flash / Kimi K2.7 Code)"],
   ["Vector DB", "Qdrant (Docker HNSW + Payload Filter)"],
   ["Embeddings", "sentence-transformers local (FastEmbed ONNX)"],
-  ["Reranker", "BAAI/bge-reranker-base local"],
+  ["Reranker", "BAAI/bge-reranker-v2-m3 local"],
   ["Observabilidade", "LangSmith Tracing + Distributed Logs"],
   ["Frontend", "React 18 + Vite + TypeScript + SSE Streaming"],
   ["Qualidade", "Ruff · pytest (484 testes - 100%) · RAGAS Gate"],

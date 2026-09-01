@@ -40,7 +40,7 @@ Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiE
 | **Atenção do Modelo** | Injeção linear sujeita a *Lost in the Middle* | **Reordenação Balanceada (`reorder_context` `[1º, 3º, 5º, 4º, 2º]`)** |
 | **Resolução de Perguntas** | Busca com pronomes do usuário ("ele", "disso") | **Query Rewriter & Resolução Coreferencial** antes de consultar índices |
 | **Filtragem Pré-Busca** | Busca vetorial cega em toda a base | **Self-Querying Metadata Filtering** pré-HNSW (documentos e normas oficiais) |
-| **Filtragem de Ruído** | Injeta os Top-K cegamente no prompt | **Corrective RAG (CRAG)** com Retrieval Grader (score $\ge 0.35$) |
+| **Filtragem de Ruído** | Injeta os Top-K cegamente no prompt | **Corrective RAG (CRAG)** com Retrieval Grader (score $\ge 0.05$) |
 | **Recuperação de Dados** | Busca vetorial densa isolada | **RAG Híbrido 4 Estágios** (Qdrant + BM25 + RRF + Cross-Encoder Re-ranker) |
 | **FinOps & Cache** | Sem cache / reexecução cara | **Semantic Cache calibrated a 0.92** + **Warmup** (<15ms) + **`trim_messages`** |
 | **Ações Sensíveis** | Execução automática sem confirmação | **Human-in-the-Loop (HITL)** via `interrupt_before` e `POST /chat/resume` |
@@ -114,7 +114,7 @@ Adota `trim_messages` do LangChain (`max_tokens=2000`) em todas as invocações 
 Calibrado em limiar de cosseno **0.92**, respondendo a dúvidas frequentes com latência $< 15\text{ms}$ e custo zero de tokens.
 
 ### 6. Corrective RAG (CRAG) com Retrieval Grader (`src/rag/crag_grader.py`)
-Após o re-ranking pelo Cross-Encoder, o `RetrievalGrader` descarta documentos irrelevantes com score $< 0.35$, evitando alucinações e garantindo que o agente declare ausência de dados quando necessário.
+Após o re-ranking pelo Cross-Encoder, o `RetrievalGrader` descarta candidatos com relevância $< 0.05$ — limiar recalibrado por medição sobre o corpus real (ver nota T10.2 em `docs/08`). O grader atua como poda de candidatos claramente não relacionados; a recusa por ausência de dados é decidida pelo agente sobre o contexto restante, não pelo threshold.
 
 ### 7. Human-in-the-Loop com Persistência Assíncrona (`src/orchestration/graph.py`)
 ```python
@@ -132,7 +132,7 @@ graph = builder.compile(
 | Camada | Tecnologias Utilizadas |
 |---|---|
 | **Orquestração Multi-Agente** | **LangGraph v0.2+**, **LangChain v0.3+**, `StateGraph`, `MemorySaver`, Checkpointers SQLite/PostgreSQL |
-| **Recuperação & RAG** | **Qdrant**, BM25, Contextual Retrieval (Anthropic), CRAG Grader, Cross-Encoder (`bge-reranker-base`) |
+| **Recuperação & RAG** | **Qdrant**, BM25, Contextual Retrieval (Anthropic), CRAG Grader, Cross-Encoder (`bge-reranker-v2-m3`) |
 | **Backend & APIs** | **FastAPI**, Python 3.12+, Server-Sent Events (SSE via `astream_events`), Pydantic v2, SlowAPI |
 | **Modelos de Linguagem (LLMs)** | OpenCode Go (**DeepSeek V4 Flash**, **Kimi K2.7 Code**) + `FakeChatModel` para testes |
 | **Segurança & FinOps** | Semantic Cache (SQLite/Redis) + Warmup, PII Masking (`mask_pii`), Guardrails Anti-Injection, `trim_messages` |

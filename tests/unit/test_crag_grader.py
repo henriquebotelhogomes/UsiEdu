@@ -96,3 +96,26 @@ class TestRetrievalGrader:
         assert has_relevant is True
         assert len(approved) == 1
         assert approved[0].score == 0.75
+
+
+class TestThresholdCalibrado:
+    """O default do grader âncora a calibração medida (nota T10.2 em docs/08)."""
+
+    # Distribuição do bge-reranker-v2-m3 sobre o corpus real: chunks-ouro de prosa
+    # jurídica ficam em 0.02–0.99 e o ruído também alcança 0.99, então o corte é
+    # escolhido no ponto de Pareto (cobertura 9/16, falso-aceite 4/9), não por
+    # intuição. Ver docs/08.
+    CALIBRADO = 0.05
+
+    def test_default_do_grader_e_o_valor_calibrado(self):
+        assert RetrievalGrader().min_relevance_score == self.CALIBRADO
+
+    def test_settings_e_assinatura_do_retriever_concordam(self):
+        import inspect
+
+        from src.rag.retriever import HybridRetriever
+        from src.rag.settings import RagSettings
+
+        assert RagSettings.model_fields["min_relevance_score"].default == self.CALIBRADO
+        sig = inspect.signature(HybridRetriever.__init__)
+        assert sig.parameters["min_relevance_score"].default == self.CALIBRADO

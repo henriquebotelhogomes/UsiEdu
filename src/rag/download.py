@@ -76,10 +76,12 @@ def main() -> None:
         else:
             failed += 1
 
-    # Salva manifest com checksums
+    # Salva manifest com checksums (newline fixa LF: o hash da cadeia de eval
+    # compara bytes crus contra texto normalizado CRLF->LF)
     MANIFEST_PATH.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2),
         encoding="utf-8",
+        newline="\n",
     )
 
     logger.info("Download completo: %d sucesso, %d falhas.", success, failed)
