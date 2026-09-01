@@ -20,6 +20,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 
+from src.evaluation.llm_judge import LLMJudge, avaliar_heuristicamente
+
 # Carrega variáveis do .env (OPENCODE_GO_API_KEY, LANGSMITH_API_KEY, etc.)
 load_dotenv()
 
@@ -153,75 +155,16 @@ def _carregar_grafo(
     )
 
 
-def _avaliar_resposta(pergunta: dict, resposta: str) -> dict:
-    """Avalia heuristicamente a resposta (fallback sem Ragas).
-
-    Usa heurísticas simples quando o Ragas não está disponível ou o
-    ambiente é offline: verifica presença de palavras-chave da referência
-    e ausência de termos de alucinação.
-    """
-    ref = pergunta.get("reference_answer", "").lower()
-    resp = resposta.lower()
-    cat = pergunta.get("category", "direct")
-
-    # Heurística: cobertura de palavras-chave da referência
-    palavras = [p for p in ref.split() if len(p) > 4]
-    if not palavras:
-        return {
-            "faithfulness": 1.0,
-            "context_precision": 1.0,
-            "context_recall": 1.0,
-            "answer_relevancy": 1.0,
-        }
-
-    cobertas = sum(1 for p in palavras if p in resp)
-    cobertura = cobertas / len(palavras)
-
-    # Perguntas fora de escopo: resposta deve negar/redirecionar
-    if cat == "fora_de_escopo":
-        negacao = any(
-            t in resp
-            for t in [
-                "fora do escopo",
-                "não encontrei",
-                "fora de escopo",
-                "não posso",
-                # resposta padrão do nó fora_de_escopo (consolidation.py)
-                "fora do meu escopo",
-            ]
-        )
-        return {
-            "faithfulness": 1.0 if negacao else 0.0,
-            "context_precision": 1.0,
-            "context_recall": 1.0,
-            "answer_relevancy": 1.0 if negacao else 0.0,
-        }
-
-    if cat == "sem_resposta":
-        honesto = any(
-            t in resp
-            for t in [
-                "não encontrei",
-                "não sei",
-                "não encontrada",
-                "não disponível",
-                # formulação usada pelos agentes na recusa honesta
-                "não localizei",
-            ]
-        )
-        return {
-            "faithfulness": 1.0 if honesto else 0.0,
-            "context_precision": 1.0,
-            "context_recall": 1.0,
-            "answer_relevancy": 1.0 if honesto else 0.0,
-        }
-
-    return {
-        "faithfulness": min(cobertura + 0.3, 1.0),
-        "context_precision": min(cobertura + 0.2, 1.0),
-        "context_recall": min(cobertura + 0.2, 1.0),
-        "answer_relevancy": min(cobertura + 0.3, 1.0),
-    }
+def _avaliar_resposta(
+    pergunta: dict,
+    resposta: str,
+    contextos: list[str] | None = None,
+    judge: LLMJudge | None = None,
+) -> dict:
+    """Avalia a resposta usando LLMJudge (quando disponível) ou heurística determinística."""
+    if judge is not None and judge.is_available:
+        return judge.evaluate(pergunta, resposta, contextos)
+    return avaliar_heuristicamente(pergunta, resposta)
 
 
 def _formatar_metricas(metricas: list[dict]) -> dict[str, float]:
@@ -425,9 +368,13 @@ async def executar_avaliacao(
     limit: int | None = None,
     feedback_path: Path | None = None,
     temperature: float | None = None,
+    use_judge: bool = True,
+    judge_model: str | None = None,
 ) -> Path:
     """Executa a avaliação e gera o relatório.
 
+    `use_judge`: quando True e a chave de API estiver presente, utiliza o LLMJudge
+    para avaliação semântica estruturada. Caso contrário, utiliza heurística determinística.
     `feedback_path` aponta para o JSONL de feedback negativo (T8.1); quando
     None, usa o caminho padrão se o arquivo existir. Casos com `question: null`
     são pulados da reavaliação e contabilizados no relatório.
@@ -437,6 +384,13 @@ async def executar_avaliacao(
         perguntas = perguntas[:limit]
 
     graph = _carregar_grafo(temperature=temperature)
+    judge: LLMJudge | None = None
+    if use_judge and os.getenv("OPENCODE_GO_API_KEY"):
+        judge = LLMJudge(
+            model_name=judge_model or os.getenv("USIEDU_JUDGE_MODEL", "deepseek-v4-flash"),
+            temperature=temperature,
+        )
+
     resultados = []
     falhas: list[str] = []
 
@@ -458,7 +412,11 @@ async def executar_avaliacao(
         try:
             result = await graph.ainvoke(state, config)
             resposta = _extrair_resposta(result)
-            metricas = _avaliar_resposta(pergunta, resposta)
+            contextos = _extrair_contexto(result)
+            if judge is not None and judge.is_available:
+                metricas = await judge.aevaluate(pergunta, resposta, contextos)
+            else:
+                metricas = _avaliar_resposta(pergunta, resposta, contextos, judge=judge)
         except Exception as exc:
             # Métrica ausente (None) != resposta ruim (0.0): falha de execução
             # não pode ser publicada como defeito de qualidade.
@@ -483,11 +441,14 @@ async def executar_avaliacao(
         resultados_fb = await _executar_casos_feedback(graph, validos)
 
     medias = _formatar_metricas(resultados)
-    modo = (
-        "heurística de cobertura + LLM (não é o framework Ragas)"
-        if os.getenv("OPENCODE_GO_API_KEY")
-        else "offline-heurístico"
-    )
+    if judge is not None and judge.is_available:
+        model_label = judge_model or os.getenv("USIEDU_JUDGE_MODEL", "deepseek-v4-flash")
+        modo = f"LLM-as-a-Judge ({model_label})"
+    elif os.getenv("OPENCODE_GO_API_KEY"):
+        modo = "heurística de cobertura + LLM (modo heurístico explícito)"
+    else:
+        modo = "offline-heurístico"
+
     _gerar_relatorio(perguntas, resultados, medias, output_path, modo, resultados_fb, pulados_fb)
     if falhas:
         raise RuntimeError(
@@ -531,11 +492,28 @@ def main() -> None:
             "(OpenCode Go só aceita 1). Use 0 apenas com modelos que a aceitam."
         ),
     )
+    parser.add_argument(
+        "--heuristic",
+        action="store_true",
+        help="Força avaliação heurística sem invocação de LLM Judge",
+    )
+    parser.add_argument(
+        "--judge-model",
+        type=str,
+        default=None,
+        help="Modelo LLM Judge (default: USIEDU_JUDGE_MODEL ou deepseek-v4-flash)",
+    )
     args = parser.parse_args()
 
     output = asyncio.run(
         executar_avaliacao(
-            args.dataset, args.output, args.limit, args.feedback, temperature=args.temperature
+            dataset_path=args.dataset,
+            output_path=args.output,
+            limit=args.limit,
+            feedback_path=args.feedback,
+            temperature=args.temperature,
+            use_judge=not args.heuristic,
+            judge_model=args.judge_model,
         )
     )
     print(f"Relatório gerado em: {output}")
