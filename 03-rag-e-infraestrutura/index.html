@@ -1190,6 +1190,174 @@
   
   
     <li class="md-nav__item">
+      <a href="../profissionalizacao/02-qualidade-rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Qualidade RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/03-integracao-entrega-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Integração, Entrega e Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/04-seguranca-operacional/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Segurança Operacional
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/05-performance-disponibilidade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P2 — Performance e Disponibilidade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/06-produto-experiencia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P2 — Produto e Experiência
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/07-decisoes-provisorias/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisões Provisórias
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../profissionalizacao/TEMPLATE_INICIATIVA/" class="md-nav__link">
         
   
@@ -1617,10 +1785,38 @@ LDB                    │               + Parent-Doc     local       coleções
 1. <strong>Query Rewriting &amp; Resolução Coreferencial (<code>src/rag/query_rewriter.py</code>):</strong> Analisa o histórico multi-turno para reescrever perguntas contextuais (<em>"E até quando posso pagar ele?"</em> $\rightarrow$ <em>"Até quando posso pagar o boleto de graduação?"</em>) antes de consultar os índices.
 2. <strong>Self-Querying &amp; Extração de Metadados (<code>extract_query_metadata</code>):</strong> Identifica referências a normas e documentos específicos na query do usuário e aplica filtros booleanos pré-HNSW no Qdrant, reduzindo ruídos entre documentos.
 3. <strong>Busca Híbrida &amp; RRF:</strong> Vetorial denso (Qdrant) + Léxico esparso (BM25) fundidos via Reciprocal Rank Fusion ($k=60$).
-4. <strong>Re-ranking Cross-Encoder:</strong> <code>BAAI/bge-reranker-base</code> reordena os candidatos avaliando os pares query-documento com alta precisão semântica.
-5. <strong>Corrective RAG Grader (<code>src/rag/crag_grader.py</code>):</strong> Avalia os scores normalizados do cross-encoder. Candidatos com relevância $&lt; 0.35$ (<code>min_relevance_score</code>) são descartados preventivamente para evitar injeção de ruído no prompt do LLM.
+4. <strong>Re-ranking Cross-Encoder:</strong> <code>BAAI/bge-reranker-v2-m3</code> reordena os candidatos avaliando os pares query-documento. O checkpoint anterior (<code>bge-reranker-base</code>) foi substituído por medição: em prosa jurídica em português ele atribuía score alto a artigos irrelevantes e baixo à passagem que respondia a pergunta, invertendo o ranqueamento (detalhe na nota T10.2 de <code>docs/08</code>).
+5. <strong>Corrective RAG Grader (<code>src/rag/crag_grader.py</code>):</strong> Descarta candidatos com relevância $&lt; 0.05$ (<code>min_relevance_score</code>) para não injetar ruído no prompt do LLM. <strong>Limitação medida:</strong> sobre o corpus real a distribuição de scores de ouro e de ruído se sobrepõe (ouro 0.0001–0.995, ruído até 0.9927), então o threshold funciona como poda de candidatos claramente não relacionados, <strong>não</strong> como garantia de recusa — as recusas corretas de <code>sem_resposta</code>/<code>fora_de_escopo</code> vêm do prompt do agente, não do grader.
 6. <strong>Mitigação de Lost in the Middle (<code>reorder_context</code>):</strong> Reorganiza os chunks aprovados no padrão <code>[1º, 3º, 5º, 4º, 2º]</code>, posicionando os documentos mais importantes nas regiões de maior atenção do LLM (início e fim do prompt).
-7. <strong>Grounding Obrigatório:</strong> Sem documentos válidos acima do limiar, o agente declara honestamente não dispor da informação.</p>
+7. <strong>Grounding Obrigatório:</strong> O agente responde apenas sobre os chunks aprovados no contexto; sem contexto útil, declara honestamente não dispor da informação.</p>
+<p><strong>Evidência de calibração do threshold (Sprint 10.2):</strong> varredura sobre as 30 perguntas do dataset sintético, contando apenas os casos em que nenhum candidato aprovado pelo grader carrega o documento ouro no top-5.</p>
+<table>
+<thead>
+<tr>
+<th>Checkpoint / threshold</th>
+<th>Perguntas respondíveis sem ouro no top-5</th>
+<th>Falsos-aceites (categorias sem ouro)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bge-reranker-base</code> @ 0.35 (configuração antiga)</td>
+<td>8</td>
+<td>4 / 9</td>
+</tr>
+<tr>
+<td><code>bge-reranker-v2-m3</code> @ 0.05 (adotado)</td>
+<td>7</td>
+<td>4 / 9</td>
+</tr>
+<tr>
+<td><code>bge-reranker-v2-m3</code> @ 0.35</td>
+<td>9</td>
+<td>2 / 9</td>
+</tr>
+</tbody>
+</table>
+<p>Manter 0.35 após a troca do modelo era a intuição "mais rígida" e saiu-se pior nas duas curvas: 9 perguntas respondíveis ficavam sem nenhuma fonte aprovada. O ponto adotado domina o antigo (mais cobertura com o mesmo número de falsos-aceites); operar a curva em 0.15–0.2 é a alternativa se a prioridade passar a ser precisos de recusa.</p>
 <hr />
 <h2 id="2-vector-db-qdrant">2. Vector DB — Qdrant<a class="headerlink" href="#2-vector-db-qdrant" title="Permanent link">&para;</a></h2>
 <table>

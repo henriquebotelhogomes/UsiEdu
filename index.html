@@ -1015,6 +1015,174 @@
   
   
     <li class="md-nav__item">
+      <a href="profissionalizacao/02-qualidade-rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Qualidade RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="profissionalizacao/03-integracao-entrega-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Integração, Entrega e Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="profissionalizacao/04-seguranca-operacional/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Segurança Operacional
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="profissionalizacao/05-performance-disponibilidade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P2 — Performance e Disponibilidade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="profissionalizacao/06-produto-experiencia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P2 — Produto e Experiência
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="profissionalizacao/07-decisoes-provisorias/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisões Provisórias
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="profissionalizacao/TEMPLATE_INICIATIVA/" class="md-nav__link">
         
   
@@ -1150,7 +1318,7 @@
 <li><strong>Query Rewriting &amp; Resolução Coreferencial:</strong> Resolução de referências pronominais baseada no histórico antes de despachar para os índices.</li>
 <li><strong>Busca Híbrida:</strong> Qdrant (Vetorial denso) + BM25 (Léxico esparso) fundidos via Reciprocal Rank Fusion ($k=60$).</li>
 <li>
-<p><strong>Re-ranking &amp; Corrective RAG (CRAG):</strong> Cross-Encoder (<code>bge-reranker-base</code>) combinado com <strong>Retrieval Grader</strong> com descarte automático de candidatos com relevância $&lt; 0.35$.</p>
+<p><strong>Re-ranking &amp; Corrective RAG (CRAG):</strong> Cross-Encoder multilingue (<code>bge-reranker-v2-m3</code>) combinado com <strong>Retrieval Grader</strong> com descarte automático de candidatos com relevância $&lt; 0.05$ (limiar calibrado por medição; ver nota T10.2 em <code>08-plano-execucao.md</code>).</p>
 </li>
 <li>
 <p><strong>Middleware de Contexto do Sistema (Grounding Universal):</strong></p>
@@ -1169,8 +1337,8 @@
 <p><strong>Qualidade Contínua, Geração Sintética &amp; LLM-as-a-Judge:</strong></p>
 </li>
 <li><strong>Geração Sintética de Testes:</strong> Gerador automatizado (<code>generate_synthetic_testset.py</code>) que fatias a base de conhecimento e produz 50 casos de teste balanceados (diretos, raciocínio, multi-contexto e fora de escopo).</li>
-<li>Suíte com mais de <strong>450 testes unitários automatizados</strong> (100% aprovados).</li>
-<li>Quality Gate de CI/CD baseado no framework <strong>RAGAS</strong> (<em>Faithfulness $\ge 0.85$</em>) e <strong>Agent Trajectory Harness</strong>.</li>
+<li>Suíte com mais de <strong>530 testes unitários automatizados</strong> (100% aprovados).</li>
+<li>Quality Gate de CI/CD baseado em <strong>LLM-as-a-Judge por rubricas e Ragas</strong> (<em>Faithfulness $\ge 0.90$</em>) e <strong>Agent Trajectory Harness</strong>.</li>
 </ol>
 <hr />
 <h2 id="navegacao-recomendada">🧭 Navegação Recomendada<a class="headerlink" href="#navegacao-recomendada" title="Permanent link">&para;</a></h2>

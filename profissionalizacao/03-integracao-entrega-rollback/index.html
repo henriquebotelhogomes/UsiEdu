@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://henriquebotelhogomes.github.io/UsiEdu/profissionalizacao/03-integracao-entrega-rollback/">
       
       
+        <link rel="prev" href="../02-qualidade-rag/">
+      
+      
+        <link rel="next" href="../04-seguranca-operacional/">
       
       
         
@@ -23,7 +27,7 @@
     
     
       
-        <title>P1 — Integração, entrega e rollback - UsiEdu — Documentação Técnica</title>
+        <title>P1 — Integração, Entrega e Rollback - UsiEdu — Documentação Técnica</title>
       
     
     
@@ -110,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              P1 — Integração, entrega e rollback
+              P1 — Integração, Entrega e Rollback
             
           </span>
         </div>
@@ -786,20 +790,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -820,7 +824,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -902,6 +906,376 @@
     
   
     P0 — Validação do Piloto
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-qualidade-rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Qualidade RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Integração, Entrega e Rollback
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Integração, Entrega e Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto-e-evidencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto e evidências
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-objetivo-mensuravel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Objetivo mensurável
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-escopo-e-nao-escopo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Escopo e não escopo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Escopo e não escopo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#escopo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escopo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nao-escopo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Não escopo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-requisitos-e-criterios-de-aceite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Requisitos e critérios de aceite
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-decisoes-dependencias-e-riscos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Decisões, dependências e riscos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-plano-tecnico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Plano técnico
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-tarefas-e-microtarefas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Tarefas e microtarefas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-estrategia-de-testes-e-validacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Estratégia de testes e validação
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-encerramento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Encerramento
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Encerramento">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gates-e-reversibilidade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gates e reversibilidade
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#definition-of-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition of Done
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-seguranca-operacional/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 — Segurança Operacional
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-performance-disponibilidade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P2 — Performance e Disponibilidade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-produto-experiencia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P2 — Produto e Experiência
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-decisoes-provisorias/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisões Provisórias
   
 
     
