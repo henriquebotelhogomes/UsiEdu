@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { InteractivePlayground } from "./InteractivePlayground";
 
 const DOCS_URL = "https://henriquebotelhogomes.github.io/UsiEdu/";
 const GITHUB_URL = "https://github.com/henriquebotelhogomes/UsiEdu";
@@ -108,6 +109,7 @@ export default function LandingPage() {
             <a href="#funcionalidades">Funcionalidades</a>
             <a href="#agentes">Agentes</a>
             <a href="#arquitetura">Arquitetura</a>
+            <a href="#playground">Playground Interativo</a>
             <a href="#fontes">Fontes</a>
             <a href="#stack">Stack</a>
             <a href={DOCS_URL} target="_blank" rel="noreferrer">
@@ -238,6 +240,15 @@ export default function LandingPage() {
             />
           </div>
         </div>
+      </section>
+
+      {/* Playground Interativo */}
+      <section id="playground" className="landing-section alt">
+        <h2>Playground &amp; Simulador de Arquitetura</h2>
+        <p className="landing-section-sub">
+          Experimente em tempo real a lógica de roteamento, extração de fontes e controle de FinOps.
+        </p>
+        <InteractivePlayground />
       </section>
 
       {/* Pipeline RAG */}
