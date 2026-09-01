@@ -182,6 +182,17 @@ def create_app() -> FastAPI:
     app.include_router(chat_stream_router)
     app.include_router(feedback_router)
 
+    @app.get("/")
+    async def root():
+        """Rota raiz amigável com links para documentação e status."""
+        return {
+            "name": "UsiEdu API",
+            "version": "0.2.0",
+            "status": "online",
+            "docs": "/docs",
+            "health": "/health",
+        }
+
     @app.get("/health")
     async def health():
         # Contadores do cache semântico (T9.2)
