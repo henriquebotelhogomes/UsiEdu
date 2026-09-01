@@ -62,12 +62,12 @@ def _build_opencode_go(
         model=model_name or os.getenv("USIEDU_ROUTER_MODEL", "deepseek-v4-flash"),
         base_url=os.getenv("OPENCODE_GO_BASE_URL", "https://opencode.ai/zen/go/v1"),
         api_key=os.getenv("OPENCODE_GO_API_KEY", ""),
-        max_retries=0,
+        max_retries=int(os.getenv("USIEDU_LLM_MAX_RETRIES", "0")),
         # Console Go/OpenCode Go exige temperature=1 para alguns modelos
         temperature=1.0 if temperature is None else temperature,
         max_tokens=max_tokens,
         stream_usage=True,
-        timeout=float(os.getenv("USIEDU_LLM_TIMEOUT_SECONDS", "120")),
+        timeout=float(os.getenv("USIEDU_LLM_TIMEOUT_SECONDS", "180")),
     )
 
 

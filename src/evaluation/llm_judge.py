@@ -64,6 +64,7 @@ Avalie a resposta fornecida em quatro dimensões métricas, com valores entre 0.
 1. Se category for "fora_de_escopo", a resposta deve redirecionar ou informar o escopo.
 2. Se category for "sem_resposta", a resposta deve admitir que a informação não foi encontrada.
 3. Se category for "direct", a resposta deve ser precisa e embasada.
+4. Pense objetivamente de forma concisa e direta.
 
 ## Output Format
 Retorne estritamente um objeto JSON válido (sem tags markdown adicionais) no formato:
@@ -202,7 +203,7 @@ class LLMJudge:
                 self._model = get_chat_model(
                     model_name=model_name or os.getenv("USIEDU_JUDGE_MODEL", "deepseek-v4-flash"),
                     temperature=temperature,
-                    max_tokens=2048,
+                    max_tokens=8192,
                 )
             except Exception as exc:
                 logger.warning("Não foi possível instanciar modelo juiz LLM: %s", exc)

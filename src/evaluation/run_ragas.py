@@ -122,7 +122,11 @@ def _carregar_grafo(
         # filtra por publico_alvo=staff, e a coleção acadêmica não tem nenhum
         # ponto nesse filtro — sem a institucional, metade do dataset é respondida
         # sem o corpus que a fundamenta.
-        client = QdrantClient(qdrant_url)
+        try:
+            client = QdrantClient(qdrant_url, timeout=3.0)
+            client.get_collections()
+        except Exception:
+            client = QdrantClient(path="./qdrant_storage")
         retriever = HybridRetriever(
             client=client,
             embedder=embedder,
@@ -533,3 +537,8 @@ def main() -> None:
         else:
             print("[CI-GATE] [FALHA] Métricas abaixo do threshold mínimo.")
             sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+
