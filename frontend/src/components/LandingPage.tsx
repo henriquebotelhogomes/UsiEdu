@@ -8,45 +8,61 @@ const AGENTES = [
     nome: "Agente Acadêmico",
     fase: "Piloto",
     descricao:
-      "Calendário, matrículas, trancamentos e processos de secretaria via RAG, além de notas e faltas integradas por tools.",
+      "Calendário letivo, matrículas, trancamentos e processos de secretaria via RAG, além de notas e faltas integradas por tools.",
   },
   {
     nome: "Agente Financeiro",
     fase: "Piloto",
     descricao:
-      "Consulta de boletos, prazos de pagamento e simulação de renegociação com dados mockados e identificação segura do aluno.",
+      "Consulta de boletos, prazos de vencimento e simulação de renegociação com dados mockados e identificação segura do aluno.",
   },
   {
     nome: "Agente Documental",
     fase: "Piloto",
     descricao:
-      "Conhecimento institucional para funcionários e docentes: normas, portarias e processos internos com citação estrita de fontes.",
+      "Conhecimento institucional amplo para servidores e docentes: afastamentos, licenças, perícia, adicionais e Lei 8.112 com citação estrita de fontes.",
   },
   {
     nome: "Agente Tutor",
     fase: "Fase 2",
     descricao:
-      "Apoio pedagógico personalizado com memória de longo prazo e trilhas de aprendizagem adaptativas.",
+      "Apoio pedagógico personalizado com memória de longo prazo (Store) e trilhas de aprendizagem adaptativas.",
   },
 ];
 
 const STACK = [
   ["Backend", "Python 3.12 · FastAPI · LangGraph · LangChain · Pydantic v2"],
-  ["LLM", "OpenCode Go (DeepSeek V4 Flash / Kimi K2.7 Code)"],
-  ["Vector DB", "Qdrant (Docker HNSW + Payload Filter)"],
-  ["Embeddings", "sentence-transformers local (FastEmbed ONNX)"],
-  ["Reranker", "BAAI/bge-reranker-v2-m3 local"],
-  ["Observabilidade", "LangSmith Tracing + Distributed Logs"],
+  ["LLM Motor", "OpenCode Go (DeepSeek V4 Flash com reasoning)"],
+  ["Vector DB", "Qdrant (HNSW + Filtro RBAC por Perfil + Storage Resiliente)"],
+  ["Embeddings", "paraphrase-multilingual-MiniLM-L12-v2 local"],
+  ["Re-ranker", "BAAI/bge-reranker-v2-m3 (Cross-Encoder multilingue)"],
+  ["Observabilidade", "LangSmith Tracing + Logs JSON Estruturados"],
   ["Frontend", "React 18 + Vite + TypeScript + SSE Streaming"],
-  ["Qualidade", "Ruff · pytest (484 testes - 100%) · RAGAS Gate"],
+  ["Qualidade", "Ruff · pytest (538 testes - 100% verde) · LLM-as-a-Judge"],
 ];
 
 const FONTES = [
   {
+    nome: "DGP — Licença e Afastamentos",
+    tipo: "HTML",
+    descricao:
+      "Diretrizes e procedimentos para afastamento de capacitação, pós-graduação stricto sensu e estudo no exterior.",
+    publico: "Funcionário / Docente",
+    urlOficial: "https://dgp.unb.br/afastamentos",
+  },
+  {
+    nome: "Lei nº 8.112/1990 Consolidada",
+    tipo: "HTML",
+    descricao:
+      "Regime Jurídico dos Servidores Públicos Civis da União — direitos, deveres, licenças e adicionais.",
+    publico: "Funcionário / Docente",
+    urlOficial: "https://www.planalto.gov.br/ccivil_03/leis/l8112cons.htm",
+  },
+  {
     nome: "Regimento Geral da UnB",
     tipo: "PDF",
     descricao:
-      "Estatuto e Regimento Geral — base das regras acadêmicas e administrativas respondidas pelos agentes.",
+      "Estatuto e Regimento Geral — base das regras acadêmicas, trancamentos e regime disciplinar.",
     publico: "Estudante · Funcionário",
     download: "/documentos/regimento_geral_unb.pdf",
     urlOficial: "https://unb.br/images/Documentos/Estatuto_e_Regimento_Geral_UnB.pdf",
@@ -55,7 +71,7 @@ const FONTES = [
     nome: "Calendário de Graduação 2026.2",
     tipo: "PDF",
     descricao:
-      "Calendário Universitário de Graduação — datas, prazos de matrícula e feriados do semestre.",
+      "Calendário Universitário de Graduação — datas letivas, períodos de matrícula e feriados oficiais.",
     publico: "Estudante",
     download: "/documentos/calendario_graduacao_2026_2.pdf",
     urlOficial:
@@ -65,17 +81,17 @@ const FONTES = [
     nome: "Guia do Servidor UnB",
     tipo: "HTML",
     descricao:
-      "Decanato de Gestão de Pessoas — normas, direitos e processos internos para servidores.",
-    publico: "Funcionário",
+      "Decanato de Gestão de Pessoas — normas, avaliação de desempenho, progressão e processos administrativos.",
+    publico: "Funcionário / Docente",
     urlOficial: "https://dgp.unb.br/servidor/guia-servidor",
   },
   {
-    nome: "LDB — Lei nº 9.394/1996",
+    nome: "FAQ SAA (Perguntas Frequentes)",
     tipo: "HTML",
     descricao:
-      "Diretrizes e bases da educação nacional — camada de legislação federal do RAG.",
+      "Secretaria de Administração Acadêmica — aproveitamento de estudos, registro e emissão de declarações.",
     publico: "Estudante",
-    urlOficial: "https://www.planalto.gov.br/ccivil_03/leis/l9394.htm",
+    urlOficial: "https://saa.unb.br/perguntas-frequentes/",
   },
 ];
 
@@ -336,20 +352,20 @@ export default function LandingPage() {
           <div>
             <div className="landing-quality-badges">
               <div className="quality-badge">
-                <strong>457</strong> testes unitários (100% aprovados)
+                <strong>538</strong> testes unitários backend + 24 frontend (100% verde)
               </div>
               <div className="quality-badge">
-                <strong>RAGAS</strong> Quality Gate automatizado
+                <strong>830</strong> chunks indexados (35 documentos oficiais)
               </div>
               <div className="quality-badge">
-                <strong>CI/CD</strong> GitHub Actions + Ruff Linter
+                <strong>LLM-as-a-Judge</strong> Faithfulness 0.933 · Relevancy 0.933 · Recall 0.900
               </div>
               <div className="quality-badge">
-                <strong>MkDocs</strong> documentação navegável completa
+                <strong>CI/CD</strong> GitHub Actions + Ruff Linter + MkDocs
               </div>
             </div>
             <p className="landing-quality-note">
-              Qualidade validada por suítes contínuas de regressão, testes de trajetória de agentes e LLM-as-a-Judge.
+              Qualidade comprovada por avaliação semântica contínua com LLM-as-a-Judge por rubricas, testes de regressão com contratos criptográficos e RBAC com isolamento estrito de coleções.
             </p>
             <a
               href={DOCS_URL}
