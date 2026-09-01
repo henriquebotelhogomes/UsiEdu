@@ -34,9 +34,13 @@ jobs:
         run: |
           pytest tests/unit/ -v --cov=src
 
-      - name: 3. RAG Quality Gate (RAGAS Evaluation Gate)
+      - name: 3. RAG Quality Gate (Regression Gate)
         run: |
-          python scripts/run_ragas.py --ci-gate --min-score 0.80 --limit 5
+          python -m src.evaluation.regression_gate \
+            --baseline src/evaluation/regression_fixtures/baseline.json \
+            --candidate src/evaluation/regression_fixtures/candidate.json \
+            --policy src/evaluation/regression_policy_v1.json \
+            --output rag-regression-report.json
 
       - name: 4. Multi-Agent Loop & Trajectory Gate (Agent Harness)
         run: |
