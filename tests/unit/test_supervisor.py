@@ -192,9 +192,7 @@ class TestParsingDaSaidaDoRoteador:
         node = make_supervisor_node(FakeChatModel(default_response=raw))
         return node(state, {})["supervisor_decision"]
 
-    def test_chaves_duplas_do_exemplo_nao_descartam_a_intencao(
-        self, default_state
-    ) -> None:
+    def test_chaves_duplas_do_exemplo_nao_descartam_a_intencao(self, default_state) -> None:
         """Raw observado em produção: '{{"intent": "fora_de_escopo", ...}}' caía em academico."""
         raw = (
             '{{\n  "intent": "fora_de_escopo",\n  "plan": null,'

@@ -144,4 +144,3 @@ class TestHumanInTheLoop:
         # Fecha conexão do checkpointer de forma limpa
         if hasattr(graph.checkpointer, "conn"):
             await graph.checkpointer.conn.close()
-

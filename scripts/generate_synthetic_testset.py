@@ -382,7 +382,7 @@ def main() -> None:
     print("\n" + "=" * 50)
     print(f"Resumo do Dataset Sintetico Gerado ({len(testset)} itens):")
     for cat, total in sorted(categories.items()):
-        print(f"  * {cat.ljust(15)}: {total:2d} ({total/len(testset)*100:.0f}%)")
+        print(f"  * {cat.ljust(15)}: {total:2d} ({total / len(testset) * 100:.0f}%)")
     print(f"Arquivo gerado: {output_path}")
     print("=" * 50 + "\n")
 

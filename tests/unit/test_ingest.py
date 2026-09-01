@@ -291,9 +291,7 @@ class TestForcedReindex:
         entry = self._entry_indexado(f)
         chunker, embedder, client = self._pipeline_mocks()
 
-        resultado = ingest_document(
-            entry, chunker, embedder, client, RagSettings(), force=True
-        )
+        resultado = ingest_document(entry, chunker, embedder, client, RagSettings(), force=True)
 
         assert resultado == 1
         client.delete.assert_called_once()
@@ -324,9 +322,7 @@ class TestForcedReindex:
         monkeypatch.setattr(ingest, "Embedder", FakeEmbedder)
         import qdrant_client
 
-        monkeypatch.setattr(
-            qdrant_client, "QdrantClient", lambda **kw: _client_sem_colecoes()
-        )
+        monkeypatch.setattr(qdrant_client, "QdrantClient", lambda **kw: _client_sem_colecoes())
 
         chamadas: list = []
         monkeypatch.setattr(

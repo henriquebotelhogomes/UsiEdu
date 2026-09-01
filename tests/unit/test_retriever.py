@@ -81,7 +81,6 @@ class TestProfileFilter:
         assert f.must[1].match.value == "Regimento Geral da UnB"
 
 
-
 try:
     import rank_bm25  # noqa: F401
 
@@ -509,4 +508,3 @@ class TestReorderContext:
         assert reorder_context([1]) == [1]
         assert reorder_context([1, 2]) == [1, 2]
         assert reorder_context([1, 2, 3]) == [1, 3, 2]
-

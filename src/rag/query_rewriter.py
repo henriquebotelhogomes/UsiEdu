@@ -124,4 +124,3 @@ def extract_query_metadata(query: str) -> dict[str, str]:
         filters["documento"] = "Lei de Diretrizes e Bases (LDB)"
 
     return filters
-

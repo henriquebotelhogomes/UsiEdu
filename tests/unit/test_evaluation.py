@@ -510,9 +510,7 @@ class TestInstrumentoDeAvaliacao:
 
         assert [c["temperature"] for c in reg.llm] == [0.2, 0.2]
 
-    def test_avaliacao_da_o_retriever_institucional_ao_agente_documental(
-        self, monkeypatch
-    ) -> None:
+    def test_avaliacao_da_o_retriever_institucional_ao_agente_documental(self, monkeypatch) -> None:
         """Produção tem 2 coleções e a acadêmica tem 0 pontos staff.
 
         Sem a institucional, o gate media um sistema que não existe.
@@ -538,9 +536,7 @@ class TestInstrumentoDeAvaliacao:
         for mock in reg.mocks:
             assert mock.build_bm25_index.called, "BM25 é por coleção; sem índice não há fusão"
 
-    def test_pergunta_que_falhou_nao_pontua_como_resposta_ruim(
-        self, tmp_path, monkeypatch
-    ) -> None:
+    def test_pergunta_que_falhou_nao_pontua_como_resposta_ruim(self, tmp_path, monkeypatch) -> None:
         """Exceção é abortada, não zerada: número parcial nunca vira métrica publicada."""
         import asyncio
         from unittest.mock import AsyncMock, MagicMock
@@ -583,4 +579,3 @@ class TestInstrumentoDeAvaliacao:
                     dataset, tmp_path / "relatorio.md", None, tmp_path / "ausente.jsonl"
                 )
             )
-

@@ -120,4 +120,3 @@ class TestExtractQueryMetadata:
 
         meta = extract_query_metadata("Como tirar segunda via de carteirinha?")
         assert meta == {}
-

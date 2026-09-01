@@ -20,8 +20,8 @@ _SECTION_RE = re.compile("|".join(_SECTION_PATTERNS), re.MULTILINE)
 # jurídicos. Quebras de linha "soft" (wrap visual da página extraída) NÃO são
 # fronteiras — foram elas que geraram chunks iniciando em "senvolvimento…".
 _UNIT_DELIM_RE = re.compile(
-    r"(?<=[.!?…])\s+"                            # fim de sentença
-    r"|\n[ \t]*\n"                               # quebra de parágrafo
+    r"(?<=[.!?…])\s+"  # fim de sentença
+    r"|\n[ \t]*\n"  # quebra de parágrafo
     r"|(?=(?:Art\.|§|T[ÍI]TULO|CAP[ÍI]TULO|SE[ÇC][ÃA]O)\s)"  # marcador jurídico
 )
 
@@ -64,13 +64,9 @@ class DocumentChunker:
 
         for section_name, section_text in sections:
             parts = self._split_text(section_text)
-            parent_text = (
-                section_text if len(section_text) <= self.parent_max_chars else None
-            )
+            parent_text = section_text if len(section_text) <= self.parent_max_chars else None
             context_prefix = (
-                self._build_context_prefix(metadata, section_name)
-                if self.contextualize
-                else ""
+                self._build_context_prefix(metadata, section_name) if self.contextualize else ""
             )
             for part in parts:
                 chunk_id = self._make_chunk_id(metadata, chunk_index)

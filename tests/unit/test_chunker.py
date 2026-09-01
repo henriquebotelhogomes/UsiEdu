@@ -329,11 +329,7 @@ class TestAncoragemEmSentenca:
             "assegurando a participação dos profissionais da educação na elaboração do projeto "
             "pedagógico e das comunidades escolar e local em conselhos escolares ou equivalentes."
         )
-        text = (
-            sent1 + "\n"
-            + sent2[:80] + "\n" + sent2[80:] + "\n"
-            + sent3[:50] + "\n" + sent3[50:]
-        )
+        text = sent1 + "\n" + sent2[:80] + "\n" + sent2[80:] + "\n" + sent3[:50] + "\n" + sent3[50:]
         parts = chunker._split_text(text)
         assert len(parts) >= 2
         for p in parts:
@@ -377,9 +373,7 @@ class TestAncoragemEmSentenca:
         assert len(frase) > 600
         tokens = frase.split(" ")
         # Wrap "soft" realista: a quebra ocupa o lugar do espaço, nunca rasga palavra.
-        text = "\n".join(
-            " ".join(tokens[i : i + 8]) for i in range(0, len(tokens), 8)
-        )
+        text = "\n".join(" ".join(tokens[i : i + 8]) for i in range(0, len(tokens), 8))
         parts = chunker._split_text(text)
         assert len(parts) >= 3
         for p in parts:
@@ -405,4 +399,3 @@ class TestAncoragemEmSentenca:
             assert not re.match(r"[a-zà-ü]", c.text), (
                 f"chunk {c.metadata['secao']} começa no meio da palavra: {c.text[:40]!r}"
             )
-

@@ -57,7 +57,5 @@ class TestContratoDeExemploJson:
         )
 
     def test_formato_de_saida_do_continue_nao_usa_chaves_duplas(self) -> None:
-        rendered = SUPERVISOR_CONTINUE_PROMPT.format(
-            agent_result="res", messages="hist"
-        )
+        rendered = SUPERVISOR_CONTINUE_PROMPT.format(agent_result="res", messages="hist")
         assert "{{" not in rendered and "}}" not in rendered
