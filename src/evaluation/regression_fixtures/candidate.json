@@ -2,9 +2,9 @@
   "schema_version": "1.0.0",
   "evidence_kind": "gate_self_test",
   "run_id": "regression-fixture-candidate-v1",
-  "dataset_git_blob_sha1": "67933038582591b4009f9b2aba1286bf85a4ada3",
+  "dataset_git_blob_sha1": "987c8b1b77a538b7594dbd4af61e77c18d9e0fc7",
   "manifest_git_blob_sha1": "83f205a52d451571874b7788f649905312c4f21f",
-  "slice_contract_git_blob_sha1": "3d4805ad67e6614dd5be4baab08aa4dd2d90370d",
+  "slice_contract_git_blob_sha1": "d21d0c0de199a3d7871ae34a43490963f85e8503",
   "taxonomy_version": "1.0.0",
   "score_mechanism": "deterministic_fixture",
   "rag_respondible": {
@@ -24,6 +24,8 @@
       "q020.rag",
       "q021.rag",
       "q023.teletrabalho",
+      "q026.rag",
+      "q029.rag",
       "q030.seguranca",
       "q030.treinamentos"
     ],
@@ -44,8 +46,8 @@
       "passed_count": 4
     },
     "sem_resposta": {
-      "total_count": 5,
-      "passed_count": 5
+      "total_count": 3,
+      "passed_count": 3
     }
   }
 }

@@ -3,8 +3,8 @@
     "cases": 30,
     "composta": 3,
     "fora_de_escopo": 4,
-    "rag_respondible": 17,
-    "sem_resposta": 5,
+    "rag_respondible": 19,
+    "sem_resposta": 3,
     "subquestions": 33,
     "tool": 7
   },
@@ -61,15 +61,15 @@
       "q020.rag",
       "q021.rag",
       "q023.teletrabalho",
+      "q026.rag",
+      "q029.rag",
       "q030.seguranca",
       "q030.treinamentos"
     ],
     "sem_resposta": [
       "q022",
-      "q026",
       "q027",
-      "q028",
-      "q029"
+      "q028"
     ],
     "tool": [
       "q004.tool",

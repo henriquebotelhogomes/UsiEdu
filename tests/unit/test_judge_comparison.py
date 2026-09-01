@@ -69,11 +69,15 @@ def test_config_fixa_paridade_repeticoes_temperatura_e_orcamento() -> None:
     assert config["protocol"]["max_attempts"] == 2
     assert config["judges"]["economic"]["model"] == "deepseek-v4-flash"
     assert config["judges"]["strong"]["model"] == "kimi-k2.7-code"
-    assert config["inputs"]["dataset_path"] == "src/evaluation/dataset.jsonl"
+    assert config["inputs"]["dataset_path"] == (
+        "src/evaluation/baseline_runs/2026-08-11/dataset.jsonl"
+    )
     assert config["inputs"]["manifest_path"] == (
         "src/evaluation/baseline_runs/2026-08-11/manifest.json"
     )
-    assert config["inputs"]["slice_contract_path"] == ("src/evaluation/recortes_avaliacao_v1.json")
+    assert config["inputs"]["slice_contract_path"] == (
+        "src/evaluation/baseline_runs/2026-08-11/recortes_avaliacao_v1.json"
+    )
 
 
 @pytest.mark.parametrize(

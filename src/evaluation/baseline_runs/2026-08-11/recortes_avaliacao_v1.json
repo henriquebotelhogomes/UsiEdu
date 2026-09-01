@@ -365,14 +365,14 @@
     },
     {
       "id": "q026",
-      "category": "direct",
+      "category": "sem_resposta",
       "subquestions": [
         {
-          "id": "q026.rag",
-          "category": "direct",
-          "requires_retrieval": true,
-          "expectation": "Recuperar e responder os procedimentos para solicitacao de pagamento de horas extras com base na Lei 8.112 e Guia do Servidor.",
-          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+          "id": "q026.refusal",
+          "category": "sem_resposta",
+          "requires_retrieval": false,
+          "expectation": "Recusar honestamente sem inventar procedimento para horas extras.",
+          "assertions": ["honest_refusal", "fabricated_sources_zero"]
         }
       ]
     },
@@ -404,14 +404,14 @@
     },
     {
       "id": "q029",
-      "category": "direct",
+      "category": "sem_resposta",
       "subquestions": [
         {
-          "id": "q029.rag",
-          "category": "direct",
-          "requires_retrieval": true,
-          "expectation": "Recuperar e responder as regras e procedimentos para afastamento por motivo de saude e pericia medica oficial.",
-          "assertions": ["faithfulness", "context_precision", "context_recall", "answer_relevancy"]
+          "id": "q029.refusal",
+          "category": "sem_resposta",
+          "requires_retrieval": false,
+          "expectation": "Recusar honestamente sem inventar regras para afastamento por saude.",
+          "assertions": ["honest_refusal", "fabricated_sources_zero"]
         }
       ]
     },

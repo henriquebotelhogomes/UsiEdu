@@ -2,11 +2,11 @@
   "schema_version": "1.0.0",
   "comparison_id": "judge-comparison-2026-08-11",
   "inputs": {
-    "dataset_path": "src/evaluation/dataset.jsonl",
+    "dataset_path": "src/evaluation/baseline_runs/2026-08-11/dataset.jsonl",
     "dataset_git_blob_sha1": "67933038582591b4009f9b2aba1286bf85a4ada3",
     "manifest_path": "src/evaluation/baseline_runs/2026-08-11/manifest.json",
     "manifest_git_blob_sha1": "1f16ac3fb74603b3a96a510024a35ae64aa63306",
-    "slice_contract_path": "src/evaluation/recortes_avaliacao_v1.json",
+    "slice_contract_path": "src/evaluation/baseline_runs/2026-08-11/recortes_avaliacao_v1.json",
     "slice_contract_git_blob_sha1": "3d4805ad67e6614dd5be4baab08aa4dd2d90370d",
     "source_records_path": "src/evaluation/baseline_runs/2026-08-11/records.jsonl",
     "source_records_sha256": "7b689f67dd881677eca65440473eb656f2e07981f3b33770929f261091a64fea"

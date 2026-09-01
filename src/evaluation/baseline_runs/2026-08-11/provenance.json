@@ -10,6 +10,7 @@
   "config_path": "src/evaluation/baseline_runs/2026-08-11/config.json",
   "dataset_git_blob_sha1": "67933038582591b4009f9b2aba1286bf85a4ada3",
   "dataset_path": "src/evaluation/dataset.jsonl",
+  "dataset_snapshot_path": "src/evaluation/baseline_runs/2026-08-11/dataset.jsonl",
   "dataset_sha256": "a421f55c530fec518e120afe0d5e5cf2b85eb50c6ba1b21f9bbb5d853d50b5f5",
   "error_count": 0,
   "estimated_cost_usd": 0.030807145,

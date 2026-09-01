@@ -146,7 +146,7 @@ def test_aggregator_builds_each_report_and_only_retrieval_enters_rag() -> None:
     contract = load_contract(CONTRACT_PATH)
     report = aggregate_results(contract, _passing_results(contract))
 
-    assert report["rag_respondible"]["subquestion_count"] == 17
+    assert report["rag_respondible"]["subquestion_count"] == 19
     assert set(report["rag_respondible"]["metrics"]) == METRICS
     assert report["rag_respondible"]["metrics"] == {
         metric: pytest.approx(0.8) for metric in METRICS
@@ -163,8 +163,8 @@ def test_aggregator_builds_each_report_and_only_retrieval_enters_rag() -> None:
     assert report["tool"]["passed_count"] == 7
     assert report["fora_de_escopo"]["case_count"] == 4
     assert report["fora_de_escopo"]["passed_count"] == 4
-    assert report["sem_resposta"]["case_count"] == 5
-    assert report["sem_resposta"]["passed_count"] == 5
+    assert report["sem_resposta"]["case_count"] == 3
+    assert report["sem_resposta"]["passed_count"] == 3
     assert set(report["composta"]) == {"q008", "q023", "q030"}
     assert report["composta"]["q008"]["rag_contribution_ids"] == []
     assert report["composta"]["q023"]["rag_contribution_ids"] == ["q023.teletrabalho"]
@@ -217,7 +217,7 @@ def test_redirect_and_refusal_failures_stay_in_their_own_reports() -> None:
     report = aggregate_results(contract, results)
 
     assert report["fora_de_escopo"]["passed_count"] == 3
-    assert report["sem_resposta"]["passed_count"] == 4
+    assert report["sem_resposta"]["passed_count"] == 2
     assert report["rag_respondible"]["metrics"] == {
         metric: pytest.approx(0.8) for metric in METRICS
     }
@@ -232,10 +232,10 @@ def test_structural_evidence_matches_contract_without_fabricated_scores() -> Non
     assert evidence["counts"] == {
         "cases": 30,
         "subquestions": 33,
-        "rag_respondible": 17,
+        "rag_respondible": 19,
         "tool": 7,
         "fora_de_escopo": 4,
-        "sem_resposta": 5,
+        "sem_resposta": 3,
         "composta": 3,
     }
 

@@ -36,6 +36,8 @@ RAG_IDS = [
     "q020.rag",
     "q021.rag",
     "q023.teletrabalho",
+    "q026.rag",
+    "q029.rag",
     "q030.seguranca",
     "q030.treinamentos",
 ]
@@ -66,7 +68,7 @@ def _summary(
         "special_reports": {
             "tool": {"total_count": 7, "passed_count": 7},
             "fora_de_escopo": {"total_count": 4, "passed_count": special_passed},
-            "sem_resposta": {"total_count": 5, "passed_count": 5},
+            "sem_resposta": {"total_count": 3, "passed_count": 3},
         },
     }
 
