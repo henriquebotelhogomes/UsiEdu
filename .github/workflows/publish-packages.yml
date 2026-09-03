@@ -52,7 +52,7 @@ jobs:
             org.opencontainers.image.licenses=MIT
 
       - name: Build and push API container
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile.api
@@ -96,7 +96,7 @@ jobs:
             org.opencontainers.image.licenses=MIT
 
       - name: Build and push Frontend container
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile.frontend
