@@ -23,7 +23,7 @@ jobs:
       BUDGET_AMOUNT_BRL: "30"
     steps:
       - name: Checkout approved template
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare evidence directory
         run: mkdir -p artifacts

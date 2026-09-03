@@ -27,7 +27,7 @@ jobs:
       SOURCE_SHARE: qdrant
     steps:
       - name: Checkout approved runbook
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare evidence directory
         run: mkdir -p artifacts
