@@ -33,7 +33,7 @@ jobs:
         run: mkdir -p artifacts
 
       - name: Login to Azure with OIDC
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
@@ -146,7 +146,7 @@ jobs:
             '.name == $share' artifacts/recovered-qdrant-share.json > /dev/null
 
       - name: Renew Azure OIDC credentials
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
