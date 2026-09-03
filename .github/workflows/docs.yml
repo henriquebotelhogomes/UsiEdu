@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0  # necessário para o mkdocs gh-deploy
 
       - name: Configurar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
