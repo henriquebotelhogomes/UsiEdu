@@ -37,7 +37,7 @@ jobs:
 
       - name: Extract metadata for API container
         id: meta-api
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}/usiedu-api
           tags: |
@@ -81,7 +81,7 @@ jobs:
 
       - name: Extract metadata for Frontend container
         id: meta-frontend
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}/usiedu-frontend
           tags: |
