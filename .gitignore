@@ -34,6 +34,7 @@ htmlcov/
 coverage.xml
 artifacts/
 frontend/e2e-report.json
+*-report.json
 
 
 # Ruff

@@ -4,7 +4,10 @@
 
 ### Plataforma Multi-Agente Universitária com LangGraph, RAG Híbrido, Function Calling & Human-in-the-Loop
 
+[![GitHub Release](https://img.shields.io/github/v/release/henriquebotelhogomes/UsiEdu?style=flat&color=blue&logo=github)](https://github.com/henriquebotelhogomes/UsiEdu/releases)
+[![GitHub Packages](https://img.shields.io/badge/GHCR-Packages%20Available-blue?logo=docker&logoColor=white)](https://github.com/henriquebotelhogomes/UsiEdu/pkgs/container/usiedu-api)
 [![CI/CD Quality Gate](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml)
+[![CodeQL Analysis](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/codeql.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/codeql.yml)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph%20v0.2%2B-orange?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
 [![LangChain](https://img.shields.io/badge/Framework-LangChain%20v0.3%2B-green?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langchain)

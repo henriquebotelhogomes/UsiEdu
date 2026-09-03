@@ -1,2 +1,22 @@
+# ==============================================================================
+# .gitattributes — UsiEdu
+# Configuração de Binários e GitHub Linguist (Estatísticas de Linguagem)
+# ==============================================================================
+
+# Definições de Binários
 knowledge_base/* binary
 
+# GitHub Linguist: Ignorar base de conhecimento bruta e documentação compilada
+# Isso garante que as estatísticas do repositório destaquem Python e TypeScript
+knowledge_base/** linguist-documentation
+knowledge_base/** linguist-vendored
+knowledge_base/*.html linguist-documentation
+knowledge_base/*.html linguist-vendored
+
+# Documentação MkDocs e site compilado
+site/** linguist-vendored
+site/** linguist-documentation
+docs/** linguist-documentation
+
+# Builds estáticos do Frontend
+frontend/dist/** linguist-vendored

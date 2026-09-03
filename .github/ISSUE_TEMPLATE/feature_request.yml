@@ -1,0 +1,39 @@
+name: 🚀 Sugestão de Funcionalidade
+description: Proponha uma nova funcionalidade, ferramenta (@tool) ou melhoria para o UsiEdu.
+title: "[FEAT]: "
+labels: ["enhancement", "feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideias e sugestões de evolução arquitetural ou novos casos de uso são muito bem-vindas!
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Escopo da Proposta
+      options:
+        - "Novo Agente Especialista ou Nova @tool"
+        - "Aprimoramento de RAG / Embeddings / Re-ranking"
+        - "Frontend / Experiência do Usuário (UI/UX)"
+        - "Observabilidade & Avaliação Contínua (Ragas / LangSmith)"
+        - "FinOps & Otimização de Tokens / Cache"
+        - "Integração / API / Webhooks"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual problema essa funcionalidade resolve?
+      description: Uma descrição clara de qual dor do estudante ou servidor público universitário estamos mitigando.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solução Proposta
+      description: Como você imagina que essa solução deva funcionar do ponto de vista do usuário e da arquitetura técnica.
+    validations:
+      required: true

@@ -1,0 +1,33 @@
+name: 🏛️ RFC / Decisão Arquitetural
+description: Proponha mudanças estruturais no grafo do LangGraph, modelos de linguagem ou infraestrutura.
+title: "[RFC]: "
+labels: ["architecture", "rfc"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para propor RFCs (Request for Comments) ou mudanças arquiteturais substanciais no UsiEdu.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto e Motivação
+      description: Por que essa mudança arquitetural é necessária? Quais são os gargalos atuais?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta Técnica Detalhada
+      description: Descreva as alterações em nós, estados (StateGraph), esquemas Pydantic ou integrações de banco vetorial.
+    validations:
+      required: true
+
+  - type: textarea
+    id: trade_offs
+    attributes:
+      label: Impactos, FinOps e Trade-offs
+      description: Qual é o impacto esperado em latência, custo de tokens, complexidade de manutenção e segurança?
+    validations:
+      required: true

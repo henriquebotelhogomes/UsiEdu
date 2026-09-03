@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentação Técnica Completa (MkDocs)
+    url: https://henriquebotelhogomes.github.io/UsiEdu/
+    about: Consulte a arquitetura detalhada, fluxos de RAG, especificações de API e relatórios de avaliação.
+  - name: 💬 GitHub Discussions
+    url: https://github.com/henriquebotelhogomes/UsiEdu/discussions
+    about: Participe de discussões gerais, tire dúvidas ou compartilhe ideias sobre o projeto.

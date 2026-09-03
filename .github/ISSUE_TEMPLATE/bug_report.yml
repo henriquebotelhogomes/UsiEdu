@@ -1,0 +1,55 @@
+name: 🐛 Relato de Bug
+description: Reporte um erro, falha ou comportamento inesperado no UsiEdu.
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por dedicar seu tempo para relatar um problema no UsiEdu!
+        Por favor, forneça o máximo de detalhes possível para facilitar a reprodução.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Componente Afetado
+      description: Em qual parte do sistema o erro foi observado?
+      options:
+        - "Agente Acadêmico / Ferramentas de Notas"
+        - "Agente Financeiro / Boletos"
+        - "Agente Documental / Base Institucional"
+        - "Orquestrador Supervisor / LangGraph"
+        - "RAG Híbrido / Qdrant / BM25 / Re-ranker"
+        - "FastAPI / SSE Streaming / Auth"
+        - "Frontend Web (React/Vite)"
+        - "Infraestrutura / Docker / Azure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição do Problema
+      description: Explique detalhadamente o que aconteceu versus o que era esperado.
+      placeholder: Ao enviar a pergunta X, o agente respondeu Y em vez de recuperar o documento Z...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Passos para Reproduzir
+      description: Passos sequenciais para reproduzir o erro.
+      placeholder: |
+        1. Fazer login como 'student' (ana@demo.usiedu)
+        2. Enviar a mensagem '...'
+        3. Observar erro retornado no console/API
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs e Rastreamento (Traceback / LangSmith)
+      description: Cole aqui logs de erro do terminal, console do navegador ou URL do trace no LangSmith.
+      render: shell

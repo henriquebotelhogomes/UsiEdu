@@ -1,0 +1,25 @@
+# ==============================================================================
+# CODEOWNERS — UsiEdu
+# Responsáveis por aprovação de Pull Requests e revisões arquiteturais
+# ==============================================================================
+
+# Propriedade padrão de todo o repositório
+* @henriquebotelhogomes
+
+# Agentes e Orquestração LangGraph
+/src/agents/ @henriquebotelhogomes
+/src/orchestration/ @henriquebotelhogomes
+
+# Pipeline de RAG e Ingestão Vetorial Qdrant
+/src/rag/ @henriquebotelhogomes
+
+# API FastAPI, Auth RBAC e Guardrails
+/src/api/ @henriquebotelhogomes
+/src/guardrails/ @henriquebotelhogomes
+
+# Frontend React e UI
+/frontend/ @henriquebotelhogomes
+
+# Infraestrutura Azure Bicep e CI/CD Workflows
+/infra/ @henriquebotelhogomes
+/.github/ @henriquebotelhogomes
