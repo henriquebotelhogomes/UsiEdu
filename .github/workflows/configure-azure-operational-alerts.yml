@@ -23,7 +23,7 @@ jobs:
       INGEST_JOB: ${{ vars.AZURE_INGEST_JOB }}
     steps:
       - name: Checkout approved templates
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare evidence directory
         run: mkdir -p artifacts

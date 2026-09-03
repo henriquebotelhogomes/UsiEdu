@@ -23,7 +23,7 @@ jobs:
       SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
     steps:
       - name: Checkout approved runbook
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare evidence directory
         run: mkdir -p artifacts

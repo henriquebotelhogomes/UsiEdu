@@ -25,7 +25,7 @@ jobs:
       PERFORMANCE_DEMO_PASSWORD: ${{ secrets.PERFORMANCE_DEMO_PASSWORD }}
     steps:
       - name: Checkout approved protocol
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare evidence directory
         run: mkdir -p artifacts

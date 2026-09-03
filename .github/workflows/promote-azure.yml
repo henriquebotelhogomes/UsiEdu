@@ -25,7 +25,7 @@ jobs:
       FRONTEND_TAG: ${{ vars.AZURE_ACR_NAME }}.azurecr.io/usiedu-frontend:${{ github.sha }}
     steps:
       - name: Checkout approved commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare evidence directory
         run: mkdir -p artifacts
