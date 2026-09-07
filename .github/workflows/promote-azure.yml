@@ -25,13 +25,13 @@ jobs:
       FRONTEND_TAG: ${{ vars.AZURE_ACR_NAME }}.azurecr.io/usiedu-frontend:${{ github.sha }}
     steps:
       - name: Checkout approved commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare evidence directory
         run: mkdir -p artifacts
 
       - name: Login to Azure with OIDC
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
@@ -148,7 +148,7 @@ jobs:
 
       - name: Upload promotion evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: azure-promotion-evidence
           path: artifacts/
