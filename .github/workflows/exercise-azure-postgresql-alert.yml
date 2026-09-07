@@ -228,7 +228,7 @@ jobs:
 
       - name: Upload sanitized PostgreSQL alert evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: azure-postgresql-alert-validation-evidence
           path: artifacts/

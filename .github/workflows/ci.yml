@@ -52,7 +52,7 @@ jobs:
 
       - name: Upload image policy self-test
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: image-policy-self-test
           path: artifacts/image-policy-*.json
@@ -68,7 +68,7 @@ jobs:
 
       - name: Upload RAG regression evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: rag-regression-evidence
           path: artifacts/rag-regression-report.json
@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload E2E evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-e2e-evidence
           path: frontend/e2e-report.json
