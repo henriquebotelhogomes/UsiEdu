@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Dependências Python (pyproject.toml) agrupadas em 1 único PR mensal
+  # Dependências Python (pyproject.toml) agrupadas em 1 único PR mensal (apenas minor e patch)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -9,12 +9,15 @@ updates:
     labels:
       - "dependencies"
       - "python"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       python-dependencies:
         patterns:
           - "*"
 
-  # Dependências Frontend (frontend/package.json) agrupadas em 1 único PR mensal
+  # Dependências Frontend (frontend/package.json) agrupadas em 1 único PR mensal (apenas minor e patch)
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
@@ -23,12 +26,15 @@ updates:
     labels:
       - "dependencies"
       - "frontend"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       frontend-dependencies:
         patterns:
           - "*"
 
-  # Ações do GitHub Actions (.github/workflows) agrupadas em 1 único PR mensal
+  # Ações do GitHub Actions (.github/workflows) agrupadas em 1 único PR mensal (apenas minor e patch)
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -37,6 +43,9 @@ updates:
     labels:
       - "dependencies"
       - "ci/cd"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       actions-dependencies:
         patterns:
