@@ -23,3 +23,11 @@
 # Infraestrutura Azure Bicep e CI/CD Workflows
 /infra/ @henriquebotelhogomes
 /.github/ @henriquebotelhogomes
+
+# ==============================================================================
+# Exceções para automações de bots (sem dono para evitar notificações por e-mail)
+# ==============================================================================
+pyproject.toml
+frontend/package.json
+frontend/package-lock.json
+uv.lock

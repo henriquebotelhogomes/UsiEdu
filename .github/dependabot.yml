@@ -1,40 +1,43 @@
 version: 2
 updates:
-  # Monitor Python pip dependencies (pyproject.toml)
+  # Dependências Python (pyproject.toml) agrupadas em 1 único PR mensal
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 3
     labels:
       - "dependencies"
       - "python"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
 
-  # Monitor Frontend npm dependencies (frontend/package.json)
+  # Dependências Frontend (frontend/package.json) agrupadas em 1 único PR mensal
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 3
     labels:
       - "dependencies"
       - "frontend"
+    groups:
+      frontend-dependencies:
+        patterns:
+          - "*"
 
-  # Monitor GitHub Actions workflow versions
+  # Ações do GitHub Actions (.github/workflows) agrupadas em 1 único PR mensal
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 3
     labels:
       - "dependencies"
       - "ci/cd"
+    groups:
+      actions-dependencies:
+        patterns:
+          - "*"
