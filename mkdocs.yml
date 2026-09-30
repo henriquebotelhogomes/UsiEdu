@@ -46,6 +46,8 @@ nav:
     - Contratos Técnicos: 09-contratos-tecnicos.md
   - Avaliação:
     - Roteiro de Vídeo Demo: 10-roteiro-video-demo.md
+  - Evolução Arquitetural & Harness:
+    - Plano de Elevação Enterprise: 11-plano-modernizacao-harness-enterprise.md
   - Profissionalização:
     - Índice: profissionalizacao/README.md
     - PRD do Programa: profissionalizacao/00-prd-programa.md
