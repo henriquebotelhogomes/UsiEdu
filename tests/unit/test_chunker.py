@@ -108,7 +108,10 @@ class TestExtractText:
         assert isinstance(text, str)  # não lança UnicodeDecodeError
 
     def test_extracao_pdf(self, chunker, metadata, tmp_path):
-        fitz = pytest.importorskip("fitz")
+        try:
+            import fitz
+        except (ImportError, Exception) as exc:
+            pytest.skip(f"fitz / pymupdf indisponível no ambiente: {exc}")
         pdf_path = tmp_path / "calendario.pdf"
         doc = fitz.open()
         page = doc.new_page()

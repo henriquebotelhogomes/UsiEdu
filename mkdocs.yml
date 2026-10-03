@@ -59,6 +59,7 @@ nav:
     - P2 — Produto e Experiência: profissionalizacao/06-produto-experiencia.md
     - Decisões Provisórias: profissionalizacao/07-decisoes-provisorias.md
     - Template de Iniciativa: profissionalizacao/TEMPLATE_INICIATIVA.md
+    - Runbook Postmortem SRE: INCIDENT_POSTMORTEM.md
 
 markdown_extensions:
   - admonition

@@ -1,7 +1,16 @@
 """Testes unitários para o reranker cross-encoder."""
 
+import sys
+import types
+
 import pytest
-import sentence_transformers
+
+try:
+    import sentence_transformers
+except (ImportError, OSError):
+    sentence_transformers = types.ModuleType("sentence_transformers")
+    sentence_transformers.CrossEncoder = None
+    sys.modules["sentence_transformers"] = sentence_transformers
 
 from src.rag.reranker import Reranker
 

@@ -166,17 +166,25 @@ Os guardrails de segurança dependem de checagens pontuais e estáticas em teste
 
 ---
 
-### Pilar 6: Compilação e Otimização de Prompts com DSPy
+### Pilar 6: Otimização Reflexiva de Prompts com GEPA (*Genetic-Pareto Algorithm*)
 
 #### Problema Atual:
-Os system prompts dos agentes acadêmico, financeiro, institucional e supervisor são estáticos, calibrados manualmente por intuição (*prompt craft*).
+Os system prompts dos agentes acadêmico, financeiro, institucional e supervisor são estáticos, calibrados manualmente por intuição (*prompt craft*). Além disso, abordagens tradicionais de compilação como DSPy clássico (`dspy.Module` / `MIPROv2`) exigem reescrever os nós do LangGraph em classes proprietárias, quebrando o ciclo de vida nativo de streaming assíncrono, ferramentas (@tool) e checkpoints HITL.
 
-#### Solução Proposta:
-1. **Módulo DSPy Teleprompter (`scripts/optimize_prompts_dspy.py`):**
-   - Modelar a orquestração do UsiEdu com `dspy.Module`.
-   - Utilizar o compilador `dspy.MIPROv2` (Multi-prompt Instruction Proposal and Optimization) orientado pelas métricas do Ragas (*Faithfulness* e *Answer Relevance*) e pelo conjunto de dados `dataset.jsonl`.
-2. **Resultado Automatizado:**
-   - O DSPy gera automaticamente as instruções mais eficientes e os melhores exemplos *few-shot* para cada agente, superando prompts manuais em até 25% de precisão e reduzindo o consumo de tokens.
+#### Por que o GEPA é Superior ao DSPy Clássico para o UsiEdu:
+1. **Otimização Multi-Objetivo de Pareto (Fidelidade vs. Tokens vs. Latência):**
+   - O DSPy foca prioritariamente em uma métrica escalar de acurácia. O **GEPA** constrói uma **fronteira de Pareto**: avalia simultaneamente a **Fidelidade da Resposta (Ragas)**, a **Latência (p95 < 2s)** e o **Custo de Tokens (FinOps)**. Mutações de prompt que aumentam acurácia ao custo de triplicar tokens são descartadas ou isoladas.
+2. **Não Invasivo (Zero Acoplamento com o Grafo):**
+   - O GEPA opera de forma agnóstica ao framework. Ele não exige converter os agentes em `dspy.Module`. O LangGraph continua 100% puro (`StateGraph`, `AsyncSqliteSaver`, streaming SSE), enquanto o GEPA atua externamente sobre os templates de prompt e datasets de teste.
+3. **Mutações Semânticas Reflexivas (LLM-as-a-Reflector):**
+   - Diferente da recombinação mecânica de few-shots, o GEPA utiliza um modelo crítico reflexivo para diagnosticar *por que* o agente errou em determinado caso do dataset de validação, gerando mutações de texto direcionadas e específicas para as lacunas observadas.
+4. **Integração Nativa com Langfuse Prompt CMS:**
+   - O prompt vencedor da fronteira de Pareto é automaticamente promovido e tagueado no Langfuse com a versão do commit Git correspondente (`git rev-parse --short HEAD`), permitindo rollback instantâneo sem alteração de código.
+
+#### Implementação Proposta (`scripts/optimize_prompts_gepa.py`):
+- Algoritmo genético reflexivo que consome o dataset de avaliação (`data/evaluation_dataset.jsonl`).
+- População de prompts avaliada em paralelo contra métricas de acurácia e FinOps.
+- Seleção de indivíduos não-dominados na fronteira de Pareto e mutação reflexiva via Gemini 3.8 Flash.
 
 ---
 
@@ -225,27 +233,97 @@ A autorização de acesso a informações restritas (ex: dados funcionais de ser
 
 ---
 
-## 📅 Roadmap de Implementação em 4 Fases
+### Pilar 10: GraphRAG Relacional (Nano-GraphRAG / NetworkX)
+
+#### Problema Atual:
+O RAG híbrido atual (Qdrant vetorial + BM25) busca trechos isolados de texto por similaridade semântica, mas falha em consultas estruturais complexas que exigem saltos relacionais (ex.: *"Quais departamentos da UnB são afetados pela resolução X e quais servidores respondem ao decano Y?"* ou *"Qual a trilha de pré-requisitos completa para o TCC?"*).
+
+#### Solução Proposta:
+- Integrar **GraphRAG**:
+  - Utilizar **Nano-GraphRAG** / **NetworkX** em modo serverless ($0/mês) para extrair entidades (departamentos, leis, cargos, disciplinas) e arestas de relacionamento a partir dos 830 chunks da base.
+  - Implementar síntese por **detecção de comunidades (algoritmo de Leiden)**, permitindo responder tanto dúvidas pontuais locais (via RAG Híbrido) quanto perguntas temáticas globais e sumarizações institucionais de alto nível (via GraphRAG).
+
+---
+
+### Pilar 11: Governança de Memória Longa & Compliance LGPD (TTL + Expurgo por `user_id`)
+
+#### Problema Atual:
+A memória de conversação está restrita à sessão efêmera ou ao histórico linear do checkpointer SQLite. Não há persistência de preferências do estudante entre semestres nem mecanismo formal de expurgo para cumprir o Direito ao Esquecimento da LGPD.
+
+#### Solução Proposta:
+- Implementar a **Taxonomia de Três Níveis de Memória**:
+  1. **Working Memory:** Estado efêmero da thread (`StateGraph` TypedDict/Pydantic).
+  2. **Short-Term Memory:** Histórico multiturndo via `AsyncSqliteSaver`.
+  3. **Long-Term Memory (Episódica & Semântica):** Memória persistida no **LanceDB** ou PostgreSQL com `pgvector`, consolidada via resumos hierárquicos periódicos.
+- **Governança LGPD:**
+  - Política explícita de **Time-To-Live (TTL)** com rotação e expurgo automático.
+  - Endpoint dedicado `DELETE /auth/me/data` para expurgo determinístico de memórias e traces associados ao `user_id`, garantindo conformidade rigorosa com a LGPD e privacidade determinística (`ANON_B84E`).
+
+---
+
+### Pilar 12: DevSecOps Supply Chain Security (Trivy + Syft SBOM + Cosign)
+
+#### Problema Atual:
+Os containers Docker no GitHub Packages (GHCR) são gerados sem atestado de proveniência criptográfico, sem SBOM (Software Bill of Materials) e sem scan impeditivo de vulnerabilidades de pacotes de sistema.
+
+#### Solução Proposta:
+- Integrar os padrões normativos de Supply Chain Security do Harness no workflow `.github/workflows/publish-packages.yml`:
+  1. **Trivy Container Scan:** Varredura obrigatória de vulnerabilidades de OS e bibliotecas, bloqueando a publicação se houver falhas críticas/altas não mitigadas (`exit-code: 1`).
+  2. **Syft SBOM:** Geração do manifesto de dependências em formato padrão SPDX JSON (`anchore/sbom-action@v0`).
+  3. **Cosign:** Assinatura digital sem chave (*keyless*) via OIDC do GitHub Actions, comprovando a autenticidade e integridade dos containers `usiedu-api` e `usiedu-frontend`.
+
+---
+
+### Pilar 13: SRE, SLOs & Incident Management (Datadog Alertas como Código + Postmortem Blameless)
+
+#### Problema Atual:
+O monitoramento depende de verificações manuais e não há política formal de Error Budget nem documentação padrão para tratamento e registro de incidentes graves.
+
+#### Solução Proposta:
+- Definir **SLOs Explícitos**:
+  - Disponibilidade: $\ge 99.5\%$ no mês.
+  - Latência p95: $< 1.200\text{ms}$ para streaming SSE.
+- **Política de Error Budget:** Deploy freeze e priorização de resiliência caso a queima de erro ultrapasse $50\%$ em uma janela de 24 horas.
+- **Runbook Canônico de Postmortem Blameless:** Adicionar o documento institucional [docs/INCIDENT_POSTMORTEM.md](INCIDENT_POSTMORTEM.md) para análise de causa raiz (Os 5 Porquês) e ações preventivas pós-incidente.
+
+---
+
+### Pilar 14: Compilação de Inferência & Re-ranking em CPU via ONNX Runtime
+
+#### Problema Atual:
+O Cross-Encoder de re-ranking (`bge-reranker-v2-m3`) roda com inferência padrão do PyTorch em CPU, consumindo de 60ms a 120ms por lote de recuperação de chunks.
+
+#### Solução Proposta:
+- Exportar e quantizar o modelo de re-ranking para **ONNX Runtime (INT8/FP16)** ou aplicar **`torch.compile(model, backend="inductor")`**:
+  - Redução da latência de re-ranking em até $70\%$ (passando de ~80ms para $< 20\text{ms}$ em CPU de servidor comum).
+  - Economia de VRAM/RAM no container do Azure Container Apps.
+
+---
+
+## 📅 Roadmap de Implementação em 5 Fases
 
 ```mermaid
 flowchart LR
-    F1[Fase 1: Quick Wins & FinOps\n- Scalar Docs\n- Gemini 3.8 Flash\n- Jev Roteamento & CRAG]
-    F2[Fase 2: Observabilidade & DevSecOps\n- Datadog Pro APM\n- Sentry Errors\n- Promptfoo CI Red-Teaming]
-    F3[Fase 3: Inteligência & Dados\n- DSPy Prompt Optimization\n- DuckDB Analytics Parquet\n- LanceDB Serverless Adapter]
-    F4[Fase 4: Experiência & Governança\n- xyflow Live Agent Graph\n- TanStack Virtual\n- Cerbos ReBAC Policies]
+    F1["Fase 1: Quick Wins & FinOps\n• Scalar Docs em /docs\n• Gemini 3.8 Flash Nativo\n• Jev Roteamento & CRAG"]
+    F2["Fase 2: Observabilidade & DevSecOps\n• Datadog Pro APM\n• Sentry Errors\n• Trivy + Syft SBOM + Cosign\n• Promptfoo CI Red-Teaming"]
+    F3["Fase 3: Inteligência & Dados\n• Otimização de Prompts com GEPA\n• DuckDB Analytics .parquet\n• LanceDB Serverless Adapter"]
+    F4["Fase 4: GraphRAG & Memória LGPD\n• Nano-GraphRAG Leiden\n• Long-Term Memory com TTL\n• ONNX Re-ranking (<20ms)"]
+    F5["Fase 5: Experiência & Governança\n• xyflow Live Agent Graph\n• TanStack Virtual\n• Cerbos ReBAC Policies"]
 
-    F1 --> F2 --> F3 --> F4
+    F1 --> F2 --> F3 --> F4 --> F5
 ```
 
 | Fase | Escopo Principal | Esforço Estimado | Entregáveis Técnicos |
 |---|---|:---:|---|
 | **Fase 1** | **Quick Wins, FinOps & Decision Models** | 1 a 2 dias | • Substituir Swagger UI por **Scalar**<br/>• Conectar **Gemini 3.8 Flash** no provider<br/>• Integrar **Jev (`typesafe/jev-latest`)** no Supervisor e no CRAG Grader |
-| **Fase 2** | **Observabilidade Enterprise & Red-Teaming** | 2 a 3 dias | • Ativar **Datadog Pro** e **Sentry** na API<br/>• Quality Gate do **Promptfoo** no GitHub Actions contra jailbreaks<br/>• Configurar **Langfuse** para APM de LLM |
-| **Fase 3** | **Otimização de Prompts & Analytics OLAP** | 2 a 3 dias | • Compilação algorítmica de prompts com **DSPy**<br/>• Engine analítico **DuckDB** sobre arquivos `.parquet`<br/>• Adapter vetorial **LanceDB** serverless |
-| **Fase 4** | **Experiência Visual Interativa & ReBAC** | 3 a 4 dias | • Componente interativo **xyflow (Live Agent Graph)** no frontend<br/>• **TanStack Virtual** em listas densas<br/>• Políticas declarativas de autorização com **Cerbos** |
+| **Fase 2** | **Observabilidade, DevSecOps & Supply Chain** | 2 a 3 dias | • Ativar **Datadog Pro** e **Sentry** na API<br/>• Scan **Trivy**, **SBOM Syft** e assinatura **Cosign** no CI<br/>• Quality Gate do **Promptfoo** contra jailbreaks |
+| **Fase 3** | **Otimização de Prompts & Analytics OLAP** | 2 a 3 dias | • Otimização reflexiva de prompts via **GEPA (*Genetic-Pareto Algorithm*)**<br/>• Engine analítico **DuckDB** sobre arquivos `.parquet`<br/>• Adapter vetorial **LanceDB** serverless |
+| **Fase 4** | **GraphRAG, Memória Longa & Inferência Rápida** | 3 a 4 dias | • **Nano-GraphRAG** para síntese institucional temática<br/>• **Memória Longa** com expurgo LGPD por `user_id`<br/>• **ONNX Runtime** no Cross-Encoder para latência < 20ms |
+| **Fase 5** | **Experiência Visual Interativa & ReBAC** | 3 a 4 dias | • Componente interativo **xyflow (Live Agent Graph)** no frontend<br/>• **TanStack Virtual** em listas densas<br/>• Políticas declarativas de autorização com **Cerbos** |
 
 ---
 
 ## Conclusão
 
-A execução deste plano posiciona o **UsiEdu** no topo absoluto dos ecossistemas multi-agente de código aberto, combinando o que há de mais avançado em **Modelos de Decisão (Jev)**, **FinOps Inteligente (Gemini 3.8 Flash + Gateway)**, **DevSecOps rigoroso (Promptfoo)**, **Observabilidade corporativa (Datadog Pro)** e **Experiência do Usuário imersiva (xyflow)**.
+A execução deste plano posiciona o **UsiEdu** no topo absoluto dos ecossistemas multi-agente de código aberto, combinando o que há de mais avançado em **Modelos de Decisão (Jev)**, **FinOps Inteligente (Gemini 3.8 Flash + Gateway)**, **GraphRAG de Alta Densidade**, **DevSecOps rigoroso (Trivy + Syft + Promptfoo)**, **Observabilidade corporativa (Datadog Pro)** e **Experiência do Usuário imersiva (xyflow)**.
+
