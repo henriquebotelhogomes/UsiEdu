@@ -153,9 +153,8 @@ async def chat_stream(
                         out = event.get("data", {}).get("output")
                         if isinstance(out, dict):
                             dec = out.get("supervisor_decision")
-                            intent_val = (
-                                getattr(dec, "intent", None)
-                                or (dec.get("intent") if isinstance(dec, dict) else None)
+                            intent_val = getattr(dec, "intent", None) or (
+                                dec.get("intent") if isinstance(dec, dict) else None
                             )
                             if intent_val == "composta":
                                 is_composite = True

@@ -169,9 +169,8 @@ class HybridRetriever:
         enable_crag_filter: bool = True,
     ) -> None:
         self.client = client
-        self.is_lancedb = (
-            client.__class__.__name__ == "LanceDBStore"
-            or (hasattr(client, "search_vector") and not hasattr(client, "query_points"))
+        self.is_lancedb = client.__class__.__name__ == "LanceDBStore" or (
+            hasattr(client, "search_vector") and not hasattr(client, "query_points")
         )
         self.embedder = embedder
         self.reranker = reranker

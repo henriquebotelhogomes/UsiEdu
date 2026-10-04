@@ -96,9 +96,7 @@ def pick_collections(
     return [academico]
 
 
-def pick_collection(
-    publico_alvo: str, settings: RagSettings, backend: str = "lancedb"
-) -> str:
+def pick_collection(publico_alvo: str, settings: RagSettings, backend: str = "lancedb") -> str:
     """Seleciona a coleção/tabela principal com base no público-alvo do documento."""
     return pick_collections(publico_alvo, settings, backend=backend)[0]
 
