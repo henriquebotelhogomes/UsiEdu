@@ -50,49 +50,85 @@ def get_cors_origins() -> list[str]:
 def _build_retrievers():
     """Cria os retrievers RAG (acadêmico e institucional).
 
-    Retorna (retriever_academico, retriever_institucional).
-    Se o Qdrant estiver indisponível, retorna (None, None) e a API
-    segue operando sem RAG.
+    Prioriza LanceDB (Serverless em disco, Zero-Daemon) por padrão.
+    Se o LanceDB contiver índices ou estiver configurado como backend padrão,
+    ele é utilizado sem necessidade de conexão HTTP externa.
+    Caso contrário, tenta o fallback para Qdrant se disponível.
     """
+    from src.rag.embedder import Embedder
+    from src.rag.reranker import Reranker
+    from src.rag.retriever import HybridRetriever
+    from src.rag.settings import RagSettings
+
+    settings = RagSettings()
+    embedder = Embedder()
+    try:
+        reranker: Reranker | None = Reranker()
+    except Exception:
+        logger.warning("Reranker indisponível; seguindo sem reranking.")
+        reranker = None
+
+    # 1. Tenta LanceDB (padrão ouro serverless em disco - Zero-Daemon)
+    lancedb_path = os.getenv("USIEDU_LANCEDB_PATH", settings.lancedb_path)
+    if settings.vector_store_backend == "lancedb" or os.path.exists(lancedb_path):
+        try:
+            from src.rag.lancedb_store import LanceDBStore
+
+            store = LanceDBStore(db_path=lancedb_path)
+            if store.count(settings.lancedb_table_academico) > 0:
+                academico = HybridRetriever(
+                    client=store,
+                    embedder=embedder,
+                    reranker=reranker,
+                    collection_name=settings.lancedb_table_academico,
+                )
+                institucional = HybridRetriever(
+                    client=store,
+                    embedder=embedder,
+                    reranker=reranker,
+                    collection_name=settings.lancedb_table_institucional,
+                )
+                academico.build_bm25_index()
+                institucional.build_bm25_index()
+                logger.info(
+                    "Retrievers RAG inicializados com LanceDB Serverless ('%s').",
+                    lancedb_path,
+                )
+                return academico, institucional
+        except Exception:
+            logger.warning("Falha ao inicializar LanceDB; tentando fallback Qdrant.", exc_info=True)
+
+    # 2. Fallback para Qdrant
     try:
         from qdrant_client import QdrantClient
 
-        from src.rag.embedder import Embedder
-        from src.rag.reranker import Reranker
-        from src.rag.retriever import HybridRetriever, qdrant_timeout_seconds
+        from src.rag.retriever import qdrant_timeout_seconds
 
-        qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
+        qdrant_url = os.getenv("QDRANT_URL", settings.qdrant_url)
         try:
             client = QdrantClient(qdrant_url, timeout=qdrant_timeout_seconds())
             client.get_collections()
         except Exception:
             client = QdrantClient(path="./qdrant_storage")
-        embedder = Embedder()
-
-        try:
-            reranker: Reranker | None = Reranker()
-        except Exception:
-            logger.warning("Reranker indisponível; seguindo sem reranking.")
-            reranker = None
 
         academico = HybridRetriever(
             client=client,
             embedder=embedder,
             reranker=reranker,
-            collection_name="academico",
+            collection_name=settings.qdrant_collection_academico,
         )
         institucional = HybridRetriever(
             client=client,
             embedder=embedder,
             reranker=reranker,
-            collection_name="institucional",
+            collection_name=settings.qdrant_collection_institucional,
         )
         academico.build_bm25_index()
         institucional.build_bm25_index()
-        logger.info("Retrievers RAG inicializados (academico + institucional).")
+        logger.info("Retrievers RAG inicializados com Qdrant.")
         return academico, institucional
     except Exception:
-        logger.exception("Qdrant indisponível; API seguirá sem RAG.")
+        logger.exception("Qdrant e LanceDB indisponíveis; API seguirá sem RAG.")
         return None, None
 
 

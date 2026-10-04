@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from src.observability.resilience import call_idempotent_with_single_retry
 from src.rag.models import RetrievalResult, Source
 
 if TYPE_CHECKING:
-    from qdrant_client import QdrantClient
     from qdrant_client.models import Filter
 
     from src.rag.crag_grader import RetrievalGrader
@@ -137,20 +136,29 @@ def reorder_context(items: list) -> list:
     return left + list(reversed(right))
 
 
+class _HitWrapper:
+    """Wrapper para compatibilizar respostas do LanceDB com a interface de pontos."""
+
+    def __init__(self, item: dict) -> None:
+        self.id = str(item.get("id", ""))
+        self.score = float(item.get("score", 0.0))
+        self.payload = item
+
+
 class HybridRetriever:
-    """Retriever híbrido: busca vetorial no Qdrant + BM25 + reranking.
+    """Retriever híbrido: busca vetorial (LanceDB/Qdrant) + BM25 + reranking.
 
     Pipeline:
     1. Busca BM25 (rank_bm25) → top-K candidatos + termos de expansão
-    2. Busca vetorial (Qdrant) com query expandida → top-K candidatos
+    2. Busca vetorial (LanceDB ou Qdrant) com query expandida → top-K candidatos
     3. Fusão por Reciprocal Rank Fusion (RRF)
     4. Reranking com cross-encoder → top-N finais
-    5. Filtro por perfil (via metadados do Qdrant)
+    5. Filtro por perfil (via metadados)
     """
 
     def __init__(
         self,
-        client: QdrantClient,
+        client: Any,
         embedder: Embedder,
         reranker: Reranker | None = None,
         grader: RetrievalGrader | None = None,
@@ -161,6 +169,10 @@ class HybridRetriever:
         enable_crag_filter: bool = True,
     ) -> None:
         self.client = client
+        self.is_lancedb = (
+            client.__class__.__name__ == "LanceDBStore"
+            or (hasattr(client, "search_vector") and not hasattr(client, "query_points"))
+        )
         self.embedder = embedder
         self.reranker = reranker
         self.collection_name = collection_name
@@ -198,25 +210,33 @@ class HybridRetriever:
         Returns:
             Lista de RetrievalResult aprovados pelo Grader ordenados por relevância.
         """
-        profile_filter = self._build_profile_filter(profile, metadata_filters=metadata_filters)
-
         # 1. Busca BM25 (também fornece termos para expansão da query vetorial)
         bm25_results = self._bm25_search(query)
 
         # 2. Busca vetorial com query expandida por termos-chave do BM25:
-        # perguntas curtas (ex: "quais feriados temos esse ano?") têm embedding
-        # genérico; os termos dos top hits BM25 direcionam a busca vetorial
         expanded_query = self._expand_query(query, bm25_results)
         query_vector = self.embedder.embed_query(expanded_query)
-        query_resp = call_idempotent_with_single_retry(
-            lambda: self.client.query_points(
-                collection_name=self.collection_name,
-                query=query_vector,
+
+        if self.is_lancedb:
+            raw_hits = self.client.search_vector(
+                table_name=self.collection_name,
+                query_vector=query_vector,
                 limit=self.search_top_k,
-                query_filter=profile_filter,
+                profile=profile,
+                metadata_filters=metadata_filters,
             )
-        )
-        vector_hits = query_resp.points
+            vector_hits = [_HitWrapper(h) for h in raw_hits]
+        else:
+            profile_filter = self._build_profile_filter(profile, metadata_filters=metadata_filters)
+            query_resp = call_idempotent_with_single_retry(
+                lambda: self.client.query_points(
+                    collection_name=self.collection_name,
+                    query=query_vector,
+                    limit=self.search_top_k,
+                    query_filter=profile_filter,
+                )
+            )
+            vector_hits = query_resp.points
 
         # 3. Fusão RRF
         if bm25_results:
@@ -243,7 +263,14 @@ class HybridRetriever:
         return candidates[: self.rerank_top_k]
 
     def build_bm25_index(self) -> None:
-        """Constrói índice BM25 a partir dos documentos no Qdrant."""
+        """Constrói índice BM25 a partir dos documentos."""
+        if self.is_lancedb:
+            docs = self.client.get_all_documents(self.collection_name)
+            if not docs:
+                return
+            self._bm25_index = _BM25Index(docs)
+            logger.info("Índice BM25 (LanceDB) construído com %d documentos.", len(docs))
+            return
 
         all_points, _ = call_idempotent_with_single_retry(
             lambda: self.client.scroll(
@@ -342,9 +369,25 @@ class HybridRetriever:
         return sorted_ids[: self.search_top_k]
 
     def _fetch_by_ids(self, ids: list[str]) -> list[RetrievalResult]:
-        """Busca documentos específicos no Qdrant por ID."""
+        """Busca documentos específicos por ID."""
         if not ids:
             return []
+
+        if self.is_lancedb:
+            records = self.client.get_by_ids(self.collection_name, ids)
+            records_map = {str(r["id"]): r for r in records}
+            results = []
+            for doc_id in ids:
+                rec = records_map.get(doc_id)
+                if rec:
+                    results.append(
+                        RetrievalResult(
+                            text=rec.get("text", ""),
+                            score=0.0,
+                            source=self._make_source(rec, 0.0),
+                        )
+                    )
+            return results
 
         points = call_idempotent_with_single_retry(
             lambda: self.client.retrieve(

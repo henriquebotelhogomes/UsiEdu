@@ -41,6 +41,9 @@ dependencies = [
     "ruff==0.16.9",
     "mkdocs-material>=9.5.0",
     "msgpack>=1.2.1",
+    "lancedb>=0.17.0",
+    "pyarrow>=17.0.0",
+    "pypdf>=6.19.0",
 ]
 
 [build-system]

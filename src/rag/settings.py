@@ -11,6 +11,12 @@ class RagSettings(BaseSettings):
 
     model_config = {"env_prefix": ""}
 
+    # Vector Store Backend ("lancedb" ou "qdrant")
+    vector_store_backend: str = "qdrant"
+    lancedb_path: str = "data/lancedb"
+    lancedb_table_academico: str = "academico"
+    lancedb_table_institucional: str = "institucional"
+
     # Qdrant
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection_academico: str = "academico"
@@ -38,7 +44,12 @@ class RagSettings(BaseSettings):
 
     @property
     def collections(self) -> dict[str, str]:
-        """Retorna {perfil: nome_coleção}."""
+        """Retorna {perfil: nome_coleção/tabela}."""
+        if self.vector_store_backend == "lancedb":
+            return {
+                "student": self.lancedb_table_academico,
+                "staff": self.lancedb_table_institucional,
+            }
         return {
             "student": self.qdrant_collection_academico,
             "staff": self.qdrant_collection_institucional,

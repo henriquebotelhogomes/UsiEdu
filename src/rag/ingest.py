@@ -78,25 +78,54 @@ def ensure_collections(client, dimension: int) -> None:
             logger.info("Coleção '%s' já existe.", collection_name)
 
 
-def pick_collections(publico_alvo: str, settings: RagSettings) -> list[str]:
-    """Seleciona as coleções com base no público-alvo do documento."""
+def pick_collections(
+    publico_alvo: str, settings: RagSettings, backend: str = "lancedb"
+) -> list[str]:
+    """Seleciona as coleções/tabelas com base no público-alvo do documento."""
+    if backend == "lancedb":
+        academico = settings.lancedb_table_academico
+        institucional = settings.lancedb_table_institucional
+    else:
+        academico = settings.qdrant_collection_academico
+        institucional = settings.qdrant_collection_institucional
+
     if publico_alvo == "all":
-        return [settings.qdrant_collection_academico, settings.qdrant_collection_institucional]
+        return [academico, institucional]
     if publico_alvo == "staff":
-        return [settings.qdrant_collection_institucional]
-    return [settings.qdrant_collection_academico]
+        return [institucional]
+    return [academico]
 
 
-def pick_collection(publico_alvo: str, settings: RagSettings) -> str:
-    """Seleciona a coleção principal com base no público-alvo do documento."""
-    return pick_collections(publico_alvo, settings)[0]
+def pick_collection(
+    publico_alvo: str, settings: RagSettings, backend: str = "lancedb"
+) -> str:
+    """Seleciona a coleção/tabela principal com base no público-alvo do documento."""
+    return pick_collections(publico_alvo, settings, backend=backend)[0]
+
+
+def documento_indexado(
+    client, doc_entry: dict, settings: RagSettings, backend: str = "lancedb"
+) -> bool:
+    """Confirma que o documento do manifest realmente existe na base vetorial."""
+    collections = pick_collections(
+        doc_entry.get("publico_alvo", "student"), settings, backend=backend
+    )
+    if backend == "lancedb":
+        for table_name in collections:
+            if not client.has_document(table_name, doc_entry["name"]):
+                return False
+        return True
+
+    return documento_indexado_no_qdrant(client, doc_entry, settings)
 
 
 def documento_indexado_no_qdrant(client, doc_entry: dict, settings: RagSettings) -> bool:
-    """Confirma que o documento do manifest realmente existe na coleção remota."""
+    """Confirma que o documento do manifest realmente existe na coleção remota do Qdrant."""
     from qdrant_client.models import FieldCondition, Filter, MatchValue
 
-    collections = pick_collections(doc_entry.get("publico_alvo", "student"), settings)
+    collections = pick_collections(
+        doc_entry.get("publico_alvo", "student"), settings, backend="qdrant"
+    )
     for collection_name in collections:
         try:
             result = client.count(
@@ -176,8 +205,16 @@ def ingest_document(
     client,
     settings: RagSettings,
     force: bool = False,
+    backend: str | None = None,
 ) -> int:
     """Processa e indexa um único documento. Retorna número de chunks indexados."""
+    if backend is None:
+        backend = (
+            "lancedb"
+            if client.__class__.__name__ == "LanceDBStore"
+            or (hasattr(client, "upsert_chunks") and not hasattr(client, "upsert"))
+            else "qdrant"
+        )
     file_path = KNOWLEDGE_BASE_DIR / doc_entry["file"]
 
     if not file_path.exists():
@@ -190,7 +227,7 @@ def ingest_document(
         not force
         and doc_entry.get("checksum") == current_checksum
         and doc_entry.get("indexed")
-        and documento_indexado_no_qdrant(client, doc_entry, settings)
+        and documento_indexado(client, doc_entry, settings, backend=backend)
     ):
         logger.info("Documento '%s' já indexado (checksum igual). Pulando.", doc_entry["name"])
         return 0
@@ -244,14 +281,18 @@ def ingest_document(
     vectors = embedder.embed(texts)
     logger.info("  %d embeddings calculados.", len(vectors))
 
-    # 3. Upload para Qdrant em todas as coleções do documento
-    collections = pick_collections(doc_entry["publico_alvo"], settings)
+    # 3. Upload para o backend selecionado (LanceDB ou Qdrant)
+    collections = pick_collections(doc_entry["publico_alvo"], settings, backend=backend)
     uploaded = 0
     for col_name in collections:
-        _delete_documento(client, col_name, doc_entry["name"])
-        up = upload_chunks(client, col_name, chunks, vectors)
+        if backend == "lancedb":
+            client.delete_document(col_name, doc_entry["name"])
+            up = client.upsert_chunks(col_name, chunks, vectors)
+        else:
+            _delete_documento(client, col_name, doc_entry["name"])
+            up = upload_chunks(client, col_name, chunks, vectors)
         uploaded += up
-        logger.info("  %d pontos enviados para '%s'.", up, col_name)
+        logger.info("  %d pontos enviados para '%s' (%s).", up, col_name, backend)
 
     # 4. Atualiza entrada do manifest
     doc_entry["checksum"] = current_checksum
@@ -263,9 +304,16 @@ def ingest_document(
 
 def main(argv: list[str] | None = None) -> None:
     """Pipeline completo de ingestão."""
+    settings = RagSettings()
     parser = argparse.ArgumentParser(
         prog="python -m src.rag.ingest",
-        description="Ingere a base de conhecimento no Qdrant.",
+        description="Ingere a base de conhecimento no LanceDB ou Qdrant.",
+    )
+    parser.add_argument(
+        "--backend",
+        choices=["lancedb", "qdrant"],
+        default=settings.vector_store_backend,
+        help="Backend de armazenamento vetorial (padrão: lancedb serverless).",
     )
     parser.add_argument(
         "--force",
@@ -282,7 +330,6 @@ def main(argv: list[str] | None = None) -> None:
         format="%(asctime)s [%(levelname)s] %(message)s",
     )
 
-    settings = RagSettings()
     manifest = load_manifest()
 
     if not manifest.get("documents"):
@@ -296,15 +343,20 @@ def main(argv: list[str] | None = None) -> None:
         batch_size=settings.embedding_batch_size,
     )
 
-    from qdrant_client import QdrantClient
+    if args.backend == "lancedb":
+        from src.rag.lancedb_store import LanceDBStore
 
-    client = QdrantClient(
-        url=settings.qdrant_url,
-        timeout=_QDRANT_TIMEOUT_SECONDS,
-    )
+        client = LanceDBStore(db_path=settings.lancedb_path)
+        logger.info("Conectado ao LanceDB serverless em '%s'.", settings.lancedb_path)
+    else:
+        from qdrant_client import QdrantClient
 
-    # Garante que as coleções existem
-    ensure_collections(client, embedder.dimension)
+        client = QdrantClient(
+            url=settings.qdrant_url,
+            timeout=_QDRANT_TIMEOUT_SECONDS,
+        )
+        ensure_collections(client, embedder.dimension)
+        logger.info("Conectado ao Qdrant em '%s'.", settings.qdrant_url)
 
     chunker = DocumentChunker(
         max_chars=settings.chunk_max_chars,
@@ -315,7 +367,15 @@ def main(argv: list[str] | None = None) -> None:
     # Processa cada documento
     total_chunks = 0
     for doc_entry in manifest["documents"]:
-        chunks = ingest_document(doc_entry, chunker, embedder, client, settings, force=args.force)
+        chunks = ingest_document(
+            doc_entry,
+            chunker,
+            embedder,
+            client,
+            settings,
+            force=args.force,
+            backend=args.backend,
+        )
         total_chunks += chunks
 
     # Salva manifest atualizado (newline fixa LF: o hash da cadeia de eval

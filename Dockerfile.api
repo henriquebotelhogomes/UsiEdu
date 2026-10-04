@@ -31,10 +31,11 @@ RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copia o código
+# Copia o código e a base vetorial LanceDB embarcada
 COPY src/ ./src/
 COPY knowledge_base/ ./knowledge_base/
 COPY scripts/ ./scripts/
+COPY data/lancedb/ ./data/lancedb/
 
 # Porta da API
 EXPOSE 8000

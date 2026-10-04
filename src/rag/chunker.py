@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from pathlib import Path
 
 from src.rag.models import Chunk, DocumentMetadata
+
+logger = logging.getLogger(__name__)
 
 # Padrões de cabeçalhos em documentos jurídicos brasileiros
 _SECTION_PATTERNS = [
@@ -122,19 +125,19 @@ class DocumentChunker:
 
     @staticmethod
     def _extract_pdf(file_path: Path) -> str:
-        """Extrai texto de PDF usando PyMuPDF, preservando tabelas."""
-        try:
-            import pymupdf as fitz
-        except ImportError:
-            import fitz
-
-        try:
-            fitz.TOOLS.mupdf_display_errors(False)
-        except Exception:
-            pass
-
+        """Extrai texto de PDF usando PyMuPDF com fallback para pypdf."""
         parts: list[str] = []
         try:
+            try:
+                import pymupdf as fitz
+            except (ImportError, Exception):
+                import fitz
+
+            try:
+                fitz.TOOLS.mupdf_display_errors(False)
+            except Exception:
+                pass
+
             with fitz.open(str(file_path)) as doc:
                 for page in doc:
                     try:
@@ -143,10 +146,27 @@ class DocumentChunker:
                             parts.append(txt)
                     except Exception:
                         pass
+            if parts:
+                return "\n".join(parts)
         except Exception:
             pass
 
-        return "\n".join(parts)
+        # Fallback robusto via pypdf (pure-python, imune a erros de DLL)
+        try:
+            import pypdf
+
+            reader = pypdf.PdfReader(str(file_path))
+            for page in reader.pages:
+                try:
+                    txt = page.extract_text()
+                    if txt and txt.strip():
+                        parts.append(txt)
+                except Exception:
+                    continue
+            return "\n".join(parts)
+        except Exception as exc:
+            logger.warning("Falha ao extrair texto do PDF '%s': %s", file_path, exc)
+            return ""
 
     @staticmethod
     def _extract_html(file_path: Path) -> str:
