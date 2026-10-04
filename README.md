@@ -9,6 +9,7 @@
 [![CI/CD Quality Gate](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/quality_gate.yml)
 [![CodeQL Analysis](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/codeql.yml/badge.svg)](https://github.com/henriquebotelhogomes/UsiEdu/actions/workflows/codeql.yml)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![uv](https://img.shields.io/badge/Package%20Manager-uv%20(Astral)-purple?logo=python&logoColor=white)](https://docs.astral.sh/uv/)
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph%20v0.2%2B-orange?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
 [![LangChain](https://img.shields.io/badge/Framework-LangChain%20v0.3%2B-green?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langchain)
 [![Vector DB](https://img.shields.io/badge/Vector%20DB-Qdrant%20Hybrid%20(830%20chunks)-red?logo=qdrant&logoColor=white)](https://qdrant.tech/)
@@ -19,7 +20,7 @@
 
 <br/>
 
-[**🌐 Testar Aplicação Online**](https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/) • [**📖 Documentação Técnica (MkDocs)**](https://henriquebotelhogomes.github.io/UsiEdu/) • [**📊 Relatório de Avaliação RAGAS**](src/evaluation/relatorio_ragas.md) • [**🧪 Agent Trajectory Harness**](src/harness/relatorio_harness.md)
+[**🌐 Testar Aplicação Online**](https://usiedu-frontend.calmtree-d18b7257.brazilsouth.azurecontainerapps.io/) • [**📖 Documentação Técnica (MkDocs)**](https://henriquebotelhogomes.github.io/UsiEdu/) • [**🚀 Plano Enterprise (Harness v1.5.2)**](docs/11-plano-modernizacao-harness-enterprise.md) • [**🛡️ Runbook Postmortem SRE**](docs/INCIDENT_POSTMORTEM.md) • [**📊 Relatório RAGAS**](src/evaluation/relatorio_ragas.md)
 
 </div>
 
@@ -29,7 +30,7 @@
 
 O **UsiEdu** é uma plataforma conversacional multi-agente de padrão **Série B / Scale-up Enterprise**, desenhada para unificar o ecossistema de atendimento e autosserviço de instituições de ensino superior. 
 
-Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiEdu opera sob um **Grafo de Estados Determinístico (LangGraph)**, combinando múltiplos agentes especialistas, execução nativa de ferramentas (*Function Calling*), aprovação humana no fluxo (*Human-in-the-Loop*), middleware de contexto universal, síntese cognitiva paralela, mitigação de *Lost in the Middle*, recuperação hierárquica e guardrails em camadas com controle de custos (*FinOps*).
+Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiEdu opera sob um **Grafo de Estados Determinístico (LangGraph)**, combinando múltiplos agentes especialistas, execução nativa de ferramentas (*Function Calling*), aprovação humana no fluxo (*Human-in-the-Loop*), middleware de contexto universal, **síntese cognitiva paralela com resolução de contradições**, mitigação de *Lost in the Middle*, recuperação hierárquica e guardrails em camadas com controle de custos (*FinOps*).
 
 ---
 
@@ -38,7 +39,9 @@ Diferente de chatbots baseados em RAG simples (*single-prompt wrappers*), o UsiE
 | Dimensão | Chatbot / RAG Tradicional (MVP) | UsiEdu Enterprise Multi-Agent (Scale-up) |
 |---|---|---|
 | **Orquestração** | Cadeia linear única (sem estado granular) | **StateGraph (LangGraph)** com supervisor tipado e checkpointer persistente (`AsyncSqliteSaver`) |
+| **Síntese Multi-Agente** | Concatenação crua ou respostas contraditórias de múltiplos nós | **Síntese Cognitiva Unificada Anti-Contradição** (elimina recusas cruzadas e unifica a identidade) |
 | **Contexto Temporal** | Dependência de funções ad-hoc / LLM sem relógio | **Middleware Universal de Contexto** (Data/Hora de Brasília, Timezone e Perfil) |
+| **Regras de Negócio** | Cálculos estáticos ignorando prazos reais | **Validação Temporal Grounded** (cálculo de dias de atraso contra políticas institucionais em tempo real) |
 | **Recuperação de Chunks** | Fatiamento ingênuo por tamanho fixo | **Contextual Retrieval (Anthropic)** + **Hierarchical Parent-Document (`parent_text`)** |
 | **Atenção do Modelo** | Injeção linear sujeita a *Lost in the Middle* | **Reordenação Balanceada (`reorder_context` `[1º, 3º, 5º, 4º, 2º]`)** |
 | **Resolução de Perguntas** | Busca com pronomes do usuário ("ele", "disso") | **Query Rewriter & Resolução Coreferencial** antes de consultar índices |
@@ -137,6 +140,7 @@ graph = builder.compile(
 | **Orquestração Multi-Agente** | **LangGraph v0.2+**, **LangChain v0.3+**, `StateGraph`, `MemorySaver`, Checkpointers SQLite/PostgreSQL |
 | **Recuperação & RAG** | **Qdrant**, BM25, Contextual Retrieval (Anthropic), CRAG Grader, Cross-Encoder (`bge-reranker-v2-m3`) |
 | **Backend & APIs** | **FastAPI**, Python 3.12+, Server-Sent Events (SSE via `astream_events`), Pydantic v2, SlowAPI |
+| **Gerenciamento & Ambiente** | **uv (Astral)** com `pyproject.toml` (PEP 621) e lockfile determinístico `uv.lock` |
 | **Modelos de Linguagem (LLMs)** | OpenCode Go (**DeepSeek V4 Flash**, **Kimi K2.7 Code**) + `FakeChatModel` para testes |
 | **Segurança & FinOps** | Semantic Cache (SQLite/Redis) + Warmup, PII Masking (`mask_pii`), Guardrails Anti-Injection, `trim_messages` |
 | **Avaliação & Harness** | **Synthetic Testset Generator**, **RAGAS** (LLM-as-a-Judge), **Agent Trajectory Harness**, **LangSmith Tracing** |
@@ -164,7 +168,7 @@ graph = builder.compile(
 ## 🚀 Guia de Instalação e Execução Local
 
 ### 1. Pré-requisitos
-- **Python 3.12+**
+- **Python 3.12+** e [**uv**](https://docs.astral.sh/uv/) instalado
 - **Node.js 20+**
 - **Docker Desktop** (em execução para o Qdrant)
 
@@ -175,30 +179,26 @@ graph = builder.compile(
 git clone https://github.com/henriquebotelhogomes/UsiEdu.git
 cd UsiEdu
 
-# 2. Ative o ambiente virtual
-.venv\Scripts\Activate.ps1    # Windows PowerShell
-source .venv/bin/activate     # Linux / macOS
+# 2. Sincronize o ambiente virtual determinístico via uv (recomendado)
+uv sync
 
-# 3. Instale as dependências
-pip install -e ".[dev]"
-
-# 4. Configure o arquivo .env
+# 3. Configure o arquivo .env
 cp .env.example .env
 
-# 5. Suba o Vector Database (Qdrant)
+# 4. Suba o Vector Database (Qdrant)
 docker compose up -d qdrant
 
-# 6. Ingestão dos documentos no Qdrant (com Contextual Retrieval)
-python -m src.rag.ingest
+# 5. Ingestão dos documentos no Qdrant (com Contextual Retrieval)
+uv run python -m src.rag.ingest
 
-# 7. Pré-aquecimento do Semantic Cache (Warmup)
-python scripts/warmup_cache.py
+# 6. Pré-aquecimento do Semantic Cache (Warmup)
+uv run python scripts/warmup_cache.py
 
-# 8. (Opcional) Gerar dataset sintético para avaliação Ragas
-python scripts/generate_synthetic_testset.py --count 50
+# 7. (Opcional) Gerar dataset sintético para avaliação Ragas
+uv run python scripts/generate_synthetic_testset.py --count 50
 
-# 9. Inicie o servidor FastAPI
-uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+# 8. Inicie o servidor FastAPI
+uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 - **API Swagger / OpenAPI:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
