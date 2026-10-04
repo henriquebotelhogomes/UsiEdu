@@ -10,31 +10,29 @@
       
       
       
-        <link rel="canonical" href="https://henriquebotelhogomes.github.io/UsiEdu/profissionalizacao/TEMPLATE_INICIATIVA/">
+        <link rel="canonical" href="https://henriquebotelhogomes.github.io/UsiEdu/INCIDENT_POSTMORTEM/">
       
       
-        <link rel="prev" href="../07-decisoes-provisorias/">
+        <link rel="prev" href="../profissionalizacao/TEMPLATE_INICIATIVA/">
       
-      
-        <link rel="next" href="../../INCIDENT_POSTMORTEM/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Template de Iniciativa - UsiEdu — Documentação Técnica</title>
+        <title>Runbook Postmortem SRE - UsiEdu — Documentação Técnica</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,7 +51,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#prioridade-nome-da-iniciativa" class="md-skip">
+        <a href="#template-canonico-de-postmortem-blameless-sre-confiabilidade" class="md-skip">
           Pular para conteúdo
         </a>
       
@@ -94,7 +92,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
-    <a href="../.." title="UsiEdu — Documentação Técnica" class="md-header__button md-logo" aria-label="UsiEdu — Documentação Técnica" data-md-component="logo">
+    <a href=".." title="UsiEdu — Documentação Técnica" class="md-header__button md-logo" aria-label="UsiEdu — Documentação Técnica" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Template de Iniciativa
+              Runbook Postmortem SRE
             
           </span>
         </div>
@@ -232,7 +230,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navegação" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="UsiEdu — Documentação Técnica" class="md-nav__button md-logo" aria-label="UsiEdu — Documentação Técnica" data-md-component="logo">
+    <a href=".." title="UsiEdu — Documentação Técnica" class="md-nav__button md-logo" aria-label="UsiEdu — Documentação Técnica" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -262,7 +260,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -338,7 +336,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../01-visao-geral-arquitetura/" class="md-nav__link">
+      <a href="../01-visao-geral-arquitetura/" class="md-nav__link">
         
   
   
@@ -366,7 +364,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../02-agentes-e-orquestracao/" class="md-nav__link">
+      <a href="../02-agentes-e-orquestracao/" class="md-nav__link">
         
   
   
@@ -394,7 +392,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../03-rag-e-infraestrutura/" class="md-nav__link">
+      <a href="../03-rag-e-infraestrutura/" class="md-nav__link">
         
   
   
@@ -478,7 +476,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../04-piloto-e-roadmap/" class="md-nav__link">
+      <a href="../04-piloto-e-roadmap/" class="md-nav__link">
         
   
   
@@ -506,7 +504,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../05-fontes-base-conhecimento/" class="md-nav__link">
+      <a href="../05-fontes-base-conhecimento/" class="md-nav__link">
         
   
   
@@ -534,7 +532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../06-visao-escala-global/" class="md-nav__link">
+      <a href="../06-visao-escala-global/" class="md-nav__link">
         
   
   
@@ -618,7 +616,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../07-prd-requisitos/" class="md-nav__link">
+      <a href="../07-prd-requisitos/" class="md-nav__link">
         
   
   
@@ -646,7 +644,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../08-plano-execucao/" class="md-nav__link">
+      <a href="../08-plano-execucao/" class="md-nav__link">
         
   
   
@@ -674,7 +672,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../09-contratos-tecnicos/" class="md-nav__link">
+      <a href="../09-contratos-tecnicos/" class="md-nav__link">
         
   
   
@@ -758,7 +756,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../10-roteiro-video-demo/" class="md-nav__link">
+      <a href="../10-roteiro-video-demo/" class="md-nav__link">
         
   
   
@@ -842,7 +840,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../11-plano-modernizacao-harness-enterprise/" class="md-nav__link">
+      <a href="../11-plano-modernizacao-harness-enterprise/" class="md-nav__link">
         
   
   
@@ -926,7 +924,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../profissionalizacao/" class="md-nav__link">
         
   
   
@@ -954,7 +952,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../00-prd-programa/" class="md-nav__link">
+      <a href="../profissionalizacao/00-prd-programa/" class="md-nav__link">
         
   
   
@@ -982,7 +980,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../01-validacao-piloto/" class="md-nav__link">
+      <a href="../profissionalizacao/01-validacao-piloto/" class="md-nav__link">
         
   
   
@@ -1010,7 +1008,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../02-qualidade-rag/" class="md-nav__link">
+      <a href="../profissionalizacao/02-qualidade-rag/" class="md-nav__link">
         
   
   
@@ -1038,7 +1036,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../03-integracao-entrega-rollback/" class="md-nav__link">
+      <a href="../profissionalizacao/03-integracao-entrega-rollback/" class="md-nav__link">
         
   
   
@@ -1066,7 +1064,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../04-seguranca-operacional/" class="md-nav__link">
+      <a href="../profissionalizacao/04-seguranca-operacional/" class="md-nav__link">
         
   
   
@@ -1094,7 +1092,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../05-performance-disponibilidade/" class="md-nav__link">
+      <a href="../profissionalizacao/05-performance-disponibilidade/" class="md-nav__link">
         
   
   
@@ -1122,7 +1120,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../06-produto-experiencia/" class="md-nav__link">
+      <a href="../profissionalizacao/06-produto-experiencia/" class="md-nav__link">
         
   
   
@@ -1150,7 +1148,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../07-decisoes-provisorias/" class="md-nav__link">
+      <a href="../profissionalizacao/07-decisoes-provisorias/" class="md-nav__link">
         
   
   
@@ -1158,6 +1156,34 @@
     
   
     Decisões Provisórias
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profissionalizacao/TEMPLATE_INICIATIVA/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Template de Iniciativa
   
 
     
@@ -1194,7 +1220,7 @@
   <span class="md-ellipsis">
     
   
-    Template de Iniciativa
+    Runbook Postmortem SRE
   
 
     
@@ -1212,7 +1238,7 @@
   <span class="md-ellipsis">
     
   
-    Template de Iniciativa
+    Runbook Postmortem SRE
   
 
     
@@ -1238,10 +1264,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-contexto-e-evidencias" class="md-nav__link">
+  <a href="#1-informacoes-basicas" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Contexto e evidências
+        1. Informações Básicas
       
     </span>
   </a>
@@ -1249,10 +1275,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-objetivo-mensuravel" class="md-nav__link">
+  <a href="#2-resumo-executivo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Objetivo mensurável
+        2. Resumo Executivo
       
     </span>
   </a>
@@ -1260,22 +1286,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-escopo-e-nao-escopo" class="md-nav__link">
+  <a href="#3-impacto-no-negocio-error-budget" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Escopo e não escopo
+        3. Impacto no Negócio &amp; Error Budget
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Escopo e não escopo">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-linha-do-tempo-horario-de-brasilia-utc-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Linha do Tempo (Horário de Brasília - UTC-3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-analise-de-causa-raiz-os-5-porques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Análise de Causa Raiz (Os 5 Porquês)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-o-que-funcionou-bem-vs-o-que-falhou" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. O que Funcionou Bem vs. O que Falhou
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. O que Funcionou Bem vs. O que Falhou">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#escopo" class="md-nav__link">
+  <a href="#o-que-funcionou-bem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Escopo
+        O que funcionou bem:
       
     </span>
   </a>
@@ -1283,10 +1342,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nao-escopo" class="md-nav__link">
+  <a href="#onde-falhamos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Não escopo
+        Onde falhamos:
       
     </span>
   </a>
@@ -1299,65 +1358,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-requisitos-e-criterios-de-aceite" class="md-nav__link">
+  <a href="#7-acoes-corretivas-e-preventivas-action-items" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Requisitos e critérios de aceite
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-decisoes-dependencias-e-riscos" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Decisões, dependências e riscos
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-plano-tecnico" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Plano técnico
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-tarefas-e-microtarefas" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Tarefas e microtarefas
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-estrategia-de-testes-e-validacao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Estratégia de testes e validação
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-encerramento" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Encerramento
+        7. Ações Corretivas e Preventivas (Action Items)
       
     </span>
   </a>
@@ -1368,34 +1372,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../INCIDENT_POSTMORTEM/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Runbook Postmortem SRE
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1435,10 +1411,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-contexto-e-evidencias" class="md-nav__link">
+  <a href="#1-informacoes-basicas" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Contexto e evidências
+        1. Informações Básicas
       
     </span>
   </a>
@@ -1446,10 +1422,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-objetivo-mensuravel" class="md-nav__link">
+  <a href="#2-resumo-executivo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Objetivo mensurável
+        2. Resumo Executivo
       
     </span>
   </a>
@@ -1457,22 +1433,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-escopo-e-nao-escopo" class="md-nav__link">
+  <a href="#3-impacto-no-negocio-error-budget" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Escopo e não escopo
+        3. Impacto no Negócio &amp; Error Budget
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Escopo e não escopo">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-linha-do-tempo-horario-de-brasilia-utc-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Linha do Tempo (Horário de Brasília - UTC-3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-analise-de-causa-raiz-os-5-porques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Análise de Causa Raiz (Os 5 Porquês)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-o-que-funcionou-bem-vs-o-que-falhou" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. O que Funcionou Bem vs. O que Falhou
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. O que Funcionou Bem vs. O que Falhou">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#escopo" class="md-nav__link">
+  <a href="#o-que-funcionou-bem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Escopo
+        O que funcionou bem:
       
     </span>
   </a>
@@ -1480,10 +1489,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nao-escopo" class="md-nav__link">
+  <a href="#onde-falhamos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Não escopo
+        Onde falhamos:
       
     </span>
   </a>
@@ -1496,65 +1505,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-requisitos-e-criterios-de-aceite" class="md-nav__link">
+  <a href="#7-acoes-corretivas-e-preventivas-action-items" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Requisitos e critérios de aceite
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-decisoes-dependencias-e-riscos" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Decisões, dependências e riscos
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-plano-tecnico" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Plano técnico
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-tarefas-e-microtarefas" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Tarefas e microtarefas
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-estrategia-de-testes-e-validacao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Estratégia de testes e validação
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-encerramento" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Encerramento
+        7. Ações Corretivas e Preventivas (Action Items)
       
     </span>
   </a>
@@ -1581,150 +1535,104 @@
   
 
 
-<h1 id="prioridade-nome-da-iniciativa">[Prioridade] — [Nome da iniciativa]<a class="headerlink" href="#prioridade-nome-da-iniciativa" title="Permanent link">&para;</a></h1>
+<h1 id="template-canonico-de-postmortem-blameless-sre-confiabilidade">📋 Template Canônico de Postmortem Blameless (SRE &amp; Confiabilidade)<a class="headerlink" href="#template-canonico-de-postmortem-blameless-sre-confiabilidade" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>UsiEdu Incident Management — Cultura Justa &amp; Aprendizado Contínuo</strong><br />
+Todo incidente de severidade alta (SEV-1 / SEV-2) deve gerar um postmortem concluído em até 72h.</p>
+</blockquote>
+<hr />
+<h2 id="1-informacoes-basicas">1. Informações Básicas<a class="headerlink" href="#1-informacoes-basicas" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Título do Incidente:</strong> [Ex: Degradação no Nó Supervisor devido a Rate Limit no Provedor de LLM]</li>
+<li><strong>Data do Incidente:</strong> YYYY-MM-DD</li>
+<li><strong>Duração Total:</strong> X horas e Y minutos</li>
+<li><strong>Severidade:</strong> SEV-1 (Indisponibilidade Crítica) / SEV-2 (Degradação Severa) / SEV-3 (Impacto Menor)</li>
+<li><strong>Incident Commander (IC):</strong> @nome</li>
+<li><strong>Lead de Resolução:</strong> @nome</li>
+<li><strong>Serviços Afetados:</strong> API FastAPI, LangGraph Engine, Qdrant Hybrid Search, Frontend Web</li>
+</ul>
+<hr />
+<h2 id="2-resumo-executivo">2. Resumo Executivo<a class="headerlink" href="#2-resumo-executivo" title="Permanent link">&para;</a></h2>
+<p><em>Breve descrição do que aconteceu, qual foi o impacto para estudantes/servidores universitários e como o sistema foi restaurado.</em></p>
+<hr />
+<h2 id="3-impacto-no-negocio-error-budget">3. Impacto no Negócio &amp; Error Budget<a class="headerlink" href="#3-impacto-no-negocio-error-budget" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Usuários Afetados:</strong> Estimativa de estudantes ou servidores com erro na sessão.</li>
+<li><strong>Queima de Error Budget:</strong> X% consumido nas últimas 24h (SLO de disponibilidade alvo: 99.5%).</li>
+<li><strong>Taxa de Erro de API:</strong> Pico de X% de respostas HTTP 5xx.</li>
+<li><strong>Latência p95 / p99:</strong> Degradação de X ms para Y ms.</li>
+</ul>
+<hr />
+<h2 id="4-linha-do-tempo-horario-de-brasilia-utc-3">4. Linha do Tempo (Horário de Brasília - UTC-3)<a class="headerlink" href="#4-linha-do-tempo-horario-de-brasilia-utc-3" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>HH:MM</code> — Detecção automática do alerta no Datadog Pro (<code>HighErrorRateFastAPI</code>).</li>
+<li><code>HH:MM</code> — Abertura da sala de incidente e investigação inicial.</li>
+<li><code>HH:MM</code> — Identificação da causa raiz no provedor ou nó do grafo.</li>
+<li><code>HH:MM</code> — Execução do rollback automatizado via workflow GitHub Actions (<code>rollback-azure.yml</code>) ou ativação do fallback de LLM.</li>
+<li><code>HH:MM</code> — Recuperação dos probes de liveness e prontidão (<code>/health</code>).</li>
+<li><code>HH:MM</code> — Incidente encerrado e retorno aos níveis normais de SLO.</li>
+</ul>
+<hr />
+<h2 id="5-analise-de-causa-raiz-os-5-porques">5. Análise de Causa Raiz (Os 5 Porquês)<a class="headerlink" href="#5-analise-de-causa-raiz-os-5-porques" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Por que o chat parou de responder?</strong> Porque o nó supervisor gerou exceção não tratada ao chamar o LLM.</li>
+<li><strong>Por que gerou exceção?</strong> Porque o endpoint retornou HTTP 429 (Too Many Requests).</li>
+<li><strong>Por que retornou 429?</strong> Porque houve um pico de perguntas de rematrícula que superou o limite do provedor primário.</li>
+<li><strong>Por que o fallback não assumiu?</strong> Porque a hierarquia de contingência no AI Gateway não estava ativada.</li>
+<li><strong>Por que não estava ativada?</strong> Porque o roteador operava com dependência direta sem retries com exponential backoff.</li>
+</ol>
+<hr />
+<h2 id="6-o-que-funcionou-bem-vs-o-que-falhou">6. O que Funcionou Bem vs. O que Falhou<a class="headerlink" href="#6-o-que-funcionou-bem-vs-o-que-falhou" title="Permanent link">&para;</a></h2>
+<h3 id="o-que-funcionou-bem">O que funcionou bem:<a class="headerlink" href="#o-que-funcionou-bem" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Os alertas do Datadog Pro dispararam dentro de 60 segundos após o início da falha.</li>
+<li>O checkpointer <code>AsyncSqliteSaver</code> manteve o histórico das conversas sem corrupção de dados.</li>
+</ul>
+<h3 id="onde-falhamos">Onde falhamos:<a class="headerlink" href="#onde-falhamos" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Falta de fallback automático transparente para o segundo provedor de LLM.</li>
+<li>Mensagem de erro genérica exibida no frontend em vez de aviso amigável de sobrecarga temporária.</li>
+</ul>
+<hr />
+<h2 id="7-acoes-corretivas-e-preventivas-action-items">7. Ações Corretivas e Preventivas (Action Items)<a class="headerlink" href="#7-acoes-corretivas-e-preventivas-action-items" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Campo</th>
-<th>Preencher</th>
+<th style="text-align: center;">ID</th>
+<th>Ação Corretiva</th>
+<th style="text-align: center;">Tipo</th>
+<th style="text-align: center;">Responsável</th>
+<th style="text-align: center;">Prazo</th>
+<th style="text-align: center;">Status</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Estado</td>
-<td>Planejado / Em execução / Bloqueado / Concluído</td>
+<td style="text-align: center;"><code>ACT-01</code></td>
+<td>Configurar hierarquia de fallback no LiteLLM Proxy</td>
+<td style="text-align: center;">Prevenção</td>
+<td style="text-align: center;">@engenharia</td>
+<td style="text-align: center;">YYYY-MM-DD</td>
+<td style="text-align: center;">Pendente</td>
 </tr>
 <tr>
-<td>Prioridade</td>
-<td>P0 / P1 / P2</td>
+<td style="text-align: center;"><code>ACT-02</code></td>
+<td>Implementar retry exponencial no nó Supervisor do LangGraph</td>
+<td style="text-align: center;">Mitigação</td>
+<td style="text-align: center;">@engenharia</td>
+<td style="text-align: center;">YYYY-MM-DD</td>
+<td style="text-align: center;">Pendente</td>
 </tr>
 <tr>
-<td>Dono</td>
-<td>Henrique Botelho Gomes</td>
-</tr>
-<tr>
-<td>Dependências</td>
-<td>[links ou “nenhuma”]</td>
-</tr>
-<tr>
-<td>Checklists legados afetados</td>
-<td>[links e itens exatos]</td>
-</tr>
-<tr>
-<td>Atualizado em</td>
-<td>AAAA-MM-DD</td>
+<td style="text-align: center;"><code>ACT-03</code></td>
+<td>Adicionar probe de contingência no dashboard Datadog</td>
+<td style="text-align: center;">Detecção</td>
+<td style="text-align: center;">@sre</td>
+<td style="text-align: center;">YYYY-MM-DD</td>
+<td style="text-align: center;">Pendente</td>
 </tr>
 </tbody>
 </table>
-<h2 id="1-contexto-e-evidencias">1. Contexto e evidências<a class="headerlink" href="#1-contexto-e-evidencias" title="Permanent link">&para;</a></h2>
-<p>Descrever apenas fatos verificáveis: comportamento atual, logs, métricas,
-incidentes, screenshots ou relatórios. Incluir links e datas.</p>
-<h2 id="2-objetivo-mensuravel">2. Objetivo mensurável<a class="headerlink" href="#2-objetivo-mensuravel" title="Permanent link">&para;</a></h2>
-<p>Definir resultado observável, métrica, valor inicial, meta e prazo, se houver.</p>
-<h2 id="3-escopo-e-nao-escopo">3. Escopo e não escopo<a class="headerlink" href="#3-escopo-e-nao-escopo" title="Permanent link">&para;</a></h2>
-<h3 id="escopo">Escopo<a class="headerlink" href="#escopo" title="Permanent link">&para;</a></h3>
-<ul>
-<li>[item]</li>
-</ul>
-<h3 id="nao-escopo">Não escopo<a class="headerlink" href="#nao-escopo" title="Permanent link">&para;</a></h3>
-<ul>
-<li>[item]</li>
-</ul>
-<h2 id="4-requisitos-e-criterios-de-aceite">4. Requisitos e critérios de aceite<a class="headerlink" href="#4-requisitos-e-criterios-de-aceite" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>ID</th>
-<th>Requisito</th>
-<th>Critério de aceite verificável</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>RQ-[sigla]-01</td>
-<td>[requisito]</td>
-<td>Dado/Quando/Então ou medição objetiva.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="5-decisoes-dependencias-e-riscos">5. Decisões, dependências e riscos<a class="headerlink" href="#5-decisoes-dependencias-e-riscos" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Tipo</th>
-<th>Item</th>
-<th>Dono / condição</th>
-<th>Mitigação ou próximo passo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Decisão</td>
-<td>[decisão tomada ou pendente]</td>
-<td>[fonte]</td>
-<td>[ação]</td>
-</tr>
-</tbody>
-</table>
-<p>Decisão sem resposta deve bloquear a tarefa dependente. Não substituir esta
-seção por uma suposição de implementação.</p>
-<h2 id="6-plano-tecnico">6. Plano técnico<a class="headerlink" href="#6-plano-tecnico" title="Permanent link">&para;</a></h2>
-<p>Descrever componentes, contratos, dados, variáveis de ambiente, migrações,
-compatibilidade, segurança e estratégia de rollout/rollback afetados.</p>
-<h2 id="7-tarefas-e-microtarefas">7. Tarefas e microtarefas<a class="headerlink" href="#7-tarefas-e-microtarefas" title="Permanent link">&para;</a></h2>
-<p>Cada microtarefa gera um commit atômico e atualiza o checklist legado
-correspondente quando aplicável.</p>
-<ul>
-<li>[ ] <strong>T[NN].1 — [resultado entregável]</strong></li>
-<li>[ ] [microtarefa verificável]</li>
-<li>[ ] Teste: [arquivo/comando/cenário]</li>
-<li>[ ] Evidência: [local onde será registrada]</li>
-</ul>
-<h2 id="8-estrategia-de-testes-e-validacao">8. Estratégia de testes e validação<a class="headerlink" href="#8-estrategia-de-testes-e-validacao" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Camada</th>
-<th>Cenário</th>
-<th>Automação</th>
-<th>Comando / evidência</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Unitária</td>
-<td>[caso]</td>
-<td>Sim/Não</td>
-<td>[comando]</td>
-</tr>
-<tr>
-<td>Integração</td>
-<td>[caso]</td>
-<td>Sim/Não</td>
-<td>[comando]</td>
-</tr>
-<tr>
-<td>Manual</td>
-<td>[caso]</td>
-<td>Sim/Não</td>
-<td>[passos]</td>
-</tr>
-<tr>
-<td>Produção</td>
-<td>[caso]</td>
-<td>Sim/Não</td>
-<td>[URL/log]</td>
-</tr>
-</tbody>
-</table>
-<h2 id="9-encerramento">9. Encerramento<a class="headerlink" href="#9-encerramento" title="Permanent link">&para;</a></h2>
-<ul>
-<li>[ ] Critérios de aceite validados.</li>
-<li>[ ] Testes e Ruff verdes, na abrangência definida.</li>
-<li>[ ] Documentação e variáveis atualizadas.</li>
-<li>[ ] Checklists legados reconciliados no mesmo commit.</li>
-<li>[ ] Resumo de conclusão entregue: mudança, evidência, teste local, riscos.</li>
-</ul>
 
 
 
@@ -1796,10 +1704,10 @@ correspondente quando aplicável.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "navigation.expand", "search.suggest", "search.highlight", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "mais 1 nesta p\u00e1gina", "search.result.more.other": "# mais nesta p\u00e1gina", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "navigation.expand", "search.suggest", "search.highlight", "toc.follow", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "mais 1 nesta p\u00e1gina", "search.result.more.other": "# mais nesta p\u00e1gina", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
