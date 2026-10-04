@@ -26,15 +26,29 @@ class TestFinanceiroTools:
         assert boletos == []
 
     @pytest.mark.asyncio
-    async def test_simular_renegociacao_com_boletos_vencidos(self) -> None:
-        """Renegociação com boletos vencidos deve retornar proposta."""
-        resultado = await simular_renegociacao("ana-123")
+    async def test_simular_renegociacao_com_boletos_vencidos_dentro_do_prazo(self) -> None:
+        """Renegociação com boletos vencidos dentro de 30 dias deve retornar proposta."""
+        from datetime import date
+
+        # Vencimento em 10/07/2026, referência em 20/07/2026 (10 dias de atraso)
+        resultado = await simular_renegociacao("ana-123", data_referencia=date(2026, 7, 20))
         assert resultado["possivel"] is True
         assert resultado["boletos_abrangidos"] == ["bol-001"]
         assert resultado["valor_original"] == 890.00
         assert resultado["desconto_aplicado"] == "10%"
         assert resultado["parcelamento"] == 6
         assert "Proposta:" in resultado["proposta"]
+
+    @pytest.mark.asyncio
+    async def test_simular_renegociacao_com_atraso_superior_a_30_dias_recusado(self) -> None:
+        """Boletos com mais de 30 dias de atraso não são elegíveis para desconto automático."""
+        from datetime import date
+
+        # Vencimento em 10/07/2026, referência em 04/10/2026 (86 dias de atraso)
+        resultado = await simular_renegociacao("ana-123", data_referencia=date(2026, 10, 4))
+        assert resultado["possivel"] is False
+        assert "mais de 30 dias" in resultado["motivo"]
+        assert resultado["dias_atraso"] == 86
 
     @pytest.mark.asyncio
     async def test_simular_renegociacao_sem_boletos_vencidos(self) -> None:
@@ -46,7 +60,11 @@ class TestFinanceiroTools:
     @pytest.mark.asyncio
     async def test_simular_renegociacao_com_boleto_ids_especificos(self) -> None:
         """Renegociação com IDs específicos deve filtrar corretamente."""
-        resultado = await simular_renegociacao("ana-123", boleto_ids=["bol-001"])
+        from datetime import date
+
+        resultado = await simular_renegociacao(
+            "ana-123", boleto_ids=["bol-001"], data_referencia=date(2026, 7, 20)
+        )
         assert resultado["possivel"] is True
         assert resultado["boletos_abrangidos"] == ["bol-001"]
 
