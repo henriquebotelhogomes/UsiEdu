@@ -145,3 +145,45 @@ class TestChatStream:
         assert events[0]["event"] == "meta"
         assert events[-1]["event"] == "error"
         assert "falha simulada" in events[-1]["detail"]
+
+    def test_stream_pergunta_composta_usa_tokens_da_consolidacao(self) -> None:
+        """Em perguntas compostas, o stream emite apenas os tokens da consolidação."""
+        from src.api import chat as chat_module
+        from src.api.main import app
+        from src.llm.fake import FakeChatModel
+        from src.orchestration.graph import create_chat_graph
+
+        router_llm = FakeChatModel(
+            default_response=json.dumps(
+                {
+                    "intent": "composta",
+                    "plan": ["academico", "financeiro"],
+                    "reasoning": "pergunta composta",
+                }
+            )
+        )
+        agent_llm = FakeChatModel(default_response="Rascunho parcial do especialista.")
+        synthesis_llm = FakeChatModel(default_response="Resposta unificada sintetizada.")
+
+        chat_module._graph = create_chat_graph(
+            router_llm=router_llm,
+            agent_llm=agent_llm,
+            synthesis_llm=synthesis_llm,
+        )
+
+        client = TestClient(app)
+        token = _get_token(client)
+        with client.stream(
+            "POST",
+            "/chat/stream",
+            json={"session_id": "sess-st-comp", "message": "Notas e boletos"},
+            headers={"Authorization": f"Bearer {token}"},
+        ) as response:
+            assert response.status_code == 200
+            events = _parse_sse(list(response.iter_lines()))
+
+        tokens = [e for e in events if e["event"] == "token"]
+        assert len(tokens) >= 1
+        streamed = "".join(t["delta"] for t in tokens)
+        assert streamed.strip() == "Resposta unificada sintetizada."
+        assert "Rascunho parcial" not in streamed

@@ -144,13 +144,35 @@ async def chat_stream(
 
     async def event_stream() -> AsyncIterator[str]:
         yield _sse({"event": "meta", "session_id": payload.session_id, "message_id": str(run_id)})
+        is_composite = False
         try:
             async for event in graph.astream_events(state, config, version="v2"):
+                if event["event"] == "on_chain_end":
+                    node_name = (event.get("metadata") or {}).get("langgraph_node")
+                    if node_name == "supervisor":
+                        out = event.get("data", {}).get("output")
+                        if isinstance(out, dict):
+                            dec = out.get("supervisor_decision")
+                            intent_val = (
+                                getattr(dec, "intent", None)
+                                or (dec.get("intent") if isinstance(dec, dict) else None)
+                            )
+                            if intent_val == "composta":
+                                is_composite = True
+
                 if event["event"] != "on_chat_model_stream":
                     continue
+
                 node = (event.get("metadata") or {}).get("langgraph_node")
-                if node not in STREAMABLE_NODES:
-                    continue
+                # Em perguntas compostas, os especialistas geram dados intermediários;
+                # apenas o nó de consolidação (síntese unificada) emite tokens ao usuário.
+                if is_composite:
+                    if node != "consolidation":
+                        continue
+                else:
+                    if node not in STREAMABLE_NODES:
+                        continue
+
                 delta = getattr(event["data"].get("chunk"), "content", "")
                 if isinstance(delta, str) and delta:
                     yield _sse({"event": "token", "delta": delta})

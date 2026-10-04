@@ -138,6 +138,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             agent_llm=agent_llm,
             financeiro_llm=agent_llm,
             documental_llm=agent_llm,
+            synthesis_llm=agent_llm,
             retriever=retriever,
             documental_retriever=documental_retriever,
             checkpointer=checkpointer,

@@ -56,7 +56,11 @@ def _build_opencode_go(
     max_tokens: int | None = None,
 ) -> BaseChatModel:
     """Constrói ChatOpenAI apontando para endpoint OpenCode Go."""
+    import uuid
+
     from langchain_openai import ChatOpenAI
+
+    session_id = os.getenv("OPENCODE_SESSION_ID") or f"usiedu-{uuid.uuid4().hex[:12]}"
 
     return ChatOpenAI(
         model=model_name or os.getenv("USIEDU_ROUTER_MODEL", "deepseek-v4-flash"),
@@ -66,6 +70,7 @@ def _build_opencode_go(
         # Console Go/OpenCode Go exige temperature=1 para alguns modelos
         temperature=1.0 if temperature is None else temperature,
         max_tokens=max_tokens,
+        default_headers={"x-opencode-session": session_id},
         stream_usage=True,
         timeout=float(os.getenv("USIEDU_LLM_TIMEOUT_SECONDS", "180")),
     )
